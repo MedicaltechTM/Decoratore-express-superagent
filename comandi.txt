@@ -1,0 +1,18 @@
+npm i superagent
+npm i @types/superagent
+
+npm i supertest
+npm i @types/supertest
+
+npm i express
+npm i @types/express
+
+npm i express-validator
+
+npm i inversify-express-utils
+
+npm i class-validator
+
+npm i class-transformer
+
+
