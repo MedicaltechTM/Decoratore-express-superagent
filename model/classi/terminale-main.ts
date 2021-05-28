@@ -3,7 +3,7 @@ import { InizializzaLogbaseIn, InizializzaLogbaseOut, IPrintabile, IRaccoltaPerc
 import express from "express";
 import { Request, Response } from "express";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
-import { urlencoded, json as BodyParseJson } from 'body-parser';
+import bodyParser, { urlencoded, json as BodyParseJson } from 'body-parser';
 import { SalvaListaClasseMetaData, TerminaleClasse } from "./terminale-classe";
 //const swaggerUI = require('swagger-ui-express');
 import fs from "fs";
@@ -52,9 +52,10 @@ export class Main {
             const pathGlobal = '/' + this.path;
             this.percorsi.pathGlobal = pathGlobal;
 
-            this.serverExpressDecorato.use(urlencoded({ 'extended': true })); // parse application/x-www-form-urlencoded
-
-            this.serverExpressDecorato.use(BodyParseJson({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
+            //this.serverExpressDecorato.use(urlencoded({ 'extended': true })); // parse application/x-www-form-urlencoded
+            //this.serverExpressDecorato.use(bodyParser.urlencoded());
+            this.serverExpressDecorato.use(express.json());
+            //this.serverExpressDecorato.use(BodyParseJson({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 
             this.serverExpressDecorato.route
             for (let index = 0; index < tmp.length; index++) {

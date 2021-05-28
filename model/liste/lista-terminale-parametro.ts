@@ -17,13 +17,13 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
         for (let index = this.length - 1; index >= 0; index--) {
             const element = this[index];
             let tmp = undefined;
-            if (richiesta.body[element.nomeParametro] != undefined) {
+            if (richiesta.body[element.nomeParametro] != undefined && element.posizione=='body') {
                 tmp = richiesta.body[element.nomeParametro];
             }
-            else if (richiesta.query[element.nomeParametro] != undefined) {
+            else if (richiesta.query[element.nomeParametro] != undefined && element.posizione=='query') {
                 tmp = richiesta.query[element.nomeParametro];
             }
-            else if (richiesta.headers[element.nomeParametro] != undefined) {
+            else if (richiesta.headers[element.nomeParametro] != undefined && element.posizione=='header') {
                 tmp = richiesta.headers[element.nomeParametro];
             }
             else {

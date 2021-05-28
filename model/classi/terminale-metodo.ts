@@ -345,7 +345,6 @@ export class TerminaleMetodo implements IDescrivibile {
             };
         }
     }
-
     ConvertiInMiddleare() {
         return async (req: Request, res: Response, nex: NextFunction) => {
             try {
@@ -362,7 +361,6 @@ export class TerminaleMetodo implements IDescrivibile {
             }
         };
     }
-
 }
 
 
