@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
 export var targetTerminale = { name: 'Terminale' };
 
+
 export interface IPrintabile {
     PrintMenu(): any
 }

@@ -9,6 +9,8 @@ import fs from 'fs';
 import http from "http";
 import { TerminaleMetodo } from "./terminale-metodo";
 
+import chiedi from "prompts";
+
 export class TerminaleClasse{
 
     static nomeMetadataKeyTarget = "ClasseTerminaleTarget";
