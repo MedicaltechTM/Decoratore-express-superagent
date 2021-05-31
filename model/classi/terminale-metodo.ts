@@ -115,7 +115,15 @@ export class TerminaleMetodo implements IDescrivibile {
                         preflightContinue: false,
                       }; */
                     corsOptions = {
-                        methods: "GET"
+                        allowedHeaders: [
+                            'X-Requested-With',
+                            'Content-Type',
+                            'Accept',
+                            'X-Access-Token',
+                        ],
+                        credentials: true,
+                        methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+                        preflightContinue: false,
                     }
                     if (this.cors == undefined) {
                         this.cors = cors(corsOptions);
@@ -124,17 +132,30 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.helmet = helmet();
                     }
                     app.get(this.percorsi.pathGlobal /* this.path */,
-                        this.cors,
+                        /* this.cors,
                         this.helmet,
-                        middlew,
+                        middlew, */
                         async (req: Request, res: Response) => {
+                            console.log("GET");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
                 case 'post':
                     corsOptions = {
+                        allowedHeaders: [
+                            'Origin',
+                            'X-Requested-With',
+                            'Content-Type',
+                            'Accept',
+                            'X-Access-Token',
+                        ],
+                        credentials: true,
+                        methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+                        preflightContinue: false,
+                    }
+                    /* corsOptions = {
                         methods: "POST"
-                    };
+                    }; */
                     if (this.helmet == undefined) {
                         this.helmet = helmet();
                     }
@@ -143,10 +164,11 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     (<IReturn>this.metodoAvviabile).body;
                     app.post(this.percorsi.pathGlobal,
-                        this.cors,
+                        /* this.cors,
                         this.helmet,
-                        middlew,
+                        middlew, */
                         async (req: Request, res: Response) => {
+                            console.log("POST");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -162,10 +184,11 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.cors = cors(corsOptions);
                     }
                     app.delete(this.percorsi.pathGlobal,
-                        this.cors,
+                        /* this.cors,
                         this.helmet,
-                        middlew,
+                        middlew, */
                         async (req: Request, res: Response) => {
+                            console.log("DELETE");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -181,10 +204,11 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     (<IReturn>this.metodoAvviabile).body;
                     app.patch(this.percorsi.pathGlobal,
-                        this.cors,
+                        /* this.cors,
                         this.helmet,
-                        middlew,
+                        middlew, */
                         async (req: Request, res: Response) => {
+                            console.log("PATCH");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -200,10 +224,11 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     (<IReturn>this.metodoAvviabile).body;
                     app.purge(this.percorsi.pathGlobal,
-                        this.cors,
+                        /* this.cors,
                         this.helmet,
-                        middlew,
+                        middlew, */
                         async (req: Request, res: Response) => {
+                            console.log("PURGE");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -213,19 +238,20 @@ export class TerminaleMetodo implements IDescrivibile {
                     };
                     if (this.helmet == undefined) {
                         this.helmet = helmet();
-                        if (this.cors == undefined) {
-                            this.cors = cors(corsOptions);
-                        }
-                        (<IReturn>this.metodoAvviabile).body;
-                        app.put(this.percorsi.pathGlobal,
-                            this.cors,
-                            this.helmet,
-                            middlew,
-                            async (req: Request, res: Response) => {
-                                await this.ChiamataGenerica(req, res);
-                            });
-                        break;
                     }
+                    if (this.cors == undefined) {
+                        this.cors = cors(corsOptions);
+                    }
+                    (<IReturn>this.metodoAvviabile).body;
+                    app.put(this.percorsi.pathGlobal,
+                        /* this.cors,
+                        this.helmet,
+                        middlew, */
+                        async (req: Request, res: Response) => {
+                            console.log("PUT");
+                            await this.ChiamataGenerica(req, res);
+                        });
+                    break;
             }
         }
     }

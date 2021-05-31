@@ -46,6 +46,7 @@ export class Main {
 
     Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean) {
         let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
+
         if (tmp.length > 0) {
             this.percorsi.patheader = patheader;
             this.percorsi.porta = porta;
@@ -71,6 +72,22 @@ export class Main {
                 //this.serverExpressDecorato.use(element.GetPath, element.rotte);
             }
 
+            /* this.serverExpressDecorato.use(function (req, res, next) {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+                res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+
+                //intercepts OPTIONS method
+                if ('OPTIONS' === req.method) {
+                    //respond with 200
+                    res.send(200);
+                }
+                else {
+                    //move on
+                    next();
+                }
+            }); */
+
             SalvaListaClasseMetaData(tmp);
         }
         else {
@@ -79,10 +96,21 @@ export class Main {
     }
 
     StartExpress() {
-        var httpServer = http.createServer(this.serverExpressDecorato);
-        this.serverExpressDecorato.listen(this.percorsi.porta)
-        //httpServer.listen(this.percorsi.porta);
-        //this.serverExpressDecorato.listen(this.percorsi.porta);
+
+
+        this.serverExpressDecorato.use(function (req, res) {
+            res.send(404);
+        });
+
+        this.serverExpressDecorato.all('*', function (req, res) {
+            res.redirect('/');
+        });
+
+        const httpServer = http.createServer(this.serverExpressDecorato);
+
+        //this.serverExpressDecorato.listen(this.percorsi.porta)
+        httpServer.listen(this.percorsi.porta);
+        this.serverExpressDecorato.listen(this.percorsi.porta);
     }
 }
 
