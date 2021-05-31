@@ -29,6 +29,13 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
         this.descrizione = "";
         this.sommario = "";
     }
+
+    /******************************* */
+
+    
+    PrintParametro() {
+        return "tipoParametro:" + this.tipoParametro.toString() + ";" + "nomeParametro:" + this.nomeParametro;
+    }
 }
 
 /**

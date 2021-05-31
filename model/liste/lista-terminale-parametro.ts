@@ -4,6 +4,8 @@ import { Router, Request, Response } from "express";
 import {  TerminaleParametro } from "../classi/terminale-parametro";
 import { IParametri, IParametriEstratti, TypeInterazone } from "../tools";
 
+import chiedi from "prompts";
+
 export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
 
     constructor() {
@@ -46,5 +48,67 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
         }
 
         return ritorno;
+    }
+
+
+    /*********************************** */
+
+    
+    async SoddisfaParamtri(chiSei: TypeInterazone): Promise<IParametri> {
+        let body = '';
+        let primo = false;
+        console.log('Soddisfa il body:');
+        for (let index = 0; index < this.length; index++) {
+            const element = this[index];
+            if (element.posizione == 'body' && (element.dovePossoTrovarlo == chiSei || element.dovePossoTrovarlo == 'qui')) {
+                if (index != this.length - 1 && primo == true) {
+                    body = body + ', ';
+                }
+                primo = true;
+                const messaggio = "Nome campo :" + element.nomeParametro + "|Tipo campo :"
+                    + element.tipoParametro + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
+                const scelta = await chiedi({ message: messaggio, type: 'text', name: 'scelta' });
+                body = body + ' "' + element.nomeParametro + '": ' + ' "' + scelta.scelta + '" ';
+            }
+        }
+        body = body + '';
+
+        let query = '';
+        primo = false;
+        console.log('Soddisfa le query:');
+        for (let index = 0; index < this.length; index++) {
+            const element = this[index];
+            if (element.posizione == 'query' && (element.dovePossoTrovarlo == chiSei || element.dovePossoTrovarlo == 'qui')) {
+                if (primo == true) {
+                    query = query + ', ';
+                }
+                primo = true;
+                const messaggio = "Nome campo :" + element.nomeParametro + "|Tipo campo :"
+                    + element.tipoParametro + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
+                const scelta = await chiedi({ message: messaggio, type: 'text', name: 'scelta' });
+                query = query + ' "' + element.nomeParametro + '": ' + ' "' + scelta.scelta + '" ';
+            }
+        }
+        query = query + '';
+
+
+        let header = '';
+        primo = false;
+        console.log("Soddisfa l'header:");
+        for (let index = 0; index < this.length; index++) {
+            const element = this[index];
+            if (element.posizione == 'header' && (element.dovePossoTrovarlo == chiSei || element.dovePossoTrovarlo == 'qui')) {
+                if (index != this.length - 1 && primo == true) {
+                    header = header + ', ';
+                }
+                primo = true;
+                const messaggio = "Nome campo :" + element.nomeParametro + "|Tipo campo :"
+                    + element.tipoParametro + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
+                const scelta = await chiedi({ message: messaggio, type: 'text', name: 'scelta' });
+                header = header + ' "' + element.nomeParametro + '": ' + ' "' + scelta.scelta + '" ';
+            }
+        }
+        header = header + '';
+        return { body, query, header };
     }
 }

@@ -8,6 +8,7 @@ import { ListaTerminaleParametro } from "../liste/lista-terminale-parametro";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import cors from 'cors';
 
+import superagent, { head } from "superagent";
 /* export interface ITerminaleMetodo {
 
 } */
@@ -386,6 +387,173 @@ export class TerminaleMetodo implements IDescrivibile {
                 res.status(555).send("Errore : " + error);
             }
         };
+    }
+
+    /************************************************************************* */
+
+    
+    PrintStamp(): string {
+        let parametri = "";
+        for (let index = 0; index < this.listaParametri.length; index++) {
+            const element = this.listaParametri[index];
+            parametri = parametri + element.PrintParametro();
+        }
+        const tmp = this.nome + ' | ' + this.percorsi.pathGlobal + '/' + this.path + '  |  ' + parametri;
+        //console.log(tmp);
+        return tmp;
+    }
+
+    
+    async ChiamaLaRotta(headerpath?: string) {
+        try {
+
+            let body = "";
+            let query = "";
+            let header = "";
+            for (let index = 0; index < this.middleware.length; index++) {
+                const element = this.middleware[index];
+
+                if (element instanceof TerminaleMetodo) {
+                    const listaMidd = GetListaMiddlewareMetaData();
+                    const midd = listaMidd.CercaConNomeSeNoAggiungi(element.nome.toString());
+                    const rit = await midd.listaParametri.SoddisfaParamtri('middleware');
+
+                    if (rit.body != "") {
+                        if (body != "") {
+                            body = body + ", " + rit.body;
+                        } else {
+                            body = rit.body;
+                        }
+                    }
+                    if (rit.query != "") {
+                        if (query != "") {
+                            query = query + ", " + rit.query;
+                        } else
+                            query = rit.query;
+                    }
+                    if (rit.header != "") {
+                        if (header != "") {
+                            header = header + ", " + rit.header;
+                        } else
+                            header = rit.header;
+                    }
+                }
+            }
+
+            if (headerpath == undefined) headerpath = "http://localhost:3000";
+            console.log('chiamata per : ' + this.percorsi.pathGlobal + ' | Verbo: ' + this.tipo);
+            const parametri = await this.listaParametri.SoddisfaParamtri('rotta');
+
+            if (parametri.body != "") {
+                if (body != "") {
+                    body = body + ", " + parametri.body;
+                } else {
+                    body = parametri.body;
+                }
+            }
+            if (parametri.query != "") {
+                if (query != "") {
+                    query = query + ", " + parametri.query;
+                } else
+                    query = parametri.query;
+            }
+            if (parametri.header != "") {
+                if (header != "") {
+                    header = header + ", " + parametri.header;
+                } else
+                    header = parametri.header;
+            }
+
+            let ritorno;
+            let gg = this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal
+
+            switch (this.tipo) {
+                case 'get':
+                    try {
+                        // Send a POST request
+                        ritorno = await superagent
+                            .get(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .query(JSON.parse('{ ' + query + ' }'))
+                            .send(JSON.parse('{ ' + body + ' }'))
+                            .set(JSON.parse('{ ' + header + ' }'))
+                            .set('accept', 'json')
+                            //.auth('my_token', { type: 'bearer' })
+                            ;
+                    } catch (error) {
+                        console.log(error);
+                        throw new Error("Errore:" + error);
+                    }
+                    break;
+                case 'post':
+                    try {
+                        ritorno = await superagent
+                            .post(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .query(JSON.parse('{ ' + query + ' }'))
+                            .send(JSON.parse('{ ' + body + ' }'))
+                            .set(JSON.parse('{ ' + header + ' }'))
+                            .set('accept', 'json')
+                    /* .set('Authorization', `Bearer ${chiave.body}`) */;
+                    } catch (error) {
+                        console.log(error);
+                        throw new Error("Errore:" + error);
+                    }
+                    break;
+                case 'purge':
+                    try {
+                        ritorno = await superagent
+                            .purge(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .query(JSON.parse('{ ' + query + ' }'))
+                            .send(JSON.parse('{ ' + body + ' }'))
+                            .set(JSON.parse('{ ' + header + ' }'))
+                            .set('accept', 'json')
+                    /* .set('Authorization', `Bearer ${chiave.body}`) */;
+                    } catch (error) {
+                        console.log(error);
+                        throw new Error("Errore:" + error);
+                    }
+                    break;
+                case 'patch':
+                    try {
+                        ritorno = await superagent
+                            .patch(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .query(JSON.parse('{ ' + query + ' }'))
+                            .send(JSON.parse('{ ' + body + ' }'))
+                            .set(JSON.parse('{ ' + header + ' }'))
+                            .set('accept', 'json')
+                    /* .set('Authorization', `Bearer ${chiave.body}`) */;
+                    } catch (error) {
+                        console.log(error);
+                        throw new Error("Errore:" + error);
+                    }
+                    break;
+                case 'delete':
+                    try {
+                        ritorno = await superagent
+                            .delete(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .query(JSON.parse('{ ' + query + ' }'))
+                            .send(JSON.parse('{ ' + body + ' }'))
+                            .set(JSON.parse('{ ' + header + ' }'))
+                            .set('accept', 'json')
+                    /* .set('Authorization', `Bearer ${chiave.body}`) */;
+                    } catch (error) {
+                        console.log(error);
+                        throw new Error("Errore:" + error);
+                    }
+                    break;
+                default:
+                    return '';
+                    break;
+            }
+
+            if (ritorno) {
+                return ritorno.body;
+            } else {
+                return '';
+            }
+            /*  */
+        } catch (error) {
+            throw new Error("Errore :" + error);
+        }
     }
 }
 

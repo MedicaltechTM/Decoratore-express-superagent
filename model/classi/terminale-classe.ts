@@ -78,6 +78,40 @@ export class TerminaleClasse{
         }
         return terminale;
     }
+
+    /******************************************************************* */
+
+    async PrintMenuClasse() {
+        console.log('Classe :' + this.nome);
+        let index = 0;
+        for (let index = 0; index < this.listaMetodi.length; index++) {
+            const element = this.listaMetodi[index];
+            const tmp = index + 1;
+            if (element.tipoInterazione == 'rotta' || element.tipoInterazione == 'ambo') {
+                console.log(tmp + ': ' + element.PrintStamp());
+            }
+        }
+        const scelta = await chiedi({ message: 'Scegli il metodo da eseguire: ', type: 'number', name: 'scelta' });
+
+        if (scelta.scelta == 0) {
+            console.log("Saluti dalla classe : " + this.nome);
+
+        } else {
+            try {
+                console.log('Richiamo la rotta');
+                const risposta = await this.listaMetodi[scelta.scelta - 1].ChiamaLaRotta(this.percorsi.patheader + this.percorsi.porta);
+                if (risposta == undefined) {
+                    console.log("Risposta undefined!");
+                } else {
+                    console.log(risposta)
+                }
+                await this.PrintMenuClasse();
+            } catch (error) {
+                await this.PrintMenuClasse();
+            }
+        }
+    }
+
 }
 
 /**

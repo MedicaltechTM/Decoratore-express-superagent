@@ -5,9 +5,8 @@ import { Request, Response } from "express";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import bodyParser, { urlencoded, json as BodyParseJson } from 'body-parser';
 import { SalvaListaClasseMetaData, TerminaleClasse } from "./terminale-classe";
-//const swaggerUI = require('swagger-ui-express');
-import fs from "fs";
 
+import * as http from 'http';
 /**
  * 
  */
@@ -112,6 +111,14 @@ export class Main {
         httpServer.listen(this.percorsi.porta);
         this.serverExpressDecorato.listen(this.percorsi.porta);
     }
-}
 
-import * as http from 'http';
+    /************************************** */
+
+    
+    async PrintMenu() {
+        let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
+        //console.log("Menu main, digita il numero della la tua scelta: ");
+                await tmp.PrintMenuClassi();
+        
+    }
+}

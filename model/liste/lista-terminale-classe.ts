@@ -1,5 +1,6 @@
 import { SalvaListaClasseMetaData, TerminaleClasse } from "../classi/terminale-classe";
-import fs from 'fs';
+
+import chiedi from "prompts";
 
 export class ListaTerminaleClasse extends Array<TerminaleClasse> {
     static nomeMetadataKeyTarget = "ListaTerminaleClasse";
@@ -49,5 +50,31 @@ export class ListaTerminaleClasse extends Array<TerminaleClasse> {
         }
         this.push(item);
         return item;
+    }
+
+    /************************************************************* */
+
+    
+    async PrintMenuClassi() {
+        await this.PrintListaClassi();
+        const scelta = await chiedi({ message: 'Scegli classe: ', type: 'number', name: 'scelta' });
+
+        if (scelta.scelta == 0) {
+        }
+        else {
+            await this[scelta.scelta - 1].PrintMenuClasse();
+            await this.PrintListaClassi();
+        }
+
+    }
+    async PrintListaClassi(): Promise<string[]> {
+        let ritorno: string[] = [];
+        for (let index = 0; index < this.length; index++) {
+            const element = this[index];
+            const tmp = index + 1;
+            ritorno.push(element.percorsi.pathGlobal);
+            console.log(tmp + ': ' + element.nome + ' | ' + element.percorsi.pathGlobal);
+        }
+        return ritorno;
     }
 }
