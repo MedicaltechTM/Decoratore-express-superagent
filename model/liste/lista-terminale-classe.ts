@@ -8,7 +8,7 @@ export class ListaTerminaleClasse extends Array<TerminaleClasse> {
     constructor() {
         super();
     }
-    
+
     CercaConNome(nome: string | Symbol): TerminaleClasse | undefined {
         for (let index = 0; index < this.length; index++) {
             const element = this[index];
@@ -54,16 +54,15 @@ export class ListaTerminaleClasse extends Array<TerminaleClasse> {
 
     /************************************************************* */
 
-    
+
     async PrintMenuClassi() {
         await this.PrintListaClassi();
         const scelta = await chiedi({ message: 'Scegli classe: ', type: 'number', name: 'scelta' });
 
-        if (scelta.scelta == 0) {
-        }
-        else {
+        if (scelta.scelta != 0) {
             await this[scelta.scelta - 1].PrintMenuClasse();
-            await this.PrintListaClassi();
+            //await this.PrintListaClassi();
+            await this.PrintMenuClassi();
         }
 
     }

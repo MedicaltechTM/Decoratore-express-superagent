@@ -97,28 +97,27 @@ export class Main {
     StartExpress() {
 
 
-        this.serverExpressDecorato.use(function (req, res) {
+        /* this.serverExpressDecorato.use(function (req, res) {
             res.send(404);
         });
 
         this.serverExpressDecorato.all('*', function (req, res) {
             res.redirect('/');
-        });
+        }); */
 
-        const httpServer = http.createServer(this.serverExpressDecorato);
+        //const httpServer = http.createServer(this.serverExpressDecorato);
 
-        //this.serverExpressDecorato.listen(this.percorsi.porta)
-        httpServer.listen(this.percorsi.porta);
-        this.serverExpressDecorato.listen(this.percorsi.porta);
+        this.serverExpressDecorato.listen(this.percorsi.porta)
+        //httpServer.listen(this.percorsi.porta);
     }
 
     /************************************** */
 
-    
+
     async PrintMenu() {
         let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
         //console.log("Menu main, digita il numero della la tua scelta: ");
-                await tmp.PrintMenuClassi();
-        
+        await tmp.PrintMenuClassi();
+
     }
 }

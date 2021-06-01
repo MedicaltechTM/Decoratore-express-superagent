@@ -9,6 +9,8 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import cors from 'cors';
 
 import superagent, { head } from "superagent";
+
+import http from "http";
 /* export interface ITerminaleMetodo {
 
 } */
@@ -74,57 +76,12 @@ export class TerminaleMetodo implements IDescrivibile {
             }
         });
         if (this.metodoAvviabile != undefined) {
-            var corsOptions = {};
-            /* var corsOptions = {
-                methods: this.tipo
-            }
-
-            if (this.helmet == undefined) {
-                this.helmet = helmet();
-            }
-            if (this.cors == undefined) {
-                this.cors = cors(corsOptions);
-            }
-            app.all("/" + this.percorsi.pathGlobal,
-                cors(this.cors),
-                //helmet(this.helmet),
-                //middlew,
-                async (req: Request, res: Response) => {
-                    console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
-                    InizializzaLogbaseIn(req, this.nome.toString());
-                    const tmp = await this.Esegui(req);
-                    res.status(tmp.stato).send(tmp.body);
-                    InizializzaLogbaseOut(res, this.nome.toString());
-                    return res;
-                }); */
-
-            /*  */
+            let corsOptions = {};
             switch (this.tipo) {
                 case 'get':
                     (<IReturn>this.metodoAvviabile).body;
-                    /* const options: cors.CorsOptions = {
-                        allowedHeaders: [
-                          'Origin',
-                          'X-Requested-With',
-                          'Content-Type',
-                          'Accept',
-                          'X-Access-Token',
-                        ],
-                        credentials: true,
-                        methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
-                        origin: API_URL,
-                        preflightContinue: false,
-                      }; */
                     corsOptions = {
-                        allowedHeaders: [
-                            'X-Requested-With',
-                            'Content-Type',
-                            'Accept',
-                            'X-Access-Token',
-                        ],
-                        credentials: true,
-                        methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
-                        preflightContinue: false,
+                        methods: 'GET',
                     }
                     if (this.cors == undefined) {
                         this.cors = cors(corsOptions);
@@ -133,9 +90,9 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.helmet = helmet();
                     }
                     app.get(this.percorsi.pathGlobal /* this.path */,
-                        /* this.cors,
+                        this.cors,
                         this.helmet,
-                        middlew, */
+                        middlew,
                         async (req: Request, res: Response) => {
                             console.log("GET");
                             await this.ChiamataGenerica(req, res);
@@ -143,20 +100,8 @@ export class TerminaleMetodo implements IDescrivibile {
                     break;
                 case 'post':
                     corsOptions = {
-                        allowedHeaders: [
-                            'Origin',
-                            'X-Requested-With',
-                            'Content-Type',
-                            'Accept',
-                            'X-Access-Token',
-                        ],
-                        credentials: true,
-                        methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
-                        preflightContinue: false,
+                        methods: 'POST'
                     }
-                    /* corsOptions = {
-                        methods: "POST"
-                    }; */
                     if (this.helmet == undefined) {
                         this.helmet = helmet();
                     }
@@ -165,9 +110,9 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     (<IReturn>this.metodoAvviabile).body;
                     app.post(this.percorsi.pathGlobal,
-                        /* this.cors,
+                        this.cors,
                         this.helmet,
-                        middlew, */
+                        middlew,
                         async (req: Request, res: Response) => {
                             console.log("POST");
                             await this.ChiamataGenerica(req, res);
@@ -185,9 +130,9 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.cors = cors(corsOptions);
                     }
                     app.delete(this.percorsi.pathGlobal,
-                        /* this.cors,
+                        this.cors,
                         this.helmet,
-                        middlew, */
+                        middlew,
                         async (req: Request, res: Response) => {
                             console.log("DELETE");
                             await this.ChiamataGenerica(req, res);
@@ -205,9 +150,9 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     (<IReturn>this.metodoAvviabile).body;
                     app.patch(this.percorsi.pathGlobal,
-                        /* this.cors,
+                        this.cors,
                         this.helmet,
-                        middlew, */
+                        middlew,
                         async (req: Request, res: Response) => {
                             console.log("PATCH");
                             await this.ChiamataGenerica(req, res);
@@ -225,9 +170,9 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     (<IReturn>this.metodoAvviabile).body;
                     app.purge(this.percorsi.pathGlobal,
-                        /* this.cors,
+                        this.cors,
                         this.helmet,
-                        middlew, */
+                        middlew,
                         async (req: Request, res: Response) => {
                             console.log("PURGE");
                             await this.ChiamataGenerica(req, res);
@@ -245,9 +190,9 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     (<IReturn>this.metodoAvviabile).body;
                     app.put(this.percorsi.pathGlobal,
-                        /* this.cors,
+                        this.cors,
                         this.helmet,
-                        middlew, */
+                        middlew,
                         async (req: Request, res: Response) => {
                             console.log("PUT");
                             await this.ChiamataGenerica(req, res);
@@ -259,7 +204,7 @@ export class TerminaleMetodo implements IDescrivibile {
     async ChiamataGenerica(req: Request, res: Response) {
         let passato = false;
         try {
-            console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
+            console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             const logIn = InizializzaLogbaseIn(req, this.nome.toString());
             let tmp: IReturn = await this.Esegui(req);
             if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
@@ -297,7 +242,6 @@ export class TerminaleMetodo implements IDescrivibile {
     }
     async Esegui(req: Request): Promise<IReturn> {
         try {
-            console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
             let valido: IRitornoValidatore | undefined = { approvato: true, stato: 200, messaggio: '' };
             if (this.Validatore) valido = this.Validatore(parametri, this.listaParametri);
@@ -311,6 +255,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     if (this.onPrimaDiEseguireMetodo) parametriTmp = this.onPrimaDiEseguireMetodo(parametri,
                         this.listaParametri);
                     const tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
+                    console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                     if (IsJsonString(tmpReturn)) {
                         if ('body' in tmpReturn) { tmp.body = tmpReturn.body; }
                         else { tmp.body = tmpReturn; }
@@ -391,19 +336,19 @@ export class TerminaleMetodo implements IDescrivibile {
 
     /************************************************************************* */
 
-    
+
     PrintStamp(): string {
         let parametri = "";
         for (let index = 0; index < this.listaParametri.length; index++) {
             const element = this.listaParametri[index];
             parametri = parametri + element.PrintParametro();
         }
-        const tmp = this.nome + ' | ' + this.percorsi.pathGlobal + '/' + this.path + '  |  ' + parametri;
+        const tmp = this.nome + ' | ' + this.percorsi.pathGlobal + '\n\t' + parametri;
         //console.log(tmp);
         return tmp;
     }
 
-    
+
     async ChiamaLaRotta(headerpath?: string) {
         try {
 
@@ -440,7 +385,7 @@ export class TerminaleMetodo implements IDescrivibile {
                 }
             }
 
-            if (headerpath == undefined) headerpath = "http://localhost:3000";
+            if (headerpath == undefined) headerpath = "localhost:3000";
             console.log('chiamata per : ' + this.percorsi.pathGlobal + ' | Verbo: ' + this.tipo);
             const parametri = await this.listaParametri.SoddisfaParamtri('rotta');
 
@@ -466,18 +411,26 @@ export class TerminaleMetodo implements IDescrivibile {
 
             let ritorno;
             let gg = this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal
-
-            switch (this.tipo) {
+            try {
+                ritorno = await superagent(this.tipo, this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
+                    .query(JSON.parse('{ ' + query + ' }'))
+                    .send(JSON.parse('{ ' + body + ' }'))
+                    .set(JSON.parse('{ ' + header + ' }'))
+                    .set('accept', 'json')
+                    ;
+            } catch (error) {
+                console.log(error);
+                throw new Error("Errore:" + error);
+            }
+            /* switch (this.tipo) {
                 case 'get':
                     try {
-                        // Send a POST request
                         ritorno = await superagent
-                            .get(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .get(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
                             .query(JSON.parse('{ ' + query + ' }'))
                             .send(JSON.parse('{ ' + body + ' }'))
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
-                            //.auth('my_token', { type: 'bearer' })
                             ;
                     } catch (error) {
                         console.log(error);
@@ -487,12 +440,11 @@ export class TerminaleMetodo implements IDescrivibile {
                 case 'post':
                     try {
                         ritorno = await superagent
-                            .post(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .post(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
                             .query(JSON.parse('{ ' + query + ' }'))
                             .send(JSON.parse('{ ' + body + ' }'))
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
-                    /* .set('Authorization', `Bearer ${chiave.body}`) */;
                     } catch (error) {
                         console.log(error);
                         throw new Error("Errore:" + error);
@@ -501,12 +453,11 @@ export class TerminaleMetodo implements IDescrivibile {
                 case 'purge':
                     try {
                         ritorno = await superagent
-                            .purge(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .purge(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
                             .query(JSON.parse('{ ' + query + ' }'))
                             .send(JSON.parse('{ ' + body + ' }'))
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
-                    /* .set('Authorization', `Bearer ${chiave.body}`) */;
                     } catch (error) {
                         console.log(error);
                         throw new Error("Errore:" + error);
@@ -515,12 +466,11 @@ export class TerminaleMetodo implements IDescrivibile {
                 case 'patch':
                     try {
                         ritorno = await superagent
-                            .patch(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .patch(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
                             .query(JSON.parse('{ ' + query + ' }'))
                             .send(JSON.parse('{ ' + body + ' }'))
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
-                    /* .set('Authorization', `Bearer ${chiave.body}`) */;
                     } catch (error) {
                         console.log(error);
                         throw new Error("Errore:" + error);
@@ -529,12 +479,11 @@ export class TerminaleMetodo implements IDescrivibile {
                 case 'delete':
                     try {
                         ritorno = await superagent
-                            .delete(this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal)
+                            .delete(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
                             .query(JSON.parse('{ ' + query + ' }'))
                             .send(JSON.parse('{ ' + body + ' }'))
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
-                    /* .set('Authorization', `Bearer ${chiave.body}`) */;
                     } catch (error) {
                         console.log(error);
                         throw new Error("Errore:" + error);
@@ -543,7 +492,7 @@ export class TerminaleMetodo implements IDescrivibile {
                 default:
                     return '';
                     break;
-            }
+            } */
 
             if (ritorno) {
                 return ritorno.body;

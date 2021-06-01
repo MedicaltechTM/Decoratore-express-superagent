@@ -3,7 +3,7 @@ import { mpClas } from "./model/classi/terminale-classe";
 import { mpAddMiddle, mpMet } from "./model/classi/terminale-metodo";
 import { mpPar } from "./model/classi/terminale-parametro";
 /* import { mpLog } from "./model/classi/terminale-log"; */
-import { TipoParametro, ErroreMio, IRitornoValidatore,GestioneErrore } from "./model/tools";
+import { TipoParametro, ErroreMio, IRitornoValidatore, GestioneErrore } from "./model/tools";
 
 import "reflect-metadata";
 
@@ -62,8 +62,13 @@ class ClassDue {
 }
 
 */
-/* function Ciao() {
+
+
+
+/* function Ciao(nome:string) {
     console.log("Primo ciao");
+    console.log("nome :::: "+nome);
+
 }
 @mpClas()
 class ClassUno {
@@ -72,15 +77,10 @@ class ClassUno {
 
     }
 
-    @mpMet({})
+    @mpMet({tipo:'post'})
     MetodoPrimo(@mpPar({ nomeParametro: 'nome', posizione: 'query' }) nome: string) {
         try {
-            Ciao();
-        } catch (error) {
-            console.log(error);
-        }
-        try {
-            this.CiaoDue();
+            Ciao(nome);
         } catch (error) {
             console.log(error);
         }
@@ -95,11 +95,13 @@ try {
 
     main.Inizializza("http://localhost", 3030, true, true);
     main.StartExpress();
+    main.PrintMenu();
     console.log("Finito!!!");
 
 } catch (error) {
     console.log(error);
     console.log("Finito!!!");
 }
- */
+*/
+
 

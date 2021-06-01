@@ -34,7 +34,7 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
     
     PrintParametro() {
-        return "tipoParametro:" + this.tipoParametro.toString() + ";" + "nomeParametro:" + this.nomeParametro;
+        return "- "+ this.tipoParametro.toString() + " : "  + this.nomeParametro + ' |';
     }
 }
 

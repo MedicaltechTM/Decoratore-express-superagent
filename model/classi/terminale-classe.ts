@@ -11,7 +11,7 @@ import { TerminaleMetodo } from "./terminale-metodo";
 
 import chiedi from "prompts";
 
-export class TerminaleClasse{
+export class TerminaleClasse {
 
     static nomeMetadataKeyTarget = "ClasseTerminaleTarget";
 
@@ -53,7 +53,7 @@ export class TerminaleClasse{
 
     SettaPathRoot_e_Global(item: string, percorsi: IRaccoltaPercorsi, app: any) {
 
-        if (percorsi.patheader == undefined) this.percorsi.patheader = "http://localhost:";
+        if (percorsi.patheader == undefined) this.percorsi.patheader = "localhost";
         else this.percorsi.patheader = percorsi.patheader;
 
         if (percorsi.porta == undefined) this.percorsi.porta = 3000;
@@ -107,10 +107,10 @@ export class TerminaleClasse{
                 } else {
                     console.log(risposta)
                 }
-                await this.PrintMenuClasse();
             } catch (error) {
-                await this.PrintMenuClasse();
+                console.log(error);
             }
+            await this.PrintMenuClasse();
         }
     }
 
