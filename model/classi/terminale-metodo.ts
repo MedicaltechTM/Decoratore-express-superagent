@@ -1,4 +1,4 @@
-import { IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IParametro, IPrintabile, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, targetTerminale, TipoParametro, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IParametro, IPrintabile, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, targetTerminale, TipoParametro, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { CheckClasseMetaData, GetListaClasseMetaData, SalvaListaClasseMetaData, TerminaleClasse } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -257,12 +257,21 @@ export class TerminaleMetodo implements IDescrivibile {
                     const tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
                     console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                     if (IsJsonString(tmpReturn)) {
+                        if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
+                            console.log("ciao");
+                        }
                         if ('body' in tmpReturn) { tmp.body = tmpReturn.body; }
                         else { tmp.body = tmpReturn; }
                         if ('stato' in tmpReturn) { tmp.stato = tmpReturn.stato; }
                         else { tmp.stato = 299; }
                     }
                     else {
+                        if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
+                            console.log('ciao');
+                        }
+                        if (tmpReturn instanceof ErroreMio) {
+                            console.log('hello');
+                        }
                         if (tmpReturn) {
                             tmp.body = tmpReturn;
                             tmp.stato = 299;
@@ -310,6 +319,9 @@ export class TerminaleMetodo implements IDescrivibile {
                 return tmp;
             }
         } catch (error) {
+            if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
+                console.log("ciao");
+            }
             console.log("Errore : ", error);
             return {
                 body: { "Errore Interno filtrato ": 'internal error!!!!' },
