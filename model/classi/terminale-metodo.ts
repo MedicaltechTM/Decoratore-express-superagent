@@ -289,7 +289,7 @@ export class TerminaleMetodo implements IDescrivibile {
                 } catch (error) {
                     if (error instanceof ErroreMio) {
                         tmp = {
-                            body: { "Errore Interno filtrato ": (<ErroreMio>error).message, 
+                            body: { "Errore Interno filtrato ": 'filtrato 404 !!!', 
                             'Errore originale':  (<ErroreMio>error).message},
                             stato: (<ErroreMio>error).codiceErrore
                         };
