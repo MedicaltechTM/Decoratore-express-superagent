@@ -19,18 +19,18 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
         for (let index = this.length - 1; index >= 0; index--) {
             const element = this[index];
             let tmp = undefined;
-            if (richiesta.body[element.nomeParametro] != undefined && element.posizione=='body') {
-                tmp = richiesta.body[element.nomeParametro];
+            if (richiesta.body[element.nome] != undefined && element.posizione=='body') {
+                tmp = richiesta.body[element.nome];
             }
-            else if (richiesta.query[element.nomeParametro] != undefined && element.posizione=='query') {
-                tmp = richiesta.query[element.nomeParametro];
+            else if (richiesta.query[element.nome] != undefined && element.posizione=='query') {
+                tmp = richiesta.query[element.nome];
             }
-            else if (richiesta.headers[element.nomeParametro] != undefined && element.posizione=='header') {
-                tmp = richiesta.headers[element.nomeParametro];
+            else if (richiesta.headers[element.nome] != undefined && element.posizione=='header') {
+                tmp = richiesta.headers[element.nome];
             }
             else {
                 ritorno.nontrovato.push({
-                    nomeParametro: element.nomeParametro,
+                    nome: element.nome,
                     posizioneParametro: element.indexParameter
                 });
             }
@@ -38,7 +38,7 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                 const rit = element.Validatore(tmp)
                 if (rit.approvato == false) {
                     /* rit.terminale = {
-                        nomeParametro: element.nomeParametro, posizione: element.posizione, tipoParametro: element.tipoParametro, descrizione: element.descrizione, sommario: element.sommario
+                        nome: element.nome, posizione: element.posizione, tipo: element.tipo, descrizione: element.descrizione, sommario: element.sommario
                     } */
                     rit.terminale = element;
                     ritorno.errori.push(rit)
@@ -65,10 +65,10 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     body = body + ', ';
                 }
                 primo = true;
-                const messaggio = "Nome campo :" + element.nomeParametro + "|Tipo campo :"
-                    + element.tipoParametro + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
+                const messaggio = "Nome campo :" + element.nome + "|Tipo campo :"
+                    + element.tipo + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
                 const scelta = await chiedi({ message: messaggio, type: 'text', name: 'scelta' });
-                body = body + ' "' + element.nomeParametro + '": ' + ' "' + scelta.scelta + '" ';
+                body = body + ' "' + element.nome + '": ' + ' "' + scelta.scelta + '" ';
             }
         }
         body = body + '';
@@ -83,10 +83,10 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     query = query + ', ';
                 }
                 primo = true;
-                const messaggio = "Nome campo :" + element.nomeParametro + "|Tipo campo :"
-                    + element.tipoParametro + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
+                const messaggio = "Nome campo :" + element.nome + "|Tipo campo :"
+                    + element.tipo + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
                 const scelta = await chiedi({ message: messaggio, type: 'text', name: 'scelta' });
-                query = query + ' "' + element.nomeParametro + '": ' + ' "' + scelta.scelta + '" ';
+                query = query + ' "' + element.nome + '": ' + ' "' + scelta.scelta + '" ';
             }
         }
         query = query + '';
@@ -102,10 +102,10 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     header = header + ', ';
                 }
                 primo = true;
-                const messaggio = "Nome campo :" + element.nomeParametro + "|Tipo campo :"
-                    + element.tipoParametro + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
+                const messaggio = "Nome campo :" + element.nome + "|Tipo campo :"
+                    + element.tipo + 'Descrizione : ' + element.descrizione + '|Inserire valore :';
                 const scelta = await chiedi({ message: messaggio, type: 'text', name: 'scelta' });
-                header = header + ' "' + element.nomeParametro + '": ' + ' "' + scelta.scelta + '" ';
+                header = header + ' "' + element.nome + '": ' + ' "' + scelta.scelta + '" ';
             }
         }
         header = header + '';

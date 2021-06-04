@@ -3,7 +3,7 @@ import { mpClas } from "./model/classi/terminale-classe";
 import { mpAddMiddle, mpMet } from "./model/classi/terminale-metodo";
 import { mpPar } from "./model/classi/terminale-parametro";
 /* import { mpLog } from "./model/classi/terminale-log"; */
-import { TipoParametro, ErroreMio, IRitornoValidatore, GestioneErrore } from "./model/tools";
+import { tipo, ErroreMio, IRitornoValidatore, GestioneErrore } from "./model/tools";
 
 import "reflect-metadata";
 
@@ -22,7 +22,7 @@ export { GestioneErrore as GestioneErrore };
 class ClassUno {
 
     @mpMet({ interazione: 'middleware' })
-    middleClasseUno(@mpPar({ nomeParametro: 'nome', posizione: 'query' }) nome: string) {
+    middleClasseUno(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string) {
         console.log('Hei sono la classe uno, hai il nome: ' + nome);
         return true;
     }
@@ -31,7 +31,7 @@ class ClassUno {
     }
     @mpMet({ nomiClasseRiferimento: [{ nome: 'ClassDue', listaMiddleware: ['middleClasseDue', 'middleClasseUno'] }] })
     @mpAddMiddle('middleClasseUno')
-    MetodoPrimo(@mpPar({ nomeParametro: 'nome', posizione: 'query' }) nome: string) {
+    MetodoPrimo(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string) {
         this.Ciao();
         return 'metodo primo ciao, sei : ' + nome;
     }
@@ -41,7 +41,7 @@ class ClassUno {
 @mpClas()
 class ClassDue {
     @mpMet({ interazione: 'middleware' })
-    middleClasseDue(@mpPar({ nomeParametro: 'nome', posizione: 'query' }) nome: string) {
+    middleClasseDue(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string) {
         console.log('Hei sono la classe due, hai il nome: ' + nome);
         return true;
     }
@@ -78,7 +78,7 @@ class ClassUno {
     }
 
     @mpMet({tipo:'post'})
-    MetodoPrimo(@mpPar({ nomeParametro: 'nome', posizione: 'query' }) nome: string) {
+    MetodoPrimo(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string) {
         try {
             Ciao(nome);
         } catch (error) {
@@ -105,3 +105,22 @@ try {
 */
 
 
+/* 
+function name() {
+    try {
+        console.log("inizio");
+        //throw new ErroreMio({ codiceErrore: 200, messaggio: '', percorsoErrore: '' });
+
+        throw new Error("Buuuuu");
+
+
+    } catch (error) {
+        console.log(__dirname);
+        console.log(__filename);
+        const tmp = GestioneErrore(error, 'classe')
+        console.log(tmp);
+    }
+
+}
+
+name();  */

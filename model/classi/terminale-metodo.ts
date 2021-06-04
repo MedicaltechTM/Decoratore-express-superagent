@@ -1,4 +1,4 @@
-import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IParametro, IPrintabile, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, targetTerminale, TipoParametro, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IParametro, IPrintabile, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, targetTerminale, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { CheckClasseMetaData, GetListaClasseMetaData, SalvaListaClasseMetaData, TerminaleClasse } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -235,8 +235,8 @@ export class TerminaleMetodo implements IDescrivibile {
         }
     }
 
-    CercaParametroSeNoAggiungi(nome: string, parameterIndex: number, tipoParametro: TipoParametro, posizione: TypePosizione) {
-        const tmp = new TerminaleParametro(nome, tipoParametro, posizione, parameterIndex);
+    CercaParametroSeNoAggiungi(nome: string, parameterIndex: number, tipo: tipo, posizione: TypePosizione) {
+        const tmp = new TerminaleParametro(nome, tipo, posizione, parameterIndex);
         this.listaParametri.push(tmp);//.lista.push({ propertyKey: propertyKey, Metodo: target });
         return tmp;
     }
@@ -287,12 +287,21 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
 
                 } catch (error) {
+                    if (error instanceof ErroreMio) {
+                        tmp = {
+                            body: { "Errore Interno filtrato ": (<ErroreMio>error).message, 
+                            'Errore originale':  (<ErroreMio>error).message},
+                            stato: (<ErroreMio>error).codiceErrore
+                        };
+                    }
+                    else {
+                        tmp = {
+                            body: { "Errore Interno filtrato ": 'internal error!!!!' },
+                            stato: 500,
+                            nonTrovati: parametri.nontrovato
+                        };
+                    }
                     console.log("Errore : \n" + error);
-                    tmp = {
-                        body: { "Errore Interno filtrato ": 'internal error!!!!' },
-                        stato: 500,
-                        nonTrovati: parametri.nontrovato
-                    };
                 }
                 return tmp;
             }
@@ -614,8 +623,8 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                     for (let index = 0; index < metodo.listaParametri.length; index++) {
                         const element = metodo.listaParametri[index];
                         /* configuro i parametri */
-                        const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nomeParametro, element.indexParameter,
-                            element.tipoParametro, element.posizione);
+                        const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nome, element.indexParameter,
+                            element.tipo, element.posizione);
                         if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
                         else paramestro.descrizione = '';
 
@@ -653,7 +662,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
         else {
             console.log("Errore mio!");
         }
-        return descriptor;
+        //return descriptor;
     }
 }
 

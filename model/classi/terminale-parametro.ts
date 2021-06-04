@@ -1,5 +1,5 @@
 
-import { IDescrivibile, IParametro, IPrintabile, IRitornoValidatore, targetTerminale, TipoParametro, TypeDovePossoTrovarlo, TypePosizione } from "../tools";
+import { IDescrivibile, IParametro, IPrintabile, IRitornoValidatore, targetTerminale, tipo, TypeDovePossoTrovarlo, TypePosizione } from "../tools";
 
 import express from "express";
 import { CheckClasseMetaData, GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
@@ -10,8 +10,8 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 export class TerminaleParametro implements IDescrivibile, IParametro {
 
     dovePossoTrovarlo: TypeDovePossoTrovarlo = 'rotta';
-    nomeParametro: string;
-    tipoParametro: TipoParametro;
+    nome: string;
+    tipo: tipo;
     posizione: TypePosizione;
     indexParameter: number;
 
@@ -20,9 +20,9 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
 
     Validatore?: (parametro: any) => IRitornoValidatore;
-    constructor(nomeParametro: string, tipoParametro: TipoParametro, posizione: TypePosizione, indexParameter: number) {
-        this.nomeParametro = nomeParametro;
-        this.tipoParametro = tipoParametro;
+    constructor(nome: string, tipo: tipo, posizione: TypePosizione, indexParameter: number) {
+        this.nome = nome;
+        this.tipo = tipo;
         this.posizione = posizione;
         this.indexParameter = indexParameter;
 
@@ -34,35 +34,35 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
     
     PrintParametro() {
-        return "- "+ this.tipoParametro.toString() + " : "  + this.nomeParametro + ' |';
+        return "- "+ this.tipo.toString() + " : "  + this.nome + ' |';
     }
 }
 
 /**
  * 
  * @param parametri 
- *  nomeParametro: nome del parametro, in pratica il nome della variabile o un nome assonante (parlante) 
+ *  nome: nome del parametro, in pratica il nome della variabile o un nome assonante (parlante) 
  *  posizione: la posizione rispetto alla chiamata, ovvero: "body" | "query" | "header" 
- *  tipoParametro?: fa riferimento al tipo di base, ovvero: "number" | "text" | "date" 
+ *  tipo?: fa riferimento al tipo di base, ovvero: "number" | "text" | "date" 
  *  descrizione?: descrizione lunga  
  *  sommario?: descrizione breve  
  *  dovePossoTrovarlo?: TypeDovePossoTrovarlo,
  *  Validatore?: (parametro: any) => IRitornoValidatore
  * @returns 
  */
-function decoratoreParametroGenerico(parametri: IParametro)/* (nomeParametro: string, posizione: TypePosizione, tipoParametro?: TipoParametro, descrizione?: string, sommario?: string) */ {
+function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, posizione: TypePosizione, tipo?: tipo, descrizione?: string, sommario?: string) */ {
     return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
-        if (parametri.tipoParametro == undefined) parametri.tipoParametro = 'text';
+        if (parametri.tipo == undefined) parametri.tipo = 'text';
         if (parametri.descrizione == undefined) parametri.descrizione = '';
         if (parametri.sommario == undefined) parametri.sommario = '';
-        if (parametri.nomeParametro == undefined) parametri.nomeParametro = parameterIndex.toString();
+        if (parametri.nome == undefined) parametri.nome = parameterIndex.toString();
         if (parametri.posizione == undefined) parametri.posizione = 'query';
 
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
-        const paramestro = metodo.CercaParametroSeNoAggiungi(parametri.nomeParametro, parameterIndex,
-            parametri.tipoParametro, parametri.posizione);
+        const paramestro = metodo.CercaParametroSeNoAggiungi(parametri.nome, parameterIndex,
+            parametri.tipo, parametri.posizione);
 
         if (parametri.descrizione != undefined) paramestro.descrizione = parametri.descrizione;
         else paramestro.descrizione = '';
