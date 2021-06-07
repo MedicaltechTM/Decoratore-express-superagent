@@ -242,6 +242,8 @@ export interface IClasseRiferimento {
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  */
 export interface IMetodo {
+    /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
+    percorsoIndipendente?:boolean,
     /** Specifica il tipo, questo puo essere: "get" | "put" | "post" | "patch" | "purge" | "delete" */
     tipo?: TypeMetod,
     /** specifica il percorso di una particolare, se non impostato prende il nome della classe */

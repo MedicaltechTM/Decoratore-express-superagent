@@ -15,6 +15,8 @@ import http from "http";
 
 } */
 export class TerminaleMetodo implements IDescrivibile {
+    /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
+    percorsoIndipendente?: boolean;
 
     static nomeMetadataKeyTarget = "MetodoTerminaleTarget";
 
@@ -68,13 +70,20 @@ export class TerminaleMetodo implements IDescrivibile {
         this.percorsi.pathGlobal = pathGlobal;
         const middlew: any[] = [];
         this.middleware.forEach(element => {
-
             if (element instanceof TerminaleMetodo) {
                 const listaMidd = GetListaMiddlewareMetaData();
                 const midd = listaMidd.CercaConNomeSeNoAggiungi(element.nome.toString());
                 middlew.push(midd.ConvertiInMiddleare());
             }
         });
+        
+        let percorsoTmp = '';
+        if (this.percorsoIndipendente)
+            percorsoTmp = this.path;
+        else
+            percorsoTmp = this.percorsi.pathGlobal;
+
+
         if (this.metodoAvviabile != undefined) {
             let corsOptions = {};
             switch (this.tipo) {
@@ -89,7 +98,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     if (this.helmet == undefined) {
                         this.helmet = helmet();
                     }
-                    app.get(this.percorsi.pathGlobal /* this.path */,
+                    app.get(percorsoTmp,
                         this.cors,
                         this.helmet,
                         middlew,
@@ -109,7 +118,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.cors = cors(corsOptions);
                     }
                     (<IReturn>this.metodoAvviabile).body;
-                    app.post(this.percorsi.pathGlobal,
+                    app.post(percorsoTmp,
                         this.cors,
                         this.helmet,
                         middlew,
@@ -129,7 +138,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     if (this.cors == undefined) {
                         this.cors = cors(corsOptions);
                     }
-                    app.delete(this.percorsi.pathGlobal,
+                    app.delete(percorsoTmp,
                         this.cors,
                         this.helmet,
                         middlew,
@@ -149,7 +158,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.cors = cors(corsOptions);
                     }
                     (<IReturn>this.metodoAvviabile).body;
-                    app.patch(this.percorsi.pathGlobal,
+                    app.patch(percorsoTmp,
                         this.cors,
                         this.helmet,
                         middlew,
@@ -169,7 +178,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.cors = cors(corsOptions);
                     }
                     (<IReturn>this.metodoAvviabile).body;
-                    app.purge(this.percorsi.pathGlobal,
+                    app.purge(percorsoTmp,
                         this.cors,
                         this.helmet,
                         middlew,
@@ -189,7 +198,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.cors = cors(corsOptions);
                     }
                     (<IReturn>this.metodoAvviabile).body;
-                    app.put(this.percorsi.pathGlobal,
+                    app.put(percorsoTmp,
                         this.cors,
                         this.helmet,
                         middlew,
@@ -201,6 +210,7 @@ export class TerminaleMetodo implements IDescrivibile {
             }
         }
     }
+
     async ChiamataGenerica(req: Request, res: Response) {
         let passato = false;
         try {
@@ -289,8 +299,10 @@ export class TerminaleMetodo implements IDescrivibile {
                 } catch (error) {
                     if (error instanceof ErroreMio) {
                         tmp = {
-                            body: { "Errore Interno filtrato ": 'filtrato 404 !!!', 
-                            'Errore originale':  (<ErroreMio>error).message},
+                            body: {
+                                "Errore Interno filtrato ": 'filtrato 404 !!!',
+                                'Errore originale': (<ErroreMio>error).message
+                            },
                             stato: (<ErroreMio>error).codiceErrore
                         };
                     }
@@ -562,6 +574,8 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
 
             descriptor.value = metodo.metodoAvviabile; */
 
+            if (parametri.percorsoIndipendente) metodo.percorsoIndipendente = parametri.percorsoIndipendente;
+            else metodo.percorsoIndipendente = false;
 
             if (parametri.nomiClasseRiferimento != undefined)
                 metodo.nomiClassiDiRiferimento = parametri.nomiClasseRiferimento;
