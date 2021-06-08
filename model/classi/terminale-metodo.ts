@@ -76,10 +76,12 @@ export class TerminaleMetodo implements IDescrivibile {
                 middlew.push(midd.ConvertiInMiddleare());
             }
         });
-        
+
         let percorsoTmp = '';
-        if (this.percorsoIndipendente)
-            percorsoTmp = this.path;
+        if (this.percorsoIndipendente) {
+            percorsoTmp = '/' + this.path;
+            this.percorsi.pathGlobal = percorsoTmp;
+        }
         else
             percorsoTmp = this.percorsi.pathGlobal;
 
