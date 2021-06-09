@@ -605,6 +605,8 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
 
             if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
 
+            if (parametri.onPrimaDiEseguireExpress != null) metodo.onPrimaDiEseguireExpress = parametri.onPrimaDiEseguireExpress;
+
             /* configuro i middleware */
             if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
 
