@@ -44,7 +44,7 @@ export class TerminaleMetodo implements IDescrivibile {
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
     onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any[];
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
-    onPrimaDiEseguireExpress?: () => void;
+    onPrimaDiEseguireExpress?: (req: Request) => void;
     onPrimaDirestituireResponseExpress?: () => void;
 
     constructor(nome: string, path: string, classePath: string) {
@@ -218,6 +218,7 @@ export class TerminaleMetodo implements IDescrivibile {
         try {
             console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             const logIn = InizializzaLogbaseIn(req, this.nome.toString());
+            if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
             let tmp: IReturn = await this.Esegui(req);
             if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
             if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
@@ -341,7 +342,7 @@ export class TerminaleMetodo implements IDescrivibile {
                 }
                 return tmp;
             }
-        } catch (error) {
+        } catch (error: any) {
             if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
                 console.log("ciao");
             }
