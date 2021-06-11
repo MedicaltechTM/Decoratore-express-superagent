@@ -285,7 +285,25 @@ export class TerminaleMetodo implements IDescrivibile {
                         if (tmpReturn instanceof ErroreMio) {
                             console.log('hello');
                         }
-                        if (tmpReturn) {
+
+
+                        if ('stato' in tmpReturn && 'body' in tmpReturn) {
+                            /* const tt = Object.assign({}, tmpReturn.body);
+                            const tt2 = Object.assign(tmpReturn.body);
+                            const tt3 = Object.create(tmpReturn.body);
+                            const tt4 = Object.create({}, tmpReturn.body);
+ 
+                            const tt5 = Object.assign(tmp.body, tmpReturn.body);
+                            const tt6 = Object.create(<any>tmp.body, tmpReturn.body); */
+
+                            for (let attribut in tmpReturn.body) {
+                                (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
+                            }
+
+                            //tmp.body = Object.assign({}, tmpReturn.body);
+                            tmp.stato = tmpReturn.stato;
+                        }
+                        else if (tmpReturn) {
                             tmp.body = tmpReturn;
                             tmp.stato = 299;
                         }
