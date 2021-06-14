@@ -46,7 +46,7 @@ export class TerminaleMetodo implements IDescrivibile {
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
     onPrimaDiEseguireExpress?: (req: Request) => void;
     onPrimaDirestituireResponseExpress?: () => void;
-    AlPostoDi?: () => void;
+    AlPostoDi?: (listaParametri: ListaTerminaleParametro) => any;
 
     constructor(nome: string, path: string, classePath: string) {
         this.listaParametri = new ListaTerminaleParametro();
@@ -269,7 +269,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     if (this.onPrimaDiEseguireMetodo) parametriTmp = this.onPrimaDiEseguireMetodo(parametri,
                         this.listaParametri);
                     let tmpReturn: any = '';
-                    if (this.AlPostoDi) tmpReturn = this.AlPostoDi();
+                    if (this.AlPostoDi) tmpReturn = this.AlPostoDi(<ListaTerminaleParametro>parametriTmp);
                     else tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
                     console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                     if (IsJsonString(tmpReturn)) {
@@ -627,6 +627,8 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
             if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
 
             if (parametri.onPrimaDiEseguireExpress != null) metodo.onPrimaDiEseguireExpress = parametri.onPrimaDiEseguireExpress;
+
+            if (parametri.AlPostoDi != null) metodo.AlPostoDi = parametri.AlPostoDi;
 
             /* configuro i middleware */
             if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {

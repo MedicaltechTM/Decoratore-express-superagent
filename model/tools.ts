@@ -263,4 +263,7 @@ export interface IMetodo {
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
 
     onPrimaDiEseguireExpress?: (req: Request) => void
+
+    
+    AlPostoDi?: (listaParametri: ListaTerminaleParametro) => any;
 }
