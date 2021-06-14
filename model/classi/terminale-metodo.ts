@@ -46,6 +46,7 @@ export class TerminaleMetodo implements IDescrivibile {
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
     onPrimaDiEseguireExpress?: (req: Request) => void;
     onPrimaDirestituireResponseExpress?: () => void;
+    AlPostoDi?: () => void;
 
     constructor(nome: string, path: string, classePath: string) {
         this.listaParametri = new ListaTerminaleParametro();
@@ -267,7 +268,9 @@ export class TerminaleMetodo implements IDescrivibile {
                     let parametriTmp = parametri.valoriParametri;
                     if (this.onPrimaDiEseguireMetodo) parametriTmp = this.onPrimaDiEseguireMetodo(parametri,
                         this.listaParametri);
-                    const tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
+                    let tmpReturn: any = '';
+                    if (this.AlPostoDi) tmpReturn = this.AlPostoDi();
+                    else tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
                     console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                     if (IsJsonString(tmpReturn)) {
                         if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {

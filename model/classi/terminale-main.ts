@@ -34,6 +34,7 @@ export class Main {
     path: string;
     serverExpressDecorato: express.Express;
     listaTerminaleClassi: ListaTerminaleClasse;
+    httpServer: any;
 
     constructor(path: string, server?: express.Express) {
         this.path = path;
@@ -87,11 +88,17 @@ export class Main {
                 }
             }); */
 
+            this.httpServer = http.createServer(this.serverExpressDecorato);
+
             SalvaListaClasseMetaData(tmp);
         }
         else {
             console.log("Attenzione non vi sono rotte e quantaltro.");
         }
+    }
+
+    StartHttpServer(){
+        this.httpServer.listen(this.percorsi.porta);
     }
 
     StartExpress() {
@@ -105,10 +112,9 @@ export class Main {
             res.redirect('/');
         }); */
 
-        //const httpServer = http.createServer(this.serverExpressDecorato);
+        //
 
         this.serverExpressDecorato.listen(this.percorsi.porta)
-        //httpServer.listen(this.percorsi.porta);
     }
 
     /************************************** */
