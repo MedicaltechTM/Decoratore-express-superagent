@@ -290,7 +290,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         }
 
 
-                        if ('stato' in tmpReturn && 'body' in tmpReturn) {
+                        if (typeof tmpReturn === 'object' && tmpReturn !== null && 'stato' in tmpReturn && 'body' in tmpReturn) {
                             /* const tt = Object.assign({}, tmpReturn.body);
                             const tt2 = Object.assign(tmpReturn.body);
                             const tt3 = Object.create(tmpReturn.body);
