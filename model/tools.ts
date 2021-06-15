@@ -14,7 +14,18 @@ export interface IDescrivibile {
 
 export type tipo = "number" | "text" | "date";
 
-export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): string {
+export interface ILogbase {
+    data: Date;
+    body: object;
+    params: object;
+    header: object;
+    local: string;
+    remote: string;
+    url: string;
+    nomeMetodo?: string
+}
+
+export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): ILogbase {
     /* console.log("InizializzaLogbaseIn - Arrivato in : " + nomeMetodo + "\n"
         + "Data : " + new Date(Date.now()) + "\n"
         + "url : " + req.originalUrl + "\n"
@@ -26,6 +37,7 @@ export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): string 
         + "remote : " + req.socket.remoteAddress + " : " + req.socket.remotePort + "\n"
     ); */
 
+    const params = req.params;
     const body = req.body;
     const data = new Date(Date.now());
     const header = JSON.parse(JSON.stringify(req.headers));
@@ -33,7 +45,7 @@ export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): string 
     const remote = req.socket.remoteAddress + " : " + req.socket.remotePort;
     const url = req.originalUrl;
 
-    const tmp = "Arrivato in : " + nomeMetodo + "\n"
+    /* const tmp = "Arrivato in : " + nomeMetodo + "\n"
         + "Data : " + new Date(Date.now()) + "\n"
         + "url : " + req.originalUrl + "\n"
         + "query : " + JSON.stringify(req.query) + "\n"
@@ -41,16 +53,28 @@ export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): string 
         + "header : " + JSON.stringify(req.headers) + "\n"
         + "soket : " + "\n"
         + "local : " + req.socket.localAddress + " : " + req.socket.localPort + "\n"
-        + "remote : " + req.socket.remoteAddress + " : " + req.socket.remotePort + "\n";
+        + "remote : " + req.socket.remoteAddress + " : " + req.socket.remotePort + "\n"; */
+
+    const tmp: ILogbase = {
+        params: params,
+        body: body,
+        data: data,
+        header: header,
+        local: local,
+        remote: remote,
+        url: url,
+        nomeMetodo: nomeMetodo
+    };
+
     return tmp;
 }
-export function InizializzaLogbaseOut(req: Response, nomeMetodo?: string): string {
+export function InizializzaLogbaseOut(res: Response, nomeMetodo?: string): ILogbase {
 
-    var t1 = '', t2 = '';
+    /* var t1 = '', t2 = '';
     if (req.socket != undefined) {
         t1 = req.socket.localAddress + " : " + req.socket.localPort;
         t2 = req.socket.remoteAddress + " : " + req.socket.remotePort;
-    }
+    } */
     /* console.log("InizializzaLogbaseOut - Arrivato in : " + nomeMetodo + "\n"
         + "Data : " + new Date(Date.now()) + "\n"
         + "headersSent : " + req.headersSent + "\n"
@@ -64,8 +88,26 @@ export function InizializzaLogbaseOut(req: Response, nomeMetodo?: string): strin
         + "remote : " + t2 + "\n"
     ); */
 
+    const params = {};
+    const body = {};
+    const data = new Date(Date.now());
+    const header = res.getHeaders();
+    const local = res.socket?.localAddress + " : " + res.socket?.localPort;
+    const remote = res.socket?.remoteAddress + " : " + res.socket?.remotePort;
+    const url = '';
 
-    const tmp = "Arrivato in : " + nomeMetodo + "\n"
+    const tmp: ILogbase = {
+        params: params,
+        body: body,
+        data: data,
+        header: header,
+        local: local,
+        remote: remote,
+        url: url,
+        nomeMetodo: nomeMetodo
+    };
+
+    /* const tmp = "Arrivato in : " + nomeMetodo + "\n"
         + "Data : " + new Date(Date.now()) + "\n"
         + "headersSent : " + req.headersSent + "\n"
         + "json : " + req.json + "\n"
@@ -75,7 +117,8 @@ export function InizializzaLogbaseOut(req: Response, nomeMetodo?: string): strin
         + "statuMessage : " + req.statusMessage + '\n'
         + "soket : " + "\n"
         + "local : " + t1 + "\n"
-        + "remote : " + t2 + "\n";
+        + "remote : " + t2 + "\n"; */
+
     return tmp;
 }
 export function IsJsonString(str: string): boolean {
@@ -163,6 +206,7 @@ export interface IReturn {
     stato: number;
     nonTrovati?: INonTrovato[];
     inErrore?: IRitornoValidatore[];
+    attore?: any;
 }
 export interface IResponse {
     body: string
@@ -258,12 +302,13 @@ export interface IMetodo {
      */
     nomiClasseRiferimento?: IClasseRiferimento[],
 
-    onChiamataCompletata?: (logOn: string, result: any, logIn: string) => void
+    onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
 
     onPrimaDiEseguireExpress?: (req: Request) => void
 
-    
-    AlPostoDi?: (listaParametri: ListaTerminaleParametro) => any;
+
+    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+    Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 }

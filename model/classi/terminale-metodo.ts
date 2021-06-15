@@ -38,7 +38,7 @@ export class TerminaleMetodo implements IDescrivibile {
     sommario: string;
     nomiClassiDiRiferimento: IClasseRiferimento[] = [];
 
-    onChiamataCompletata?: (logOn: string, result: any, logIn: string) => void;
+    onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onParametriNonTrovati?: (nonTrovati?: INonTrovato[]) => void;
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
@@ -46,7 +46,8 @@ export class TerminaleMetodo implements IDescrivibile {
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
     onPrimaDiEseguireExpress?: (req: Request) => void;
     onPrimaDirestituireResponseExpress?: () => void;
-    AlPostoDi?: (listaParametri: ListaTerminaleParametro) => any;
+    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+    Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 
     constructor(nome: string, path: string, classePath: string) {
         this.listaParametri = new ListaTerminaleParametro();
@@ -216,11 +217,14 @@ export class TerminaleMetodo implements IDescrivibile {
 
     async ChiamataGenerica(req: Request, res: Response) {
         let passato = false;
+        let logIn: any;
+        let logOut: any;
+        let tmp: any;
         try {
             console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
-            const logIn = InizializzaLogbaseIn(req, this.nome.toString());
+            logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
-            let tmp: IReturn = await this.Esegui(req);
+            tmp = await this.Esegui(req);
             if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
             if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
             try {
@@ -234,14 +238,14 @@ export class TerminaleMetodo implements IDescrivibile {
             } catch (error) {
                 res.status(500).send(error);
             }
-            const logOit = InizializzaLogbaseOut(res, this.nome.toString());
+            logOut = InizializzaLogbaseOut(res, this.nome.toString());
             if (this.onChiamataCompletata) {
-                this.onChiamataCompletata(logIn, tmp, logOit);
+                this.onChiamataCompletata(logIn, tmp, logOut, undefined);
             }
             //return res;
         } catch (error) {
             if (this.onChiamataCompletata) {
-                this.onChiamataCompletata('', { stato: 500, body: error }, '');
+                this.onChiamataCompletata(logIn, tmp , logOut,error);
             }
             if (passato == false)
                 res.status(500).send(error);
@@ -269,8 +273,23 @@ export class TerminaleMetodo implements IDescrivibile {
                     if (this.onPrimaDiEseguireMetodo) parametriTmp = this.onPrimaDiEseguireMetodo(parametri,
                         this.listaParametri);
                     let tmpReturn: any = '';
-                    if (this.AlPostoDi) tmpReturn = this.AlPostoDi(<ListaTerminaleParametro>parametriTmp);
-                    else tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
+                    if (this.AlPostoDi) {
+                        tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
+                    }
+                    else {
+                        if (this.Istanziatore) {
+                            const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
+                            tmp.attore = classeInstanziata;
+                            tmpReturn = await classeInstanziata[this.nome.toString()](this.metodoAvviabile, parametriTmp);
+
+                            //tmpReturn = await (<Object>classeInstanziata).constructor.caller(this.nome).apply(this.metodoAvviabile, parametriTmp);
+                            //classeInstanziata[this.nome].apply()
+                            //tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
+                        }
+                        else {
+                            tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
+                        }
+                    }
                     console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                     if (IsJsonString(tmpReturn)) {
                         if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
@@ -282,12 +301,12 @@ export class TerminaleMetodo implements IDescrivibile {
                         else { tmp.stato = 299; }
                     }
                     else {
-                        if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
+                        /* if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
                             console.log('ciao');
                         }
                         if (tmpReturn instanceof ErroreMio) {
                             console.log('hello');
-                        }
+                        } */
 
 
                         if (typeof tmpReturn === 'object' && tmpReturn !== null && 'stato' in tmpReturn && 'body' in tmpReturn) {
@@ -319,7 +338,8 @@ export class TerminaleMetodo implements IDescrivibile {
                         }
 
                     }
-
+                    console.log(tmpReturn);
+                    console.log("finito!!")
                 } catch (error) {
                     if (error instanceof ErroreMio) {
                         tmp = {
@@ -628,8 +648,13 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
 
             if (parametri.onPrimaDiEseguireExpress != null) metodo.onPrimaDiEseguireExpress = parametri.onPrimaDiEseguireExpress;
 
-            if (parametri.AlPostoDi != null) metodo.AlPostoDi = parametri.AlPostoDi;
+            if (parametri.AlPostoDi != null && parametri.AlPostoDi != undefined) {
+                metodo.AlPostoDi = parametri.AlPostoDi;
+            }
 
+            if (parametri.Istanziatore != null && parametri.Istanziatore != undefined) {
+                metodo.Istanziatore = parametri.Istanziatore;
+            }
             /* configuro i middleware */
             if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
 
