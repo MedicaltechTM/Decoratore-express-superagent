@@ -1,4 +1,4 @@
-import { IPrintabile, IRaccoltaPercorsi, targetTerminale } from "../tools";
+import { IPrintabile, IRaccoltaPercorsi, targetTerminale, TypeMetod } from "../tools";
 
 import express, { Router } from "express";
 
@@ -120,12 +120,27 @@ export class TerminaleClasse {
  * inizializza la classe, crea un rotta in express mediante il percorso specificato. 
  * @param percorso : di default il nome della classe
  */
-function decoratoreClasse(percorso?: string): any {
+function decoratoreClasse(percorso?: string, LogGenerale?: any/*  ((logOut: any, result: any, logIn: any, errore: any) => void) */, Inizializzatore?: any): any {
     return (ctr: Function) => {
         const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
         const classe = CheckClasseMetaData(ctr.name);
         if (percorso) classe.SetPath = percorso;
         else classe.SetPath = ctr.name;
+        if (LogGenerale) {
+            classe.listaMetodi.forEach(element => {
+                if (element.onChiamataCompletata == undefined)
+                    element.onChiamataCompletata = LogGenerale;
+            });
+        }
+        if (Inizializzatore) {
+            classe.listaMetodi.forEach(element => {
+                let contiene = false;
+                element.listaParametri.forEach(element => {
+                    if (element.autenticatore == true) contiene = true;
+                });
+                if (contiene) element.Istanziatore = Inizializzatore;
+            });
+        }
         SalvaListaClasseMetaData(tmp);
     }
 }

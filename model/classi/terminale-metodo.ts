@@ -336,7 +336,6 @@ export class TerminaleMetodo implements IDescrivibile {
                                 nonTrovati: parametri.nontrovato
                             };
                         }
-
                     }
                     console.log(tmpReturn);
                     console.log("finito!!")
