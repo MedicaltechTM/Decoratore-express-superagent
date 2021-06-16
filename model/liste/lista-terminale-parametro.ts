@@ -1,7 +1,7 @@
 
 import { Router, Request, Response } from "express";
 
-import {  TerminaleParametro } from "../classi/terminale-parametro";
+import { TerminaleParametro } from "../classi/terminale-parametro";
 import { IParametri, IParametriEstratti, TypeInterazone } from "../tools";
 
 import chiedi from "prompts";
@@ -19,13 +19,13 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
         for (let index = this.length - 1; index >= 0; index--) {
             const element = this[index];
             let tmp = undefined;
-            if (richiesta.body[element.nome] != undefined && element.posizione=='body') {
+            if (richiesta.body[element.nome] != undefined && element.posizione == 'body') {
                 tmp = richiesta.body[element.nome];
             }
-            else if (richiesta.query[element.nome] != undefined && element.posizione=='query') {
+            else if (richiesta.query[element.nome] != undefined && element.posizione == 'query') {
                 tmp = richiesta.query[element.nome];
             }
-            else if (richiesta.headers[element.nome] != undefined && element.posizione=='header') {
+            else if (richiesta.headers[element.nome] != undefined && element.posizione == 'header') {
                 tmp = richiesta.headers[element.nome];
             }
             else {
@@ -44,16 +44,27 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     ritorno.errori.push(rit)
                 }
             }
+            
             ritorno.valoriParametri.push(tmp);
         }
 
         return ritorno;
     }
 
+    GetAutenticatore(): TerminaleParametro | undefined {
+        for (let index = 0; index < this.length; index++) {
+            const element = this[index];
+            if (element.autenticatore) {
+                return element;
+            }
+        }
+        return undefined;
+    }
+
 
     /*********************************** */
 
-    
+
     async SoddisfaParamtri(chiSei: TypeInterazone): Promise<IParametri> {
         let body = '';
         let primo = false;

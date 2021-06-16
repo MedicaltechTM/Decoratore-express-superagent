@@ -9,6 +9,8 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 
 export class TerminaleParametro implements IDescrivibile, IParametro {
 
+    valore: any;
+
     dovePossoTrovarlo: TypeDovePossoTrovarlo = 'rotta';
     nome: string;
     tipo: tipo;
@@ -17,6 +19,8 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
     descrizione: string;
     sommario: string;
+
+    autenticatore: boolean;
 
 
     Validatore?: (parametro: any) => IRitornoValidatore;
@@ -28,13 +32,14 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
         this.descrizione = "";
         this.sommario = "";
+        this.autenticatore = false;
     }
 
     /******************************* */
 
-    
+
     PrintParametro() {
-        return "- "+ this.tipo.toString() + " : "  + this.nome + ' |';
+        return "- " + this.tipo.toString() + " : " + this.nome + ' |';
     }
 }
 
@@ -57,6 +62,7 @@ function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, pos
         if (parametri.sommario == undefined) parametri.sommario = '';
         if (parametri.nome == undefined) parametri.nome = parameterIndex.toString();
         if (parametri.posizione == undefined) parametri.posizione = 'query';
+        if (parametri.autenticatore == undefined) parametri.autenticatore = false;
 
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
@@ -74,6 +80,8 @@ function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, pos
         else paramestro.dovePossoTrovarlo = 'rotta';
 
         if (parametri.Validatore != undefined) paramestro.Validatore = parametri.Validatore;
+
+        paramestro.autenticatore = parametri.autenticatore;
 
         SalvaListaClasseMetaData(list);
     }

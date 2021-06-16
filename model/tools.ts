@@ -240,7 +240,10 @@ export interface IParametro {
     descrizione?: string,
     /** descrizione breve */
     sommario?: string,
+    /*indica se il parametro è controllato nel metodo corrente o in un 'altro metodo per esempio in un middleware */
     dovePossoTrovarlo?: TypeDovePossoTrovarlo,
+    /*indica se il paramtro è un autenticatore, per esempio come un barrer token o un username, questo puo essere reperito facimente in ListaTerminaleParametro o IParametriEstratti */
+    autenticatore?: boolean,
     Validatore?: (parametro: any) => IRitornoValidatore
 }
 
