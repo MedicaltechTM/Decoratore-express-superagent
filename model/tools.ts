@@ -26,16 +26,6 @@ export interface ILogbase {
 }
 
 export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): ILogbase {
-    /* console.log("InizializzaLogbaseIn - Arrivato in : " + nomeMetodo + "\n"
-        + "Data : " + new Date(Date.now()) + "\n"
-        + "url : " + req.originalUrl + "\n"
-        + "query : " + JSON.stringify(req.query) + "\n"
-        + "body : " + JSON.stringify(req.body) + "\n"
-        + "header : " + JSON.stringify(req.headers) + "\n"
-        + "soket : " + "\n"
-        + "local : " + req.socket.localAddress + " : " + req.socket.localPort + "\n"
-        + "remote : " + req.socket.remoteAddress + " : " + req.socket.remotePort + "\n"
-    ); */
 
     const params = req.params;
     const body = req.body;
@@ -69,24 +59,6 @@ export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): ILogbas
     return tmp;
 }
 export function InizializzaLogbaseOut(res: Response, nomeMetodo?: string): ILogbase {
-
-    /* var t1 = '', t2 = '';
-    if (req.socket != undefined) {
-        t1 = req.socket.localAddress + " : " + req.socket.localPort;
-        t2 = req.socket.remoteAddress + " : " + req.socket.remotePort;
-    } */
-    /* console.log("InizializzaLogbaseOut - Arrivato in : " + nomeMetodo + "\n"
-        + "Data : " + new Date(Date.now()) + "\n"
-        + "headersSent : " + req.headersSent + "\n"
-        // + "json : " + req.json + "\n"
-        // + "send : " + req.send + "\n"
-        + "sendDate : " + req.sendDate + "\n"
-        + "statusCode : " + req.statusCode + '\n'
-        + "statuMessage : " + req.statusMessage + '\n'
-        + "soket : " + "\n"
-        + "local : " + t1 + "\n"
-        + "remote : " + t2 + "\n"
-    ); */
 
     const params = {};
     const body = {};

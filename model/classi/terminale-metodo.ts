@@ -1,14 +1,14 @@
 import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
-import {  GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
+import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
-import  {  Request, Response, NextFunction } from "express";
-import { GetListaMiddlewareMetaData,  SalvaListaMiddlewareMetaData } from "../liste/lista-terminale-metodo";
+import { Request, Response, NextFunction } from "express";
+import { GetListaMiddlewareMetaData, SalvaListaMiddlewareMetaData } from "../liste/lista-terminale-metodo";
 import { ListaTerminaleParametro } from "../liste/lista-terminale-parametro";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import cors from 'cors';
 
-import superagent  from "superagent"; 
+import superagent from "superagent";
 /* export interface ITerminaleMetodo {
 
 } */
@@ -105,7 +105,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.helmet,
                         middlew,
                         async (req: Request, res: Response) => {
-                            console.log("GET");
+                            ////console.log("GET");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -125,7 +125,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.helmet,
                         middlew,
                         async (req: Request, res: Response) => {
-                            console.log("POST");
+                            //console.log("POST");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -145,7 +145,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.helmet,
                         middlew,
                         async (req: Request, res: Response) => {
-                            console.log("DELETE");
+                            //console.log("DELETE");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -165,7 +165,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.helmet,
                         middlew,
                         async (req: Request, res: Response) => {
-                            console.log("PATCH");
+                            //console.log("PATCH");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -185,7 +185,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.helmet,
                         middlew,
                         async (req: Request, res: Response) => {
-                            console.log("PURGE");
+                            //console.log("PURGE");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -205,7 +205,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         this.helmet,
                         middlew,
                         async (req: Request, res: Response) => {
-                            console.log("PUT");
+                            //console.log("PUT");
                             await this.ChiamataGenerica(req, res);
                         });
                     break;
@@ -219,7 +219,7 @@ export class TerminaleMetodo implements IDescrivibile {
         let logOut: any;
         let tmp: any;
         try {
-            console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
+            //console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
             tmp = await this.Esegui(req);
@@ -243,7 +243,7 @@ export class TerminaleMetodo implements IDescrivibile {
             //return res;
         } catch (error) {
             if (this.onChiamataCompletata) {
-                this.onChiamataCompletata(logIn, tmp , logOut,error);
+                this.onChiamataCompletata(logIn, tmp, logOut, error);
             }
             if (passato == false)
                 res.status(500).send(error);
@@ -278,20 +278,19 @@ export class TerminaleMetodo implements IDescrivibile {
                         if (this.Istanziatore) {
                             const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
                             tmp.attore = classeInstanziata;
-                            tmpReturn = await classeInstanziata[this.nome.toString()](this.metodoAvviabile, parametriTmp);
-
-                            //tmpReturn = await (<Object>classeInstanziata).constructor.caller(this.nome).apply(this.metodoAvviabile, parametriTmp);
-                            //classeInstanziata[this.nome].apply()
-                            //tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
+                            
+                            tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametriTmp);
+                            
+                            //console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                         }
                         else {
                             tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
+                            //console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                         }
                     }
-                    console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                     if (IsJsonString(tmpReturn)) {
                         if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
-                            console.log("ciao");
+                            //console.log("ciao");
                         }
                         if ('body' in tmpReturn) { tmp.body = tmpReturn.body; }
                         else { tmp.body = tmpReturn; }
@@ -300,10 +299,10 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     else {
                         /* if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
-                            console.log('ciao');
+                            //console.log('ciao');
                         }
                         if (tmpReturn instanceof ErroreMio) {
-                            console.log('hello');
+                            //console.log('hello');
                         } */
 
 
@@ -335,8 +334,8 @@ export class TerminaleMetodo implements IDescrivibile {
                             };
                         }
                     }
-                    console.log(tmpReturn);
-                    console.log("finito!!")
+                    //console.log(tmpReturn);
+                    //console.log("finito!!")
                 } catch (error) {
                     if (error instanceof ErroreMio) {
                         tmp = {
@@ -354,7 +353,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             nonTrovati: parametri.nontrovato
                         };
                     }
-                    console.log("Errore : \n" + error);
+                    //console.log("Errore : \n" + error);
                 }
                 return tmp;
             }
@@ -381,10 +380,10 @@ export class TerminaleMetodo implements IDescrivibile {
                 return tmp;
             }
         } catch (error: any) {
-            if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
-                console.log("ciao");
-            }
-            console.log("Errore : ", error);
+            /* if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
+                //console.log("ciao");
+            } */
+            //console.log("Errore : ", error);
             return {
                 body: { "Errore Interno filtrato ": 'internal error!!!!' },
                 stato: 500
@@ -418,7 +417,7 @@ export class TerminaleMetodo implements IDescrivibile {
             parametri = parametri + element.PrintParametro();
         }
         const tmp = this.nome + ' | ' + this.percorsi.pathGlobal + '\n\t' + parametri;
-        //console.log(tmp);
+        ////console.log(tmp);
         return tmp;
     }
 
@@ -460,7 +459,7 @@ export class TerminaleMetodo implements IDescrivibile {
             }
 
             if (headerpath == undefined) headerpath = "localhost:3000";
-            console.log('chiamata per : ' + this.percorsi.pathGlobal + ' | Verbo: ' + this.tipo);
+            //console.log('chiamata per : ' + this.percorsi.pathGlobal + ' | Verbo: ' + this.tipo);
             const parametri = await this.listaParametri.SoddisfaParamtri('rotta');
 
             if (parametri.body != "") {
@@ -484,7 +483,7 @@ export class TerminaleMetodo implements IDescrivibile {
             }
 
             let ritorno;
-           // let gg = this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal
+            // let gg = this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal
             try {
                 ritorno = await superagent(this.tipo, this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
                     .query(JSON.parse('{ ' + query + ' }'))
@@ -493,7 +492,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     .set('accept', 'json')
                     ;
             } catch (error) {
-                console.log(error);
+                //console.log(error);
                 throw new Error("Errore:" + error);
             }
             /* switch (this.tipo) {
@@ -507,7 +506,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             .set('accept', 'json')
                             ;
                     } catch (error) {
-                        console.log(error);
+                        //console.log(error);
                         throw new Error("Errore:" + error);
                     }
                     break;
@@ -520,7 +519,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
                     } catch (error) {
-                        console.log(error);
+                        //console.log(error);
                         throw new Error("Errore:" + error);
                     }
                     break;
@@ -533,7 +532,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
                     } catch (error) {
-                        console.log(error);
+                        //console.log(error);
                         throw new Error("Errore:" + error);
                     }
                     break;
@@ -546,7 +545,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
                     } catch (error) {
-                        console.log(error);
+                        //console.log(error);
                         throw new Error("Errore:" + error);
                     }
                     break;
@@ -559,7 +558,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             .set(JSON.parse('{ ' + header + ' }'))
                             .set('accept', 'json')
                     } catch (error) {
-                        console.log(error);
+                        //console.log(error);
                         throw new Error("Errore:" + error);
                     }
                     break;
@@ -715,7 +714,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                                 SalvaListaClasseMetaData(list);
                             }
                             else {
-                                console.log("Errore mio!");
+                                //console.log("Errore mio!");
                             }
                         }
                     }
@@ -724,7 +723,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
             SalvaListaClasseMetaData(list);
         }
         else {
-            console.log("Errore mio!");
+            //console.log("Errore mio!");
         }
         //return descriptor;
     }
@@ -748,7 +747,7 @@ export function mpAddCors(cors: any): MethodDecorator {
                     metodo2.cors = cors;
                 }
                 else {
-                    console.log("Errore mio!");
+                    //console.log("Errore mio!");
                 }
             }
         }
@@ -756,7 +755,7 @@ export function mpAddCors(cors: any): MethodDecorator {
             metodo.cors = cors;
         }
         else {
-            console.log("Errore mio!");
+            //console.log("Errore mio!");
         }
         SalvaListaClasseMetaData(list);
     }
@@ -779,7 +778,7 @@ export function mpAddHelmet(helmet: any): MethodDecorator {
                     metodo.helmet = helmet;
                 }
                 else {
-                    console.log("Errore mio!");
+                    //console.log("Errore mio!");
                 }
             }
         }
@@ -787,7 +786,7 @@ export function mpAddHelmet(helmet: any): MethodDecorator {
             metodo.helmet = helmet;
         }
         else {
-            console.log("Errore mio!");
+            //console.log("Errore mio!");
         }
         SalvaListaClasseMetaData(list);
     }
@@ -814,7 +813,7 @@ export function mpAddMiddle(item: any): MethodDecorator {
             SalvaListaClasseMetaData(list);
         }
         else {
-            console.log("Errore mio!");
+            //console.log("Errore mio!");
         }
     }
 }
