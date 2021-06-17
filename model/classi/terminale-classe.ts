@@ -1,15 +1,12 @@
-import { IPrintabile, IRaccoltaPercorsi, targetTerminale, TypeMetod } from "../tools";
+import {  IRaccoltaPercorsi, targetTerminale } from "../tools";
 
-import express, { Router } from "express";
 
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import { ListaTerminaleMetodo } from "../liste/lista-terminale-metodo";
-import fs from 'fs';
-
-import http from "http";
 import { TerminaleMetodo } from "./terminale-metodo";
 
 import chiedi from "prompts";
+import { Router } from "express";
 
 export class TerminaleClasse {
 
@@ -84,8 +81,7 @@ export class TerminaleClasse {
     /******************************************************************* */
 
     async PrintMenuClasse() {
-        console.log('Classe :' + this.nome);
-        let index = 0;
+        console.log('Classe :' + this.nome); 
         for (let index = 0; index < this.listaMetodi.length; index++) {
             const element = this.listaMetodi[index];
             const tmp = index + 1;

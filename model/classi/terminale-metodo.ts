@@ -1,16 +1,14 @@
-import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IParametro, IPrintabile, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, targetTerminale, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
-import { CheckClasseMetaData, GetListaClasseMetaData, SalvaListaClasseMetaData, TerminaleClasse } from "./terminale-classe";
+import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import {  GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
-import express, { Router, Request, Response, NextFunction } from "express";
-import { GetListaMiddlewareMetaData, ListaTerminaleMetodo, ListaTerminaleMiddleware, SalvaListaMiddlewareMetaData } from "../liste/lista-terminale-metodo";
+import  {  Request, Response, NextFunction } from "express";
+import { GetListaMiddlewareMetaData,  SalvaListaMiddlewareMetaData } from "../liste/lista-terminale-metodo";
 import { ListaTerminaleParametro } from "../liste/lista-terminale-parametro";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import cors from 'cors';
 
-import superagent, { head } from "superagent";
-
-import http from "http";
+import superagent  from "superagent"; 
 /* export interface ITerminaleMetodo {
 
 } */
@@ -405,7 +403,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     return nex;
                 }
             } catch (error) {
-                res.status(555).send("Errore : " + error);
+                return res.status(555).send("Errore : " + error);
             }
         };
     }
@@ -486,7 +484,7 @@ export class TerminaleMetodo implements IDescrivibile {
             }
 
             let ritorno;
-            let gg = this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal
+           // let gg = this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal
             try {
                 ritorno = await superagent(this.tipo, this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
                     .query(JSON.parse('{ ' + query + ' }'))

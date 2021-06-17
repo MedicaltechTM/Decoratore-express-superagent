@@ -1,4 +1,3 @@
-import { Router } from "express";
 import { TerminaleMetodo } from "../classi/terminale-metodo";
 import { targetTerminale } from "../tools";
 

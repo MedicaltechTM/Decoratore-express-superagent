@@ -1,9 +1,7 @@
 
-import { IDescrivibile, IParametro, IPrintabile, IRitornoValidatore, targetTerminale, tipo, TypeDovePossoTrovarlo, TypePosizione } from "../tools";
+import { IDescrivibile, IParametro,  IRitornoValidatore,  tipo, TypeDovePossoTrovarlo, TypePosizione } from "../tools";
 
-import express from "express";
-import { CheckClasseMetaData, GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
-import { ListaTerminaleMetodo } from "../liste/lista-terminale-metodo";
+import {  GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 
 

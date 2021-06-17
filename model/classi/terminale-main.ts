@@ -1,10 +1,8 @@
-import { InizializzaLogbaseIn, InizializzaLogbaseOut, IPrintabile, IRaccoltaPercorsi, targetTerminale } from "../tools";
+import { IRaccoltaPercorsi, targetTerminale } from "../tools";
 
 import express from "express";
-import { Request, Response } from "express";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
-import bodyParser, { urlencoded, json as BodyParseJson } from 'body-parser';
-import { SalvaListaClasseMetaData, TerminaleClasse } from "./terminale-classe";
+import { SalvaListaClasseMetaData } from "./terminale-classe";
 
 import * as http from 'http';
 /**

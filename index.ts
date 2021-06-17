@@ -1,9 +1,9 @@
-import { mpMain, Main } from "./model/classi/terminale-main";
+import {  Main } from "./model/classi/terminale-main";
 import { mpClas } from "./model/classi/terminale-classe";
-import { mpAddMiddle, mpMet } from "./model/classi/terminale-metodo";
+import {  mpMet } from "./model/classi/terminale-metodo";
 import { mpPar } from "./model/classi/terminale-parametro";
 /* import { mpLog } from "./model/classi/terminale-log"; */
-import { tipo, ErroreMio, IRitornoValidatore, GestioneErrore, IParametriEstratti, ILogbase } from "./model/tools";
+import {  ErroreMio, IRitornoValidatore, GestioneErrore, IParametriEstratti, ILogbase } from "./model/tools";
 import { ListaTerminaleParametro } from './model/liste/lista-terminale-parametro';
 
 import "reflect-metadata";

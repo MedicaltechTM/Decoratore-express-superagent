@@ -1,5 +1,5 @@
 
-import { Router, Request, Response } from "express";
+import {  Request } from "express";
 
 import { TerminaleParametro } from "../classi/terminale-parametro";
 import { IParametri, IParametriEstratti, TypeInterazone } from "../tools";
