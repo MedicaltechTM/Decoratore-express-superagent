@@ -9,7 +9,7 @@ export class TerminaleTest {
 
     static nomeMetadataKeyTarget = "MetodoTerminaleTarget";
 
-    listaTest?: FunctionConstructor[];
+    listaTest?: any[];
     constructor(item: any) {
         this.listaTest = item;
     }
