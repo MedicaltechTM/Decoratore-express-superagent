@@ -121,8 +121,13 @@ export class Main {
         this.serverExpressDecorato.listen(this.percorsi.porta)
     }
 
-    StartTest(){
-
+    StartTest() {
+        this.listaTerminaleTest.forEach(element => {
+            if (element.listaTest)
+                element.listaTest.forEach(element => {
+                    element();
+                });
+        });
     }
 
     /************************************** */

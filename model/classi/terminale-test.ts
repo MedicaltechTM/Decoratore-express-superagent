@@ -9,7 +9,7 @@ export class TerminaleTest {
 
     static nomeMetadataKeyTarget = "MetodoTerminaleTarget";
 
-    listaTest?: any[];
+    listaTest?: FunctionConstructor[];
     constructor(item: any) {
         this.listaTest = item;
     }
@@ -34,7 +34,7 @@ function decoratoreTestMetodo(parametri: ITest) {
 
 export interface ITest {
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
-    testUnita: any[]
+    testUnita: FunctionConstructor[]
 }
 /**
  * 
