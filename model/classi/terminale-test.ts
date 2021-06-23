@@ -5,12 +5,10 @@ import { targetTerminale } from "../tools";
 
 
 export class TerminaleTest {
-    /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
-    percorsoIndipendente?: boolean;
 
     static nomeMetadataKeyTarget = "MetodoTerminaleTarget";
 
-    listaTest?: any[];
+    listaTest?: ITest;
     constructor(item: any) {
         this.listaTest = item;
     }
@@ -34,16 +32,19 @@ function decoratoreTestMetodo(parametri: ITest) {
 export interface ITest {
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     testUnita: {
-        FunzioniCreaAmbienteEsecuzione?: any,
-        FunzioniDaTestare: any,
-        FunzioniDiPulizia?: any
+        FunzioniCreaAmbienteEsecuzione?: () => IReturnTest,
+        FunzioniDaTestare: () => IReturnTest,
+        FunzioniDiPulizia?: () => IReturnTest
     }[]
+}
+export interface IReturnTest {
+    passato: boolean
 }
 /**
  * 
  * @returns 
  */
- export function GetListaTestMetaData(): ListaTerminaleTest {
+export function GetListaTestMetaData(): ListaTerminaleTest {
     let tmp: ListaTerminaleTest = Reflect.getMetadata(ListaTerminaleTest.nomeMetadataKeyTarget, targetTerminale);
     if (tmp == undefined) {
         tmp = new ListaTerminaleTest();

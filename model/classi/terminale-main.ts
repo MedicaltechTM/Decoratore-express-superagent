@@ -125,10 +125,15 @@ export class Main {
         for (let index = 0; index < this.listaTerminaleTest.length; index++) {
             const test = this.listaTerminaleTest[index];
             if (test.listaTest) {
-                for (let index2 = 0; index2 < test.listaTest.length; index2++) {
-                    const element = test.listaTest[index2];
+                for (let index2 = 0; index2 < test.listaTest.testUnita.length; index2++) {
+                    const element = test.listaTest.testUnita[index2];
                     try {
-                        await element();
+                        if (element.FunzioniCreaAmbienteEsecuzione)
+                            await element.FunzioniCreaAmbienteEsecuzione();
+                        if (element.FunzioniDaTestare)
+                            await element.FunzioniDaTestare();
+                        if (element.FunzioniDiPulizia)
+                            await element.FunzioniDiPulizia();
                     } catch (error) {
                         console.log(error);
 
@@ -136,14 +141,15 @@ export class Main {
                 }
             }
         }
-
-        /************************************** */
-
-
-        async PrintMenu() {
-            let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
-            //console.log("Menu main, digita il numero della la tua scelta: ");
-            await tmp.PrintMenuClassi();
-
-        }
     }
+
+    /************************************** */
+
+
+    async PrintMenu() {
+        let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
+        //console.log("Menu main, digita il numero della la tua scelta: ");
+        await tmp.PrintMenuClassi();
+
+    }
+}
