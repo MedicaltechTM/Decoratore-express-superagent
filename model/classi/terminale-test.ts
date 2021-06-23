@@ -32,9 +32,9 @@ function decoratoreTestMetodo(parametri: ITest) {
 export interface ITest {
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     testUnita: {
-        FunzioniCreaAmbienteEsecuzione?: () => IReturnTest,
-        FunzioniDaTestare: () => IReturnTest,
-        FunzioniDiPulizia?: () => IReturnTest
+        FunzioniCreaAmbienteEsecuzione?: () => IReturnTest|Promise<IReturnTest>,
+        FunzioniDaTestare: () => IReturnTest|Promise<IReturnTest>,
+        FunzioniDiPulizia?: () => IReturnTest|Promise<IReturnTest>
     }[]
 }
 export interface IReturnTest {
