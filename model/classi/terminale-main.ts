@@ -5,6 +5,7 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import { SalvaListaClasseMetaData } from "./terminale-classe";
 
 import * as http from 'http';
+import { ListaTerminaleTest } from "../liste/lista-terminale-test";
 /**
  * 
  */
@@ -32,6 +33,7 @@ export class Main {
     path: string;
     serverExpressDecorato: express.Express;
     listaTerminaleClassi: ListaTerminaleClasse;
+    listaTerminaleTest: ListaTerminaleTest;
     httpServer: any;
 
     constructor(path: string, server?: express.Express) {
@@ -40,6 +42,7 @@ export class Main {
         if (server == undefined) this.serverExpressDecorato = express();
         else this.serverExpressDecorato = server;
         this.listaTerminaleClassi = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
+        this.listaTerminaleTest = Reflect.getMetadata(ListaTerminaleTest.nomeMetadataKeyTarget, targetTerminale);
     }
 
     Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean) {
@@ -54,6 +57,9 @@ export class Main {
             //this.serverExpressDecorato.use(urlencoded({ 'extended': true })); // parse application/x-www-form-urlencoded
             //this.serverExpressDecorato.use(bodyParser.urlencoded());
             this.serverExpressDecorato.use(express.json());
+            this.serverExpressDecorato.use(express.urlencoded({
+                extended: true
+            }));
             //this.serverExpressDecorato.use(BodyParseJson({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 
             this.serverExpressDecorato.route
@@ -95,7 +101,7 @@ export class Main {
         }
     }
 
-    StartHttpServer(){
+    StartHttpServer() {
         this.httpServer.listen(this.percorsi.porta);
     }
 
@@ -113,6 +119,10 @@ export class Main {
         //
 
         this.serverExpressDecorato.listen(this.percorsi.porta)
+    }
+
+    StartTest(){
+
     }
 
     /************************************** */

@@ -2,6 +2,9 @@ import {  Main } from "./model/classi/terminale-main";
 import { mpClas } from "./model/classi/terminale-classe";
 import {  mpMet } from "./model/classi/terminale-metodo";
 import { mpPar } from "./model/classi/terminale-parametro";
+
+import { mpTestClas, mpTestMet } from "./model/classi/terminale-test";
+
 /* import { mpLog } from "./model/classi/terminale-log"; */
 import {  ErroreMio, IRitornoValidatore, GestioneErrore, IParametriEstratti, ILogbase } from "./model/tools";
 import { ListaTerminaleParametro } from './model/liste/lista-terminale-parametro';
@@ -12,6 +15,9 @@ export { Main as Main };
 export { mpMet as mpMet };
 export { mpPar as mpPar };
 export { mpClas as mpClas };
+
+export { mpTestClas as mpTestClas };
+export { mpTestMet as mpTestMet };
 /* export { mpLog as mpLog } */
 
 export { ErroreMio as ErroreMio };
