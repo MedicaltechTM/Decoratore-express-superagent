@@ -127,13 +127,17 @@ export class Main {
             if (test.listaTest) {
                 for (let index2 = 0; index2 < test.listaTest.testUnita.length; index2++) {
                     const element = test.listaTest.testUnita[index2];
+                    let risultato;
                     try {
-                        if (element.FunzioniCreaAmbienteEsecuzione)
-                            await element.FunzioniCreaAmbienteEsecuzione();
-                        if (element.FunzioniDaTestare)
-                            await element.FunzioniDaTestare();
-                        if (element.FunzioniDiPulizia)
-                            await element.FunzioniDiPulizia();
+                        if (element.FunzioniCreaAmbienteEsecuzione) {
+                            risultato = await element.FunzioniCreaAmbienteEsecuzione();
+                        }
+                        if (element.FunzioniDaTestare) {
+                            risultato = await element.FunzioniDaTestare();
+                        }
+                        if (element.FunzioniDiPulizia) {
+                            risultato = await element.FunzioniDiPulizia();
+                        }
                     } catch (error) {
                         console.log(error);
 
