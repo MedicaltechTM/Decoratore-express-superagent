@@ -121,22 +121,29 @@ export class Main {
         this.serverExpressDecorato.listen(this.percorsi.porta)
     }
 
-    StartTest() {
-        this.listaTerminaleTest.forEach(element => {
-            if (element.listaTest)
-                element.listaTest.forEach(element => {
-                    element();
-                });
-        });
+    async StartTest() {
+        for (let index = 0; index < this.listaTerminaleTest.length; index++) {
+            const test = this.listaTerminaleTest[index];
+            if (test.listaTest) {
+                for (let index2 = 0; index2 < test.listaTest.length; index2++) {
+                    const element = test.listaTest[index2];
+                    try {
+                        await element();
+                    } catch (error) {
+                        console.log(error);
+
+                    }
+                }
+            }
+        }
+
+        /************************************** */
+
+
+        async PrintMenu() {
+            let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
+            //console.log("Menu main, digita il numero della la tua scelta: ");
+            await tmp.PrintMenuClassi();
+
+        }
     }
-
-    /************************************** */
-
-
-    async PrintMenu() {
-        let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
-        //console.log("Menu main, digita il numero della la tua scelta: ");
-        await tmp.PrintMenuClassi();
-
-    }
-}
