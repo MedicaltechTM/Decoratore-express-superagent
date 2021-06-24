@@ -2,7 +2,6 @@ import { Main } from "./model/classi/terminale-main";
 import { mpClas } from "./model/classi/terminale-classe";
 import { mpMet } from "./model/classi/terminale-metodo";
 import { mpPar } from "./model/classi/terminale-parametro";
-import chiedi from "prompts";
 import { mpTestClas, mpTestMet } from "./model/classi/terminale-test";
 
 /* import { mpLog } from "./model/classi/terminale-log"; */
@@ -10,7 +9,6 @@ import { ErroreMio, IRitornoValidatore, GestioneErrore, IParametriEstratti, ILog
 import { ListaTerminaleParametro } from './model/liste/lista-terminale-parametro';
 
 import "reflect-metadata";
-import { createConnection } from "typeorm";
 
 export { Main as Main };
 export { mpMet as mpMet };
@@ -30,62 +28,6 @@ export { ListaTerminaleParametro as ListaTerminaleParametro };
 
 export { ILogbase as ILogbase };
 
-createConnection({
-    type: "postgres",
-    host: "localhost",
-    port: 5432,
-    username: "postgres",
-    password: "password",
-    database: "postgres",//"testStaisicuro",
-    synchronize: true,
-    logging: false,
-    entities: [
-        "ESEMPIO/src/**/*.ts"
-    ],
-    migrations: [
-        "ESEMPIO/src/migration/**/*.ts"
-    ],
-    subscribers: [
-        "ESEMPIO/src/subscriber/**/*.ts"
-    ],
-    cli: {
-        "entitiesDir": "ESEMPIO/src/app",
-        "migrationsDir": "ESEMPIO/src",
-        "subscribersDir": "ESEMPIO/src"
-    }
-}).then(async connection => {
-    console.log("ciao");
-    const main = new Main('api');
-    console.log("1: server express");
-    console.log("2: promts-superagent");
-    console.log("3: test-api");
-    console.log("4: test");
-    main.Inizializza("localhost", 3030, true, true);
-    await main.StartTest();
-    chiedi({ type: 'number', message: 'scegli:', name: 'risultato', min: 0, max: 3 })
-        .then((result) => {
-            if (result.risultato == '1') {
-                console.log("Start server express.");
-                main.StartExpress();
-                console.log("Finito!!!!!");
-            } else if (result.risultato == '2') {
-                console.log("Start promt-superagent");
-                main.PrintMenu();
-            } else if (result.risultato == '3') {
-                console.log("Start StartTestAPI");
-                main.StartTestAPI();
-            } else if (result.risultato == '4') {
-                console.log("Start StartTest");
-                main.StartTest();
-            }
-        }).catch((err) => {
-            console.log(err);
-        });
-
-    //main.StartExpressConsole(3030, "localhost");
-}).catch(err => {
-    console.log(err);
-})
 
 /* @mpClas()
 class ClassUno {

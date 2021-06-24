@@ -6,6 +6,7 @@
   "scripts": {
     "start-js": "node ./out/index.js",
     "start": "ts-node ./index.ts",
+    "start-esempio": "ts-node ./index-esempio.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "mirko pizzini",
