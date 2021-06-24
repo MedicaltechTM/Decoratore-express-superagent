@@ -106,8 +106,7 @@ export class Main {
             const tmpClasse = this.listaTerminaleClassi[index2];
             console.log('Classe :' + tmpClasse);
             for (let index = 0; index < tmpClasse.listaMetodi.length; index++) {
-                const tmpMetodo = tmpClasse.listaMetodi[index];
-                const tmp = index + 1;
+                const tmpMetodo = tmpClasse.listaMetodi[index]; 
                 if (tmpMetodo.listaTest) {
                     for (let index = 0; index < tmpMetodo.listaTest.length; index++) {
                         const element = tmpMetodo.listaTest[index];

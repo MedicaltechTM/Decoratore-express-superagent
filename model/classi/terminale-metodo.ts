@@ -523,9 +523,9 @@ export class TerminaleMetodo implements IDescrivibile {
             // let gg = this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal
             try {
                 ritorno = await superagent(this.tipo, this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
-                    .query(JSON.parse('{ ' + query + ' }'))
-                    .send(JSON.parse('{ ' + body + ' }'))
-                    .set(JSON.parse('{ ' + header + ' }'))
+                    .query(query)
+                    .send(body)
+                    .set(header)
                     .set('accept', 'json')
                     ;
             } catch (error) {
@@ -574,7 +574,8 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                 return originalMethod.apply(this, args);
             } */
 
-            metodo.listaTest = parametri.listaTest;
+            if (parametri.listaTest)
+                metodo.listaTest = parametri.listaTest;
 
             metodo.metodoAvviabile = descriptor.value;//la prendo come riferimento 
             /* descriptor.value = function (...args: any[]) {

@@ -35,7 +35,7 @@ createConnection({
     host: "localhost",
     port: 5432,
     username: "postgres",
-    password: "postgres",
+    password: "password",
     database: "postgres",//"testStaisicuro",
     synchronize: true,
     logging: false,
@@ -58,9 +58,11 @@ createConnection({
     const main = new Main('api');
     console.log("1: server express");
     console.log("2: promts-superagent");
+    console.log("3: test-api");
+    console.log("4: test");
     main.Inizializza("localhost", 3030, true, true);
     await main.StartTest();
-    chiedi({ type: 'number', message: 'scegli:', name: 'risultato', min: 0, max: 2 })
+    chiedi({ type: 'number', message: 'scegli:', name: 'risultato', min: 0, max: 3 })
         .then((result) => {
             if (result.risultato == '1') {
                 console.log("Start server express.");
@@ -69,6 +71,12 @@ createConnection({
             } else if (result.risultato == '2') {
                 console.log("Start promt-superagent");
                 main.PrintMenu();
+            } else if (result.risultato == '3') {
+                console.log("Start StartTestAPI");
+                main.StartTestAPI();
+            } else if (result.risultato == '4') {
+                console.log("Start StartTest");
+                main.StartTest();
             }
         }).catch((err) => {
             console.log(err);

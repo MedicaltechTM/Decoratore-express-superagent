@@ -56,7 +56,11 @@ export class Maggiordomo {
         this.nome = 'indefinito';
     }
 
-    @mpMet({ path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore })
+    @mpMet({ path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, listaTest:[{
+        body:{},
+        header:{},
+        query:{"idMaggiordomo":'1'}
+    }] })
     MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string) {
         console.log("Sono il maggiordomo : " + this.nome);
         return { saluto: "Sono il maggiordomo : " + this.nome };
