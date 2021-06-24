@@ -36,6 +36,10 @@ export class TerminaleMetodo implements IDescrivibile {
     sommario: string;
     nomiClassiDiRiferimento: IClasseRiferimento[] = [];
 
+    listaTest: {
+        body: any, query: any, header: any
+    }[] = [];
+
     onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onParametriNonTrovati?: (nonTrovati?: INonTrovato[]) => void;
 
@@ -278,9 +282,9 @@ export class TerminaleMetodo implements IDescrivibile {
                         if (this.Istanziatore) {
                             const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
                             tmp.attore = classeInstanziata;
-                            
+
                             tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametriTmp);
-                            
+
                             //console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
                         }
                         else {
@@ -341,16 +345,21 @@ export class TerminaleMetodo implements IDescrivibile {
                         tmp = {
                             body: {
                                 "Errore Interno filtrato ": 'filtrato 404 !!!',
-                                'Errore originale': (<ErroreMio>error).message
+                                'Errore originale': (<ErroreMio>error).message,
+                                'Stack errore': (<Error>error).stack
                             },
                             stato: (<ErroreMio>error).codiceErrore
                         };
                     }
                     else {
                         tmp = {
-                            body: { "Errore Interno filtrato ": 'internal error!!!!' },
-                            stato: 500,
-                            nonTrovati: parametri.nontrovato
+                            body: {
+                                "Errore Interno filtrato ": 'internal error!!!!',
+                                'Errore originale': (<Error>error).message,
+                                'Stack errore': (<Error>error).stack,
+                                nonTrovati: parametri.nontrovato
+                            },
+                            stato: 500
                         };
                     }
                     //console.log("Errore : \n" + error);
@@ -493,80 +502,39 @@ export class TerminaleMetodo implements IDescrivibile {
                     ;
             } catch (error) {
                 //console.log(error);
+                if ('response' in error) {
+                    return (<any>error).response.body;
+                }
                 throw new Error("Errore:" + error);
             }
-            /* switch (this.tipo) {
-                case 'get':
-                    try {
-                        ritorno = await superagent
-                            .get(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
-                            .query(JSON.parse('{ ' + query + ' }'))
-                            .send(JSON.parse('{ ' + body + ' }'))
-                            .set(JSON.parse('{ ' + header + ' }'))
-                            .set('accept', 'json')
-                            ;
-                    } catch (error) {
-                        //console.log(error);
-                        throw new Error("Errore:" + error);
-                    }
-                    break;
-                case 'post':
-                    try {
-                        ritorno = await superagent
-                            .post(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
-                            .query(JSON.parse('{ ' + query + ' }'))
-                            .send(JSON.parse('{ ' + body + ' }'))
-                            .set(JSON.parse('{ ' + header + ' }'))
-                            .set('accept', 'json')
-                    } catch (error) {
-                        //console.log(error);
-                        throw new Error("Errore:" + error);
-                    }
-                    break;
-                case 'purge':
-                    try {
-                        ritorno = await superagent
-                            .purge(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
-                            .query(JSON.parse('{ ' + query + ' }'))
-                            .send(JSON.parse('{ ' + body + ' }'))
-                            .set(JSON.parse('{ ' + header + ' }'))
-                            .set('accept', 'json')
-                    } catch (error) {
-                        //console.log(error);
-                        throw new Error("Errore:" + error);
-                    }
-                    break;
-                case 'patch':
-                    try {
-                        ritorno = await superagent
-                            .patch(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
-                            .query(JSON.parse('{ ' + query + ' }'))
-                            .send(JSON.parse('{ ' + body + ' }'))
-                            .set(JSON.parse('{ ' + header + ' }'))
-                            .set('accept', 'json')
-                    } catch (error) {
-                        //console.log(error);
-                        throw new Error("Errore:" + error);
-                    }
-                    break;
-                case 'delete':
-                    try {
-                        ritorno = await superagent
-                            .delete(this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
-                            .query(JSON.parse('{ ' + query + ' }'))
-                            .send(JSON.parse('{ ' + body + ' }'))
-                            .set(JSON.parse('{ ' + header + ' }'))
-                            .set('accept', 'json')
-                    } catch (error) {
-                        //console.log(error);
-                        throw new Error("Errore:" + error);
-                    }
-                    break;
-                default:
-                    return '';
-                    break;
-            } */
-
+            if (ritorno) {
+                return ritorno.body;
+            } else {
+                return '';
+            }
+            /*  */
+        } catch (error) {
+            throw new Error("Errore :" + error);
+        }
+    }
+    async ChiamaLaRottaConParametri(body: any, query: any, header: any) {
+        try {
+            let ritorno;
+            // let gg = this.percorsi.patheader + this.percorsi.porta + this.percorsi.pathGlobal
+            try {
+                ritorno = await superagent(this.tipo, this.percorsi.patheader + ':' + this.percorsi.porta + this.percorsi.pathGlobal)
+                    .query(JSON.parse('{ ' + query + ' }'))
+                    .send(JSON.parse('{ ' + body + ' }'))
+                    .set(JSON.parse('{ ' + header + ' }'))
+                    .set('accept', 'json')
+                    ;
+            } catch (error) {
+                //console.log(error);
+                if ('response' in error) {
+                    return (<any>error).response.body;
+                }
+                throw new Error("Errore:" + error);
+            }
             if (ritorno) {
                 return ritorno.body;
             } else {
@@ -605,6 +573,9 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                 var originalMethod = descriptor.value;
                 return originalMethod.apply(this, args);
             } */
+
+            metodo.listaTest = parametri.listaTest;
+
             metodo.metodoAvviabile = descriptor.value;//la prendo come riferimento 
             /* descriptor.value = function (...args: any[]) {
                 funcToCallEveryTime(...args);

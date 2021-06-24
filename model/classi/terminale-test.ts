@@ -14,14 +14,14 @@ export class TerminaleTest {
     }
 }
 function decoratoreTestClasse(parametri: ITest): any {
-    return (ctr: Function) => {
+    return (ctr: FunctionConstructor) => {
         const tmp: ListaTerminaleTest = GetListaTestMetaData();
-        tmp.AggiungiElemento(new TerminaleTest(parametri.testUnita));
+        tmp.AggiungiElemento(new TerminaleTest(parametri));
         SalvaListaTerminaleMetaData(tmp);
     }
 }
 function decoratoreTestMetodo(parametri: ITest) {
-    return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const tmp: ListaTerminaleTest = GetListaTestMetaData();
         tmp.AggiungiElemento(new TerminaleTest(parametri.testUnita));
         SalvaListaTerminaleMetaData(tmp);
@@ -30,11 +30,13 @@ function decoratoreTestMetodo(parametri: ITest) {
 }
 
 export interface ITest {
+    nome: string,
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     testUnita: {
-        FunzioniCreaAmbienteEsecuzione?: () => IReturnTest|Promise<IReturnTest>| undefined,
-        FunzioniDaTestare: () => IReturnTest|Promise<IReturnTest>| undefined,
-        FunzioniDiPulizia?: () => IReturnTest|Promise<IReturnTest>| undefined
+        nome: string,
+        FunzioniCreaAmbienteEsecuzione?: () => IReturnTest | Promise<IReturnTest> | undefined,
+        FunzioniDaTestare: () => IReturnTest | Promise<IReturnTest> | undefined,
+        FunzioniDiPulizia?: () => IReturnTest | Promise<IReturnTest> | undefined
     }[]
 }
 export interface IReturnTest {

@@ -10,9 +10,9 @@ import { ListaTerminaleTest } from "../liste/lista-terminale-test";
  * 
  */
 export function mpMain(path: string) {
-    return function (ctr: Function) {
+    return function (ctr: FunctionConstructor) {
         //tmp.PrintMenu();
-        ctr.prototype.serverExpressDecorato = express();
+        (<any>ctr.prototype).serverExpressDecorato = express();
         /* ctr.prototype.Inizializza = () => {
             let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
             for (let index = 0; index < tmp.length; index++) {
@@ -46,7 +46,7 @@ export class Main {
     }
 
     Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean) {
-        let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
+        const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
 
         if (tmp.length > 0) {
             this.percorsi.patheader = patheader;
@@ -56,10 +56,10 @@ export class Main {
 
             //this.serverExpressDecorato.use(urlencoded({ 'extended': true })); // parse application/x-www-form-urlencoded
             //this.serverExpressDecorato.use(bodyParser.urlencoded());
-            this.serverExpressDecorato.use(express.json());
-            this.serverExpressDecorato.use(express.urlencoded({
+            (<any>this.serverExpressDecorato).use(express.json());
+            /* this.serverExpressDecorato.use(express.urlencoded({
                 extended: true
-            }));
+            })); */
             //this.serverExpressDecorato.use(BodyParseJson({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 
             this.serverExpressDecorato.route
@@ -101,6 +101,33 @@ export class Main {
         }
     }
 
+    async StartTestAPI() {
+        for (let index2 = 0; index2 < this.listaTerminaleClassi.length; index2++) {
+            const tmpClasse = this.listaTerminaleClassi[index2];
+            console.log('Classe :' + tmpClasse);
+            for (let index = 0; index < tmpClasse.listaMetodi.length; index++) {
+                const tmpMetodo = tmpClasse.listaMetodi[index];
+                const tmp = index + 1;
+                if (tmpMetodo.listaTest) {
+                    for (let index = 0; index < tmpMetodo.listaTest.length; index++) {
+                        const element = tmpMetodo.listaTest[index];
+                        if (tmpMetodo.tipoInterazione == 'rotta' || tmpMetodo.tipoInterazione == 'ambo') {
+                            const risposta = await tmpMetodo.ChiamaLaRottaConParametri(
+                                element.body, element.query, element.header
+                            );
+                            if (risposta == undefined) {
+                                console.log("Risposta undefined!");
+                            } else {
+                                console.log(risposta)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
     StartHttpServer() {
         this.httpServer.listen(this.percorsi.porta);
     }
@@ -125,24 +152,40 @@ export class Main {
         for (let index = 0; index < this.listaTerminaleTest.length; index++) {
             const test = this.listaTerminaleTest[index];
             if (test.listaTest) {
+                console.log("Inizio lista test con nome : " + test.listaTest.nome);
                 for (let index2 = 0; index2 < test.listaTest.testUnita.length; index2++) {
                     const element = test.listaTest.testUnita[index2];
                     let risultato;
                     try {
-                        if (element.FunzioniCreaAmbienteEsecuzione) {
-                            risultato = await element.FunzioniCreaAmbienteEsecuzione();
+                        console.log("Inizio test con nome : " + element.nome);
+                        if (element) {
+                            if (element.FunzioniCreaAmbienteEsecuzione) {
+                                risultato = await element.FunzioniCreaAmbienteEsecuzione();
+                            }
+                            if (element.FunzioniDaTestare) {
+                                risultato = await element.FunzioniDaTestare();
+                            }
+                            if (element.FunzioniDiPulizia) {
+                                risultato = await element.FunzioniDiPulizia();
+                            }
                         }
-                        if (element.FunzioniDaTestare) {
-                            risultato = await element.FunzioniDaTestare();
-                        }
-                        if (element.FunzioniDiPulizia) {
-                            risultato = await element.FunzioniDiPulizia();
+                        console.log("Fine test con nome : " + element.nome);
+                        if (risultato) {
+                            if (risultato.passato) {
+                                console.log("TEST PASSATO.");
+                            }
+                            else {
+                                console.log("TEST NON PASSATO.");
+                            }
+                        } else {
+                            console.log("TEST NESSUN RISULTATO.");
                         }
                     } catch (error) {
                         console.log(error);
-
+                        console.log("TEST IN ERRORE.");
                     }
                 }
+                console.log("Fine lista test con nome : " + test.listaTest.nome);
             }
         }
     }
@@ -151,7 +194,7 @@ export class Main {
 
 
     async PrintMenu() {
-        let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
+        const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
         //console.log("Menu main, digita il numero della la tua scelta: ");
         await tmp.PrintMenuClassi();
 

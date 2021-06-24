@@ -1,7 +1,7 @@
 
 import { Request, Response } from "express";
 import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
-export var targetTerminale = { name: 'Terminale' };
+export const targetTerminale = { name: 'Terminale' };
 
 
 export interface IPrintabile {
@@ -286,4 +286,7 @@ export interface IMetodo {
 
     AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+    listaTest?: {
+        body: any, query: any, header: any
+    }[]
 }
