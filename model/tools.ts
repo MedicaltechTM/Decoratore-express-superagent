@@ -287,6 +287,11 @@ export interface IMetodo {
     AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     listaTest?: {
-        body: any, query: any, header: any
+        /* nomeTest?:string, 
+        posizione?:number,
+        nomeTestGenerico?:string, */
+        body: any, 
+        query: any, 
+        header: any
     }[]
 }

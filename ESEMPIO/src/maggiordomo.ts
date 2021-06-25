@@ -1,10 +1,12 @@
-import { Column, Entity, getRepository, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, getRepository, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { mpClas } from "../../model/classi/terminale-classe";
 import { mpMet } from "../../model/classi/terminale-metodo";
 import { mpPar } from "../../model/classi/terminale-parametro";
 import { mpTestClas } from "../../model/classi/terminale-test";
 import { ListaTerminaleParametro } from "../../model/liste/lista-terminale-parametro";
 import { IParametriEstratti } from "../../model/tools";
+import { Conoscere } from "./conoscere";
+import { Persona } from "./persona";
 
 @mpTestClas({
     nome: "Test per testare il maggiordomo",
@@ -52,19 +54,27 @@ export class Maggiordomo {
     @Column({ type: "varchar"/* , nullable: false, unique: true */ /* , transformer: new EncryptionTransformer( MyEncryptionTransformerConfig) */ })
     nome = "";
 
+    @OneToMany(type => Conoscere, conoscere => conoscere.fkMaggiordomo)
+    @JoinColumn({ name: "listaPersoneConosciute" })
+    listaPersoneConosciute:  Promise<Conoscere[]> | undefined;
+
     constructor() {
         this.nome = 'indefinito';
     }
 
-    @mpMet({ path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, listaTest:[{
-        body:{},
-        header:{},
-        query:{"idMaggiordomo":'1'}
-    }] })
+    @mpMet({
+        path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, listaTest: [{
+            body: {},
+            header: {},
+            query: { "idMaggiordomo": '1' }
+        }]
+    })
     MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string) {
         console.log("Sono il maggiordomo : " + this.nome);
         return { saluto: "Sono il maggiordomo : " + this.nome };
     }
+
+
     @mpMet({ path: 'MaggiordomoSalutaChi' })
     MaggiordomoSalutaChi(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string) {
         console.log("Buon giorno signor : " + nome);
