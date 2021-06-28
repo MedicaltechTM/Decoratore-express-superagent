@@ -9,6 +9,7 @@ import chiedi from "prompts";
 import { Router } from "express";
 
 export class TerminaleClasse {
+    html?: string;
 
     static nomeMetadataKeyTarget = "ClasseTerminaleTarget";
 

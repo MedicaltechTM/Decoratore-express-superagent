@@ -13,6 +13,11 @@ import superagent from "superagent";
 
 } */
 export class TerminaleMetodo implements IDescrivibile {
+
+    html?: {
+        percorso: string, contenuto: string
+    }
+
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean;
 
@@ -86,135 +91,158 @@ export class TerminaleMetodo implements IDescrivibile {
             percorsoTmp = '/' + this.path;
             this.percorsi.pathGlobal = percorsoTmp;
         }
-        else
+        else {
             percorsoTmp = this.percorsi.pathGlobal;
-
+        }
 
         if (this.metodoAvviabile != undefined) {
-            let corsOptions = {};
-            switch (this.tipo) {
-                case 'get':
-                    (<IReturn>this.metodoAvviabile).body;
-                    corsOptions = {
-                        methods: 'GET',
-                    }
-                    if (this.cors == undefined) {
-                        this.cors = cors(corsOptions);
-                    }
-                    if (this.helmet == undefined) {
-                        this.helmet = helmet();
-                    }
-                    app.get(percorsoTmp,
-                        this.cors,
-                        this.helmet,
-                        middlew,
-                        async (req: Request, res: Response) => {
-                            ////console.log("GET");
-                            await this.ChiamataGenerica(req, res);
-                        });
-                    break;
-                case 'post':
-                    corsOptions = {
-                        methods: 'POST'
-                    }
-                    if (this.helmet == undefined) {
-                        this.helmet = helmet();
-                    }
-                    if (this.cors == undefined) {
-                        this.cors = cors(corsOptions);
-                    }
-                    (<IReturn>this.metodoAvviabile).body;
-                    app.post(percorsoTmp,
-                        this.cors,
-                        this.helmet,
-                        middlew,
-                        async (req: Request, res: Response) => {
-                            //console.log("POST");
-                            await this.ChiamataGenerica(req, res);
-                        });
-                    break;
-                case 'delete':
-                    (<IReturn>this.metodoAvviabile).body;
-                    corsOptions = {
-                        methods: "DELETE"
-                    }
-                    if (this.helmet == undefined) {
-                        this.helmet = helmet();
-                    }
-                    if (this.cors == undefined) {
-                        this.cors = cors(corsOptions);
-                    }
-                    app.delete(percorsoTmp,
-                        this.cors,
-                        this.helmet,
-                        middlew,
-                        async (req: Request, res: Response) => {
-                            //console.log("DELETE");
-                            await this.ChiamataGenerica(req, res);
-                        });
-                    break;
-                case 'patch':
-                    corsOptions = {
-                        methods: "PATCH"
-                    };
-                    if (this.helmet == undefined) {
-                        this.helmet = helmet();
-                    }
-                    if (this.cors == undefined) {
-                        this.cors = cors(corsOptions);
-                    }
-                    (<IReturn>this.metodoAvviabile).body;
-                    app.patch(percorsoTmp,
-                        this.cors,
-                        this.helmet,
-                        middlew,
-                        async (req: Request, res: Response) => {
-                            //console.log("PATCH");
-                            await this.ChiamataGenerica(req, res);
-                        });
-                    break;
-                case 'purge':
-                    corsOptions = {
-                        methods: "PURGE"
-                    };
-                    if (this.helmet == undefined) {
-                        this.helmet = helmet();
-                    }
-                    if (this.cors == undefined) {
-                        this.cors = cors(corsOptions);
-                    }
-                    (<IReturn>this.metodoAvviabile).body;
-                    app.purge(percorsoTmp,
-                        this.cors,
-                        this.helmet,
-                        middlew,
-                        async (req: Request, res: Response) => {
-                            //console.log("PURGE");
-                            await this.ChiamataGenerica(req, res);
-                        });
-                    break;
-                case 'put':
-                    corsOptions = {
-                        methods: "PUT"
-                    };
-                    if (this.helmet == undefined) {
-                        this.helmet = helmet();
-                    }
-                    if (this.cors == undefined) {
-                        this.cors = cors(corsOptions);
-                    }
-                    (<IReturn>this.metodoAvviabile).body;
-                    app.put(percorsoTmp,
-                        this.cors,
-                        this.helmet,
-                        middlew,
-                        async (req: Request, res: Response) => {
-                            //console.log("PUT");
-                            await this.ChiamataGenerica(req, res);
-                        });
-                    break;
-            }
+            this.ConfiguraRotteSwitch(app, percorsoTmp, middlew);
+            this.ConfiguraRotteHtml(app, percorsoTmp);
         }
+    }
+    ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
+        let corsOptions = {};
+        switch (this.tipo) {
+            case 'get':
+                (<IReturn>this.metodoAvviabile).body;
+                corsOptions = {
+                    methods: 'GET',
+                }
+                if (this.cors == undefined) {
+                    this.cors = cors(corsOptions);
+                }
+                if (this.helmet == undefined) {
+                    this.helmet = helmet();
+                }
+                app.get(percorsoTmp,
+                    this.cors,
+                    this.helmet,
+                    middlew,
+                    async (req: Request, res: Response) => {
+                        ////console.log("GET");
+                        await this.ChiamataGenerica(req, res);
+                    });
+                break;
+            case 'post':
+                corsOptions = {
+                    methods: 'POST'
+                }
+                if (this.helmet == undefined) {
+                    this.helmet = helmet();
+                }
+                if (this.cors == undefined) {
+                    this.cors = cors(corsOptions);
+                }
+                (<IReturn>this.metodoAvviabile).body;
+                app.post(percorsoTmp,
+                    this.cors,
+                    this.helmet,
+                    middlew,
+                    async (req: Request, res: Response) => {
+                        //console.log("POST");
+                        await this.ChiamataGenerica(req, res);
+                    });
+                break;
+            case 'delete':
+                (<IReturn>this.metodoAvviabile).body;
+                corsOptions = {
+                    methods: "DELETE"
+                }
+                if (this.helmet == undefined) {
+                    this.helmet = helmet();
+                }
+                if (this.cors == undefined) {
+                    this.cors = cors(corsOptions);
+                }
+                app.delete(percorsoTmp,
+                    this.cors,
+                    this.helmet,
+                    middlew,
+                    async (req: Request, res: Response) => {
+                        //console.log("DELETE");
+                        await this.ChiamataGenerica(req, res);
+                    });
+                break;
+            case 'patch':
+                corsOptions = {
+                    methods: "PATCH"
+                };
+                if (this.helmet == undefined) {
+                    this.helmet = helmet();
+                }
+                if (this.cors == undefined) {
+                    this.cors = cors(corsOptions);
+                }
+                (<IReturn>this.metodoAvviabile).body;
+                app.patch(percorsoTmp,
+                    this.cors,
+                    this.helmet,
+                    middlew,
+                    async (req: Request, res: Response) => {
+                        //console.log("PATCH");
+                        await this.ChiamataGenerica(req, res);
+                    });
+                break;
+            case 'purge':
+                corsOptions = {
+                    methods: "PURGE"
+                };
+                if (this.helmet == undefined) {
+                    this.helmet = helmet();
+                }
+                if (this.cors == undefined) {
+                    this.cors = cors(corsOptions);
+                }
+                (<IReturn>this.metodoAvviabile).body;
+                app.purge(percorsoTmp,
+                    this.cors,
+                    this.helmet,
+                    middlew,
+                    async (req: Request, res: Response) => {
+                        //console.log("PURGE");
+                        await this.ChiamataGenerica(req, res);
+                    });
+                break;
+            case 'put':
+                corsOptions = {
+                    methods: "PUT"
+                };
+                if (this.helmet == undefined) {
+                    this.helmet = helmet();
+                }
+                if (this.cors == undefined) {
+                    this.cors = cors(corsOptions);
+                }
+                (<IReturn>this.metodoAvviabile).body;
+                app.put(percorsoTmp,
+                    this.cors,
+                    this.helmet,
+                    middlew,
+                    async (req: Request, res: Response) => {
+                        //console.log("PUT");
+                        await this.ChiamataGenerica(req, res);
+                    });
+                break;
+        }
+    }
+    ConfiguraRotteHtml(app: any, percorsoTmp: string) {
+        (<IReturn>this.metodoAvviabile).body;
+        let corsOptions = {};
+        corsOptions = {
+            methods: 'GET',
+        }
+        if (this.cors == undefined) {
+            this.cors = cors(corsOptions);
+        }
+        if (this.helmet == undefined) {
+            this.helmet = helmet();
+        }
+        app.get(percorsoTmp + '.html',
+            /* this.cors,
+            this.helmet, */
+            async (req: Request, res: Response) => {
+                res.send(this.html);
+            });
     }
 
     async ChiamataGenerica(req: Request, res: Response) {

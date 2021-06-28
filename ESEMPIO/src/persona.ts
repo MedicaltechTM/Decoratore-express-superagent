@@ -80,7 +80,7 @@ export class Persona {
 
     @mpMet({ path: 'ConosceNuovoMaggiordomo', Istanziatore: Persona.Istanziatore })
     async ConosceNuovoMaggiordomo(@mpPar({ nome: 'idPersona', posizione: 'query', autenticatore: true }) idPersona: string,
-        @mpPar({ nome: 'nomeMaggiordomo', posizione: 'query' }) nomeMaggiordomo: string): number {
+        @mpPar({ nome: 'nomeMaggiordomo', posizione: 'query' }) nomeMaggiordomo: string): Promise<number> {
         const maggiordomo = await getRepository(Maggiordomo).findOne({ where: { nome: nomeMaggiordomo } });
         const conoscere = new Conoscere();
         if (maggiordomo) {

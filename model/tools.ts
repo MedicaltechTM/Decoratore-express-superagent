@@ -295,3 +295,9 @@ export interface IMetodo {
         header: any
     }[]
 }
+
+export interface IHtml {
+    nome:string,
+    htmlPath?:string,
+    html?:string
+}

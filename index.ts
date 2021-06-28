@@ -3,6 +3,7 @@ import { mpClas } from "./model/classi/terminale-classe";
 import { mpMet } from "./model/classi/terminale-metodo";
 import { mpPar } from "./model/classi/terminale-parametro";
 import { mpTestClas, mpTestMet } from "./model/classi/terminale-test";
+import { mpMetHtml } from './model/classi/terminale-html';
 
 /* import { mpLog } from "./model/classi/terminale-log"; */
 import { ErroreMio, IRitornoValidatore, GestioneErrore, IParametriEstratti, ILogbase } from "./model/tools";
@@ -17,6 +18,7 @@ export { mpClas as mpClas };
 
 export { mpTestClas as mpTestClas };
 export { mpTestMet as mpTestMet };
+export { mpMetHtml as mpMetHtml };
 /* export { mpLog as mpLog } */
 
 export { ErroreMio as ErroreMio };

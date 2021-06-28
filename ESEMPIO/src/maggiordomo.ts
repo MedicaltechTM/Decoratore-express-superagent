@@ -1,12 +1,12 @@
 import { Column, Entity, getRepository, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { mpClas } from "../../model/classi/terminale-classe";
+import { mpMetHtml } from "../../model/classi/terminale-html";
 import { mpMet } from "../../model/classi/terminale-metodo";
 import { mpPar } from "../../model/classi/terminale-parametro";
 import { mpTestClas } from "../../model/classi/terminale-test";
 import { ListaTerminaleParametro } from "../../model/liste/lista-terminale-parametro";
 import { IParametriEstratti } from "../../model/tools";
 import { Conoscere } from "./conoscere";
-import { Persona } from "./persona";
 
 @mpTestClas({
     nome: "Test per testare il maggiordomo",
@@ -28,6 +28,7 @@ import { Persona } from "./persona";
         }
     ]
 })
+
 @Entity({ name: "Maggiordomo" })
 @mpClas("Maggiordomo")
 export class Maggiordomo {
@@ -56,18 +57,20 @@ export class Maggiordomo {
 
     @OneToMany(type => Conoscere, conoscere => conoscere.fkMaggiordomo)
     @JoinColumn({ name: "listaPersoneConosciute" })
-    listaPersoneConosciute:  Promise<Conoscere[]> | undefined;
+    listaPersoneConosciute: Promise<Conoscere[]> | undefined;
 
     constructor() {
         this.nome = 'indefinito';
     }
 
+    @mpMetHtml({ nome: 'MaggiordomoSaluta.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html' })
+    @mpMetHtml({ nome: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html' })
     @mpMet({
         path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, listaTest: [{
             body: {},
             header: {},
             query: { "idMaggiordomo": '1' }
-        }]
+        }], tipo: 'get'
     })
     MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string) {
         console.log("Sono il maggiordomo : " + this.nome);
