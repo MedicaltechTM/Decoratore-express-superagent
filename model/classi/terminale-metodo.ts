@@ -665,6 +665,113 @@ export class TerminaleMetodo implements IDescrivibile {
             throw new Error("Errore :" + error);
         }
     }
+
+
+    SettaSwagger(tipoInterazione: 'rotta' | 'middleware') {
+
+        if (tipoInterazione == 'middleware') {
+            //questo deve restituire un oggetto
+            let primo = false;
+            let ritorno = '';
+            for (let index = 0; index < this.middleware.length; index++) {
+                const element = this.middleware[index];
+                if (element instanceof TerminaleMetodo) {
+                    const tt = element.SettaSwagger('middleware');
+                    /* tmp.push(tt); */
+                    if (primo == false && tt != undefined) {
+                        primo = true;
+                        ritorno = tt + '';
+                    } else if (tt != undefined) {
+                        ritorno = ritorno + ',' + tt;
+                    }
+                }
+            }
+            for (let index = 0; index < this.listaParametri.length; index++) {
+                const element = this.listaParametri[index];
+                const tt = element.SettaSwagger();
+                /* tmp.push(tt); */
+                if (index == 0)
+                    if (primo == false) ritorno = tt;
+                    else ritorno = ritorno + ',' + tt;
+                else ritorno = ritorno + ',' + tt;
+                if (primo == false) primo = true;
+            }
+            //ritorno = ritorno;
+            try {
+                JSON.parse(ritorno)
+            } catch (error) {
+                console.log(error);
+            }
+            if (primo) return undefined;
+            else return ritorno;
+        }
+        else {
+            let primo = false;
+            const ritornoTesta = `"${this.percorsi.pathGlobal}" : { 
+                "${this.tipo}" : 
+                {
+                    "tags": [
+                    ],
+                    "summary": "${this.sommario}",
+                    "description": "${this.descrizione}",
+                    "parameters": [ `;
+            const ritornoCoda = `
+                ]
+            }
+        }
+`;
+            let ritorno = '';
+            const tmp2: any[] = [];
+            const gg = this.percorsi.pathGlobal;
+
+            for (let index = 0; index < this.middleware.length; index++) {
+                const element = this.middleware[index];
+                if (element instanceof TerminaleMetodo) {
+                    const tt = element.SettaSwagger('middleware');
+                    /* tmp2.push(tt); */
+                    if (primo == false && tt != undefined) {
+                        primo = true;
+                        ritorno = tt + '';
+                    } else if (tt != undefined) {
+                        ritorno = ritorno + ',' + tt;
+                    }
+                }
+            }
+            for (let index = 0; index < this.listaParametri.length; index++) {
+                const element = this.listaParametri[index];
+                const tt = element.SettaSwagger();
+                /* tmp2.push(tt); */
+                if (index == 0)
+                    if (primo == false) ritorno = tt;
+                    else ritorno = ritorno + ',' + tt;
+                else ritorno = ritorno + ',' + tt;
+                if (primo == false) primo = true;
+            }
+            ritorno = ritornoTesta + ritorno + ritornoCoda;
+            try {
+                JSON.parse('{' + ritorno + '}')
+            } catch (error) {
+                console.log(error);
+            }
+            const tmp = {
+                gg: {
+                    "summary": this.sommario,
+                    "description": this.descrizione,
+                    "parameters": tmp2
+                }
+            };
+
+            const tmp3 = `${gg}: {
+                "summary": ${this.sommario},
+                "description": ${this.descrizione},
+                "parameters": [${tmp2}]
+            }`;
+            /* if (primo) return undefined;
+            else return ritorno; */
+
+            return ritorno;
+        }
+    }
 }
 
 

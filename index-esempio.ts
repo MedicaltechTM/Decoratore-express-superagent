@@ -9,7 +9,7 @@ const connessione = <ConnectionOptions>{
     host: "localhost",
     port: 5432,
     username: "postgres",
-    password: "password",
+    password: "postgres",
     database: "postgres",//"testStaisicuro",
     synchronize: true,
     logging: false,
@@ -38,6 +38,7 @@ createConnection(connessione).then(async connection => {
     console.log("4: test");
     main.Inizializza("localhost", 8080, true, true);
     main.InizializzaHandlebars();
+    main.InizializzaSwagger();
     await main.StartTest();
     chiedi({ type: 'number', message: 'scegli:', name: 'risultato', min: 0, max: 3 })
         .then((result) => {

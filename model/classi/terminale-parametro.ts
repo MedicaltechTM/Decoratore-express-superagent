@@ -39,6 +39,27 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
     PrintParametro() {
         return "- " + this.tipo.toString() + " : " + this.nome + ' |';
     }
+
+    /*  */
+
+    
+    SettaSwagger() {
+        const ritorno =
+            `{
+                "name": "${this.nome}",
+                "in": "${this.posizione}",
+                "required": false,
+                "type": "${this.tipo}",
+                "description": "${this.descrizione}",
+                "summary":"${this.sommario}"
+            }`;
+        try {
+            JSON.parse(ritorno)
+        } catch (error) {
+            console.log(error);
+        }
+        return ritorno;
+    }
 }
 
 /**

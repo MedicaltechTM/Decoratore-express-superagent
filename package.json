@@ -22,12 +22,15 @@
   "dependencies": {
     "@types/body-parser": "^1.19.0",
     "@types/express": "^4.17.11",
+    "@types/express-handlebars": "^5.3.0",
     "@types/http-server": "^0.10.1",
     "@types/prompts": "^2.0.12",
     "@types/superagent": "^4.1.11",
+    "@types/swagger-ui-express": "^4.1.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "express-handlebars": "^5.3.2",
     "handlebars": "^4.7.7",
     "helmet": "^4.4.1",
     "http-server": "^0.12.3",
@@ -35,6 +38,8 @@
     "prompts": "^2.4.1",
     "reflect-metadata": "^0.1.13",
     "superagent": "^6.1.0",
+    "swagger-express-ts": "^1.1.0",
+    "swagger-ui-express": "^4.1.6",
     "ts-node": "^9.1.1",
     "typeorm": "^0.2.34"
   }

@@ -8,6 +8,9 @@ import * as http from 'http';
 import { ListaTerminaleTest } from "../liste/lista-terminale-test";
 
 import exphbs from 'express-handlebars';
+import { Swagger_Mio } from "../swagger";
+
+
 /**
  * 
  */
@@ -204,12 +207,54 @@ export class Main {
 
         // routes
         this.serverExpressDecorato.get('/', (req, res) => {
-            res.render('home', { msg: 'This is home page'});
+            res.render('home', { msg: 'This is home page' });
         });
         this.serverExpressDecorato.get('/about-us', (req, res) => {
             res.render('about-us');
         });
     }
+
+    InizializzaSwagger() {
+        /* this.serverExpressDecorato = Swagger_Mio.Configura(this.serverExpressDecorato); */
+
+    }
+    EsponiSwagger() {
+        const swaggerJson = ``;
+        let ritorno = `
+        {
+            "openapi": "3.0.0",
+            "servers": [
+                {
+                    "url": "https://staisicuro.medicaltech.it/",
+                    "variables": {},
+                    "description": "indirizzo principale"
+                },
+                {
+                    "url": "http://ss-test.medicaltech.it/",
+                    "description": "indirizzo secondario nel caso quello principale non dovesse funzionare."
+  }
+            ],
+            "info": {
+                "description": "Documentazione delle API con le quali interrogare il server dell'applicazione STAI sicuro, per il momento qui troverai solo le api con le quali interfacciarti alla parte relativa al paziente. \nSe vi sono problemi sollevare degli issues o problemi sulla pagina di github oppure scrivere direttamente una email.",
+                "version": "1.0.0",
+                "title": "STAI sicuro",
+                "termsOfService": "https://github.com/MedicaltechTM/STAI_sicuro"
+            },
+        `;
+        for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
+            const element = this.listaTerminaleClassi[index];
+            element.SettaSwagger();
+            if (index == 0 && index + 1 != this.listaTerminaleClassi.length) {
+                ritorno = ritorno + ', ';
+            }
+            if (index + 1 == this.listaTerminaleClassi.length) {
+                ritorno = ritorno + ' }';
+            }
+        }
+        ritorno = ritorno + '}';
+        return ritorno;
+    }
+
     /************************************** */
 
 
