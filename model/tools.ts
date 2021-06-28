@@ -290,14 +290,48 @@ export interface IMetodo {
         /* nomeTest?:string, 
         posizione?:number,
         nomeTestGenerico?:string, */
-        body: any, 
-        query: any, 
+        body: any,
+        query: any,
         header: any
-    }[]
+    }[];
+    listaHtml?: {
+        path: string,
+        percorsoIndipendente?: boolean,
+
+        htmlPath?: string,
+        html?: string
+    }[];
+    RispondiConHTML?: {
+        trigger?: { nome: string, valre: any, posizione: TypePosizione },
+        risposta: {
+            "2xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "1xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "3xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "4xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "5xx"?: {
+                htmlPath?: string,
+                html?: string
+            }
+        }
+    };
 }
 
 export interface IHtml {
-    nome:string,
-    htmlPath?:string,
-    html?:string
+    path: string,
+    percorsoIndipendente?: boolean,
+
+    htmlPath?: string,
+    html?: string
 }

@@ -8,15 +8,25 @@ import { ListaTerminaleParametro } from "../liste/lista-terminale-parametro";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import cors from 'cors';
 
+import fs from "fs";
+
 import superagent from "superagent";
+
+import Handlebars from "handlebars";
+
 /* export interface ITerminaleMetodo {
 
 } */
 export class TerminaleMetodo implements IDescrivibile {
 
-    html?: {
-        percorso: string, contenuto: string
-    }
+    htmlHandlebars: {
+        percorso: string, contenuto: string, percorsoIndipendente?: boolean,
+        listaParametri?: { nome: string, valore: string }[]
+    }[] = [];
+
+    html: {
+        percorso: string, contenuto: string, percorsoIndipendente?: boolean
+    }[] = [];
 
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean;
@@ -56,6 +66,32 @@ export class TerminaleMetodo implements IDescrivibile {
     AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 
+    RispondiConHTML?: {
+        trigger?: { nome: string, valre: any, posizione: TypePosizione },
+        risposta: {
+            "1xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "2xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "3xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "4xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "5xx"?: {
+                htmlPath?: string,
+                html?: string
+            }
+        }
+    };
+
     constructor(nome: string, path: string, classePath: string) {
         this.listaParametri = new ListaTerminaleParametro();
         this.nome = nome;
@@ -75,8 +111,16 @@ export class TerminaleMetodo implements IDescrivibile {
     ConfiguraRottaApplicazione(app: any, percorsi: IRaccoltaPercorsi) {
         this.percorsi.patheader = percorsi.patheader;
         this.percorsi.porta = percorsi.porta;
+
+        /*  */
+        //const pathGlobal = percorsi.pathGlobal + '/' + this.path;
+        //this.percorsi.pathGlobal = pathGlobal;
+
+        const pathGlobalTmp = percorsi.pathGlobal;
         const pathGlobal = percorsi.pathGlobal + '/' + this.path;
         this.percorsi.pathGlobal = pathGlobal;
+        /*  */
+
         const middlew: any[] = [];
         this.middleware.forEach(element => {
             if (element instanceof TerminaleMetodo) {
@@ -87,6 +131,10 @@ export class TerminaleMetodo implements IDescrivibile {
         });
 
         let percorsoTmp = '';
+        /*  */
+
+        /* if (this.percorsoIndipendente) percorsoTmp = '/' + this.path;
+        else percorsoTmp = this.percorsi.pathGlobal + '/' + this.path; */
         if (this.percorsoIndipendente) {
             percorsoTmp = '/' + this.path;
             this.percorsi.pathGlobal = percorsoTmp;
@@ -94,11 +142,26 @@ export class TerminaleMetodo implements IDescrivibile {
         else {
             percorsoTmp = this.percorsi.pathGlobal;
         }
+        /*  */
 
         if (this.metodoAvviabile != undefined) {
             this.ConfiguraRotteSwitch(app, percorsoTmp, middlew);
-            this.ConfiguraRotteHtml(app, percorsoTmp);
         }
+
+        if (this.html) {
+            percorsoTmp = '';
+            for (let index = 0; index < this.html.length; index++) {
+                const element = this.html[index];
+                if (element.percorsoIndipendente) percorsoTmp = '/' + element.percorso;
+                else percorsoTmp = pathGlobalTmp + '/' + element.percorso;
+
+                if (this.metodoAvviabile != undefined) {
+                    this.ConfiguraRotteHtml(app, percorsoTmp, element.contenuto);
+                }
+            }
+
+        }
+
     }
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
         let corsOptions = {};
@@ -225,7 +288,7 @@ export class TerminaleMetodo implements IDescrivibile {
                 break;
         }
     }
-    ConfiguraRotteHtml(app: any, percorsoTmp: string) {
+    ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
         let corsOptions = {};
         corsOptions = {
@@ -237,11 +300,14 @@ export class TerminaleMetodo implements IDescrivibile {
         if (this.helmet == undefined) {
             this.helmet = helmet();
         }
-        app.get(percorsoTmp + '.html',
+        app.get(percorsoTmp,
             /* this.cors,
             this.helmet, */
             async (req: Request, res: Response) => {
-                res.send(this.html);
+                if (this.html)
+                    res.send(contenuto);
+                else
+                    res.sendStatus(404);
             });
     }
 
@@ -258,13 +324,39 @@ export class TerminaleMetodo implements IDescrivibile {
             if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
             if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
             try {
-                //res.status(tmp.stato).send(tmp.body);
-                let num = 0;
-                num = tmp.stato;
-                //num = 404; 
-                res.statusCode = Number.parseInt('' + num);
-                res.send(tmp.body);
-                passato = true;
+                if (this.RispondiConHTML == undefined) {
+                    //res.status(tmp.stato).send(tmp.body);
+                    let num = 0;
+                    num = tmp.stato;
+                    //num = 404; 
+                    res.statusCode = Number.parseInt('' + num);
+                    res.send(tmp.body);
+                    passato = true;
+                }
+                else {
+                    let source = "";
+                    if (this.RispondiConHTML && this.RispondiConHTML.trigger == undefined) {
+                        if (tmp.stato >= 200 && tmp.stato < 300 && this.RispondiConHTML.risposta["2xx"]) {
+                            if (this.RispondiConHTML.risposta["2xx"].htmlPath != undefined)
+                                source = fs.readFileSync(this.RispondiConHTML.risposta["2xx"].htmlPath).toString();
+                            else if (this.RispondiConHTML.risposta["2xx"].html != undefined)
+                                source = this.RispondiConHTML.risposta["2xx"].html;
+                            else
+                                throw new Error("Errorissimo");
+                        }
+                    } else {
+                        console.log("e");
+                    }
+
+                    const template = Handlebars.compile(source);
+
+                    const data = tmp.body;
+                    const result = template(data);
+
+                    res.statusCode = Number.parseInt('' + tmp.stato);
+                    res.send(result);
+                    passato = true;
+                }
             } catch (error) {
                 res.status(500).send(error);
             }
@@ -601,6 +693,34 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                 var originalMethod = descriptor.value;
                 return originalMethod.apply(this, args);
             } */
+
+            if (parametri.listaHtml) {
+                for (let index = 0; index < parametri.listaHtml.length; index++) {
+                    const element = parametri.listaHtml[index];
+                    if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
+
+                    if (element.html != undefined && element.htmlPath == undefined
+                        && metodo.html.find(x => { if (x.percorso == element.path) return true; else return false; }) == undefined) {
+                        metodo.html?.push({
+                            contenuto: element.html,
+                            percorso: element.path,
+                            percorsoIndipendente: element.percorsoIndipendente
+                        });
+                        // metodo.html?.contenuto = element.html;
+                    } else if (element.html == undefined && element.htmlPath != undefined
+                        && metodo.html.find(x => { if (x.percorso == element.path) return true; else return false; }) == undefined) {
+                        metodo.html.push({
+                            contenuto: fs.readFileSync(element.htmlPath).toString(),
+                            percorso: element.path,
+                            percorsoIndipendente: element.percorsoIndipendente
+                        });
+                        // metodo.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
+                    }
+                }
+            }
+
+            if (parametri.RispondiConHTML)
+                metodo.RispondiConHTML = parametri.RispondiConHTML;
 
             if (parametri.listaTest)
                 metodo.listaTest = parametri.listaTest;

@@ -1,6 +1,6 @@
 import { Column, Entity, getRepository, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { mpClas } from "../../model/classi/terminale-classe";
-import { mpMetHtml } from "../../model/classi/terminale-html";
+import { mpMetHtml, mpMetHtmlHandlebars } from "../../model/classi/terminale-html";
 import { mpMet } from "../../model/classi/terminale-metodo";
 import { mpPar } from "../../model/classi/terminale-parametro";
 import { mpTestClas } from "../../model/classi/terminale-test";
@@ -28,7 +28,6 @@ import { Conoscere } from "./conoscere";
         }
     ]
 })
-
 @Entity({ name: "Maggiordomo" })
 @mpClas("Maggiordomo")
 export class Maggiordomo {
@@ -63,23 +62,63 @@ export class Maggiordomo {
         this.nome = 'indefinito';
     }
 
-    @mpMetHtml({ nome: 'MaggiordomoSaluta.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html' })
-    @mpMetHtml({ nome: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html' })
-    @mpMet({
-        path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, listaTest: [{
-            body: {},
-            header: {},
-            query: { "idMaggiordomo": '1' }
-        }], tipo: 'get'
+    /* @mpMetHtmlHandlebars({
+        risposta: {
+            "2xx": {
+                html: `
+                    <!DOCTYPE html>
+                        <html lang="en">
+
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Document</title>
+                        </head>
+
+                        <body>
+                            <h1>Ciao dal medico !!!</h1>
+                            <p>{{saluto}}</p>
+                        </body>
+
+                        </html>
+                    `
+            }
+        }
     })
-    MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string) {
+    @mpMetHtml({ path: 'MaggiordomoSaluta.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false })
+    @mpMetHtml({ path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false }) */
+    @mpMet({
+        path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, tipo: 'get',
+        listaTest: [
+            {
+                body: {},
+                header: {},
+                query: { "idMaggiordomo": '1' }
+            }
+        ],
+        listaHtml: [
+            { path: 'MaggiordomoSaluta.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false },
+            { path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false }
+        ],
+        RispondiConHTML: {
+            risposta: {
+                "2xx": {
+                    html: `
+                        
+                        `
+                }
+            }
+        }
+    })
+    MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string):any {
         console.log("Sono il maggiordomo : " + this.nome);
         return { saluto: "Sono il maggiordomo : " + this.nome };
     }
 
 
     @mpMet({ path: 'MaggiordomoSalutaChi' })
-    MaggiordomoSalutaChi(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string) {
+    MaggiordomoSalutaChi(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string):any {
         console.log("Buon giorno signor : " + nome);
         return "Buon giorno signor : " + nome;
     }
