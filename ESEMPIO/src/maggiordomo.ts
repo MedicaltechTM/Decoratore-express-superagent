@@ -105,20 +105,35 @@ export class Maggiordomo {
             risposta: {
                 "2xx": {
                     html: `
-                        
+                        <!DOCTYPE html>
+                        <html lang="en">
+
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Document</title>
+                        </head>
+
+                        <body>
+                            <h1>Ciao dal medico !!!</h1>
+                            <p>{{saluto}}</p>
+                        </body>
+
+                        </html>
                         `
                 }
             }
         }
     })
-    MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string):any {
+    MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string): any {
         console.log("Sono il maggiordomo : " + this.nome);
         return { saluto: "Sono il maggiordomo : " + this.nome };
     }
 
 
     @mpMet({ path: 'MaggiordomoSalutaChi' })
-    MaggiordomoSalutaChi(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string):any {
+    MaggiordomoSalutaChi(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string): any {
         console.log("Buon giorno signor : " + nome);
         return "Buon giorno signor : " + nome;
     }

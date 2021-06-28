@@ -1,8 +1,7 @@
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import { IHtml, targetTerminale, TypePosizione } from "../tools";
 import { CheckClasseMetaData, GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
-import fs from "fs";
-import Handlebars from "handlebars";
+import fs from "fs"; 
 
 
 export { decoratoreMetodoHtml as mpMetHtml };
