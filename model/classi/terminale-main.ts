@@ -272,15 +272,6 @@ export class Main {
             ritorno = ritorno.replace('"\n', '"'); 
             const json = JSON.parse(ritorno); 
             */
-            console.log(ritorno);
-            try {
-                const gg = JSON.parse(ritorno);
-                console.log(gg);
-                
-            } catch (error) {
-                console.log(error);
-            }
-
             this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
             return ritorno;
         } catch (error) {
