@@ -717,18 +717,13 @@ export class TerminaleMetodo implements IDescrivibile {
             for (let index = 0; index < this.listaParametri.length; index++) {
                 const element = this.listaParametri[index];
                 if (index > 0) parameters = parameters + ', ';
-                parameters = parameters + `
-                {
+                parameters = parameters + `{
                     "name": "${element.nome}",
                     "in": "${element.posizione}",
+                    "description": "${element.descrizione}",
                     "required": false,
                     "schema": {
-                        "type": "${element.tipo}",
-                        "properties": {
-                            "${element.nome}": {
-                                "type": "${element.tipo}"
-                            }
-                        }
+                        "type": "${element.tipo}"
                     }
                 }
                 `;
@@ -749,29 +744,29 @@ export class TerminaleMetodo implements IDescrivibile {
                                     ${schema}
                                 }
                             }
-                        },
-                        "parameters": [
-                            ${parameters}
-                        ],
-                        "responses": {
-                            "200": {
-                                "description": "restituisce il token di risposta.",
-                                "content": {
-                                    "application/json": {
-                                        "schema": {
-                                            "type": "object",
-                                            "properties": {
-                                                "accessToken": {
-                                                    "type": "string",
-                                                    "format": "VARCHAR(255)",
-                                                    "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
-                                                },
-                                                "webexGuestToken": {
-                                                    "type": "string",
-                                                    "format": "VARCHAR(255)",
-                                                    "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
-                                                }
-                                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    ${parameters}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "restituisce il token di risposta.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accessToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        },
+                                        "webexGuestToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
                                         }
                                     }
                                 }
