@@ -39,7 +39,6 @@ createConnection(connessione).then(async connection => {
     main.Inizializza("localhost", 8080, true, true);
     main.InizializzaHandlebars();
     main.InizializzaSwagger();
-    main.StartExpressSwagger(8081);
     await main.StartTest();
     chiedi({ type: 'number', message: 'scegli:', name: 'risultato', min: 0, max: 3 })
         .then((result) => {
