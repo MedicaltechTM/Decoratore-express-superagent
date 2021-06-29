@@ -277,6 +277,8 @@ export interface IMetodo {
      */
     nomiClasseRiferimento?: IClasseRiferimento[],
 
+    Risposte?: IRisposta[];
+
     onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
@@ -334,4 +336,15 @@ export interface IHtml {
 
     htmlPath?: string,
     html?: string
+}
+
+export interface IRisposta {
+    stato: number,
+    descrizione: string
+    valori: [
+        {
+            nome: string,
+            tipo: tipo,
+        }
+    ]
 }

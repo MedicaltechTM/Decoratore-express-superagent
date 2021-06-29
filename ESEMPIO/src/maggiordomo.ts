@@ -1,4 +1,4 @@
-import { ApiModel, ApiModelProperty, ApiOperationGet, SwaggerDefinitionConstant } from "swagger-express-ts";
+
 import { Column, Entity, getRepository, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { mpClas } from "../../model/classi/terminale-classe";
 //import { mpMetHtml, mpMetHtmlHandlebars } from "../../model/classi/terminale-html";
@@ -9,10 +9,6 @@ import { ListaTerminaleParametro } from "../../model/liste/lista-terminale-param
 import { IParametriEstratti } from "../../model/tools";
 import { Conoscere } from "./conoscere";
 
-@ApiModel({
-    description: "Version description",
-    name: "Maggiordomo"
-})
 @mpTestClas({
     nome: "Test per testare il maggiordomo",
     testUnita: [
@@ -53,11 +49,6 @@ export class Maggiordomo {
         }
     }
 
-    @ApiModelProperty({
-        description: "Id of version",
-        required: true,
-        example: ['123456789']
-    })
     @PrimaryGeneratedColumn()
     id?: number;
 
@@ -112,6 +103,9 @@ export class Maggiordomo {
             { path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false }
         ],
         RispondiConHTML: {
+            trigger: {
+                nome: 'trigger', posizione: 'query', valre: 'true'
+            },
             risposta: {
                 "2xx": {
                     html: `
@@ -134,23 +128,25 @@ export class Maggiordomo {
                         `
                 }
             }
-        }
+        },
+        Risposte: [
+            {
+                stato: 200,
+                descrizione: 'ciao',
+                valori: [
+                    {
+                        nome: "saluto",
+                        tipo: "text"
+                    }
+                ]
+            }
+        ]
     })
     MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string): any {
         console.log("Sono il maggiordomo : " + this.nome);
         return { saluto: "Sono il maggiordomo : " + this.nome };
     }
 
-    @ApiOperationGet({
-        description: "Get versions objects list",
-        summary: "Get versions list",
-        responses: {
-            200: { description: "Success", type: SwaggerDefinitionConstant.Response.Type.BOOLEAN }
-        },
-        security: {
-            apiKeyHeader: []
-        }
-    })
     @mpMet({ path: 'MaggiordomoSalutaChi' })
     MaggiordomoSalutaChi(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string): any {
         console.log("Buon giorno signor : " + nome);

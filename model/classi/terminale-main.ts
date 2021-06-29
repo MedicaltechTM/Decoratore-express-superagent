@@ -7,8 +7,6 @@ import { SalvaListaClasseMetaData } from "./terminale-classe";
 import * as http from 'http';
 import { ListaTerminaleTest } from "../liste/lista-terminale-test";
 
-import exphbs from 'express-handlebars';
-
 import swaggerUI from "swagger-ui-express";
 
 /**
@@ -194,9 +192,10 @@ export class Main {
         }
     }
 
-    InizializzaHandlebars() {
-        /*  this.serverExpressDecorato.engine('handlebars', exphbs());
-         this.serverExpressDecorato.set('view engine', 'handlebars'); */
+    /* InizializzaHandlebars() {
+        //  this.serverExpressDecorato.engine('handlebars', exphbs());
+        // this.serverExpressDecorato.set('view engine', 'handlebars'); 
+        ///////////////////////////////////////////////////////////////////////////////////////
         // Configure template Engine and Main Template File
         this.serverExpressDecorato.engine('hbs', exphbs({
             defaultLayout: 'main',
@@ -212,7 +211,7 @@ export class Main {
         this.serverExpressDecorato.get('/about-us', (req, res) => {
             res.render('about-us');
         });
-    }
+    } */
 
     InizializzaSwagger() {
         try {

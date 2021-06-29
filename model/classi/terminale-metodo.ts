@@ -1,4 +1,4 @@
-import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRisposta, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -65,6 +65,8 @@ export class TerminaleMetodo implements IDescrivibile {
     onPrimaDirestituireResponseExpress?: () => void;
     AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+
+    Risposte?: IRisposta[] = []
 
     RispondiConHTML?: {
         trigger?: { nome: string, valre: any, posizione: TypePosizione },
@@ -324,7 +326,7 @@ export class TerminaleMetodo implements IDescrivibile {
             if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
             if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
             try {
-                if (this.RispondiConHTML == undefined) {
+                if (this.VerificaTrigger(req)) {
                     //res.status(tmp.stato).send(tmp.body);
                     let num = 0;
                     num = tmp.stato;
@@ -334,8 +336,8 @@ export class TerminaleMetodo implements IDescrivibile {
                     passato = true;
                 }
                 else {
-                    let source = "";
-                    if (this.RispondiConHTML && this.RispondiConHTML.trigger == undefined) {
+                    if (this.RispondiConHTML) {
+                        let source = "";
                         if (tmp.stato >= 200 && tmp.stato < 300 && this.RispondiConHTML.risposta["2xx"]) {
                             if (this.RispondiConHTML.risposta["2xx"].htmlPath != undefined)
                                 source = fs.readFileSync(this.RispondiConHTML.risposta["2xx"].htmlPath).toString();
@@ -344,18 +346,19 @@ export class TerminaleMetodo implements IDescrivibile {
                             else
                                 throw new Error("Errorissimo");
                         }
-                    } else {
-                        console.log("e");
+
+                        const template = Handlebars.compile(source);
+
+                        const data = tmp.body;
+                        const result = template(data);
+
+                        res.statusCode = Number.parseInt('' + tmp.stato);
+                        res.send(result);
+                        passato = true;
                     }
-
-                    const template = Handlebars.compile(source);
-
-                    const data = tmp.body;
-                    const result = template(data);
-
-                    res.statusCode = Number.parseInt('' + tmp.stato);
-                    res.send(result);
-                    passato = true;
+                    else {
+                        throw new Error("Errore gnel trigger");
+                    }
                 }
             } catch (error) {
                 res.status(500).send(error);
@@ -373,6 +376,23 @@ export class TerminaleMetodo implements IDescrivibile {
                 res.status(500).send(error);
             //return res;
         }
+    }
+
+    VerificaTrigger(richiesta: Request): boolean {
+
+        let tmp = undefined;
+        if (this.RispondiConHTML && this.RispondiConHTML.trigger) {
+            if (this.RispondiConHTML.trigger.posizione == 'body')
+                tmp = richiesta.body[this.RispondiConHTML.trigger.nome];
+            if (this.RispondiConHTML.trigger.posizione == 'header')
+                tmp = richiesta.headers[this.RispondiConHTML.trigger.nome];
+            if (this.RispondiConHTML.trigger.posizione == 'query')
+                tmp = richiesta.query[this.RispondiConHTML.trigger.nome];
+
+            if (tmp == this.RispondiConHTML.trigger.valre) return false;
+            else return true;
+        }
+        return false;
     }
 
     CercaParametroSeNoAggiungi(nome: string, parameterIndex: number, tipo: tipo, posizione: TypePosizione) {
@@ -721,12 +741,41 @@ export class TerminaleMetodo implements IDescrivibile {
                     "name": "${element.nome}",
                     "in": "${element.posizione}",
                     "description": "${element.descrizione}",
-                    "required": false,
+                    "required": true,
                     "schema": {
                         "type": "${element.tipo}"
                     }
                 }
                 `;
+            }
+            let risposte = "";
+            if (this.Risposte) {
+                for (let index = 0; index < this.Risposte.length; index++) {
+                    const element = this.Risposte[index];
+                    let tt = '';
+                    for (let indexj = 0; indexj < element.valori.length; indexj++) {
+                        const element2 = element.valori[indexj];
+                        if (indexj > 0) tt = tt + ', ';
+                        tt = tt +
+                            `"${element2.nome}": {
+                            "type": "${element2.tipo}"
+                        }`;
+                    }
+                    if (index > 0) risposte = risposte + ', ';
+                    risposte = risposte + `"${element.stato}": {
+                        "description": "${element.descrizione}",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        ${tt}
+                                    }
+                                }
+                            }
+                        }
+                    }`;
+                }
             }
 
             const ritorno = `"${this.percorsi.pathGlobal}": {
@@ -734,45 +783,11 @@ export class TerminaleMetodo implements IDescrivibile {
                     "summary": "${this.sommario}",
                 "description": "${this.descrizione}",
                 "operationId": "paziente post signin",
-                "requestBody": {
-                    "description": "",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    ${schema}
-                                }
-                            }
-                        }
-                    }
-                },
                 "parameters": [
                     ${parameters}
                 ],
                 "responses": {
-                    "200": {
-                        "description": "restituisce il token di risposta.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "accessToken": {
-                                            "type": "string",
-                                            "format": "VARCHAR(255)",
-                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
-                                        },
-                                        "webexGuestToken": {
-                                            "type": "string",
-                                            "format": "VARCHAR(255)",
-                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    ${risposte}
                 }
                 }                
             }`;
@@ -808,6 +823,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                 var originalMethod = descriptor.value;
                 return originalMethod.apply(this, args);
             } */
+            if (parametri.Risposte) metodo.Risposte = parametri.Risposte;
 
             if (parametri.listaHtml) {
                 for (let index = 0; index < parametri.listaHtml.length; index++) {

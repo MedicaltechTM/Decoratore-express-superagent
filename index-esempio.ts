@@ -37,7 +37,6 @@ createConnection(connessione).then(async connection => {
     console.log("3: test-api");
     console.log("4: test");
     main.Inizializza("localhost", 8080, true, true);
-    main.InizializzaHandlebars();
     main.InizializzaSwagger();
     await main.StartTest();
     chiedi({ type: 'number', message: 'scegli:', name: 'risultato', min: 0, max: 3 })
