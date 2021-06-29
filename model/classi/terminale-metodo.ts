@@ -326,7 +326,7 @@ export class TerminaleMetodo implements IDescrivibile {
             if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
             if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
             try {
-                if (this.VerificaTrigger(req)) {
+                if (!this.VerificaTrigger(req)) {
                     //res.status(tmp.stato).send(tmp.body);
                     let num = 0;
                     num = tmp.stato;
@@ -478,6 +478,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             };
                         }
                     }
+                return tmp;
                     //console.log(tmpReturn);
                     //console.log("finito!!")
                 } catch (error) {
@@ -504,7 +505,6 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     //console.log("Errore : \n" + error);
                 }
-                return tmp;
             }
             else {
                 let tmp: IReturn = {
