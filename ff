@@ -1,0 +1,315 @@
+{
+    "openapi": "3.0.0",
+    "servers": [
+        {
+            "url": "https://staisicuro.medicaltech.it/",
+            "variables": {},
+            "description": "indirizzo principale"
+        },
+        {
+            "url": "http://ss-test.medicaltech.it/",
+            "description": "indirizzo secondario nel caso quello principale non dovesse funzionare."
+        }
+    ],
+    "info": {
+        "description": "Docu b oppure scrivere direttamente una email.",
+        "version": "1.0.0",
+        "title": "STAI sicuro",
+        "termsOfService": "https://github.com/MedicaltechTM/STAI_sicuro"
+    },
+    "tags": [],
+    "paths": {
+        "/api/Maggiordomo/MaggiordomoSaluta": {
+        "get":{
+            "summary": "",
+        "description": "",
+        "operationId": "paziente post signin",
+        "requestBody": {
+            "description": "",
+            "required": true,
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "properties": {
+                            "idMaggiordomo": {
+            "type": "text"
+        }
+                        }
+                    }
+                },
+                "parameters": [
+
+        {
+            "name": "idMaggiordomo",
+            "in": "query",
+            "required": false,
+            "schema": {
+                "type": "text",
+                "properties": {
+                    "idMaggiordomo": {
+                        "type": "text"
+                    }
+                }
+            }
+        }
+
+                ],
+                "responses": {
+                    "200": {
+                        "description": "restituisce il token di risposta.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accessToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        },
+                                        "webexGuestToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        }
+    }, "/api/Maggiordomo/MaggiordomoSalutaChi": {
+        "post":{
+            "summary": "",
+        "description": "",
+        "operationId": "paziente post signin",
+        "requestBody": {
+            "description": "",
+            "required": true,
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "properties": {
+                            "nome": {
+            "type": "text"
+        }
+                        }
+                    }
+                },
+                "parameters": [
+
+        {
+            "name": "nome",
+            "in": "query",
+            "required": false,
+            "schema": {
+                "type": "text",
+                "properties": {
+                    "nome": {
+                        "type": "text"
+                    }
+                }
+            }
+        }
+
+                ],
+                "responses": {
+                    "200": {
+                        "description": "restituisce il token di risposta.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accessToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        },
+                                        "webexGuestToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        }
+    }, "/api/Persona/CambiaNome": {
+        "post":{
+            "summary": "",
+        "description": "",
+        "operationId": "paziente post signin",
+        "requestBody": {
+            "description": "",
+            "required": true,
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "properties": {
+                            "nuovoNome": {
+            "type": "text"
+        }, "idPersona": {
+            "type": "text"
+        }
+                        }
+                    }
+                },
+                "parameters": [
+
+        {
+            "name": "nuovoNome",
+            "in": "query",
+            "required": false,
+            "schema": {
+                "type": "text",
+                "properties": {
+                    "nuovoNome": {
+                        "type": "text"
+                    }
+                }
+            }
+        }
+        ,
+        {
+            "name": "idPersona",
+            "in": "query",
+            "required": false,
+            "schema": {
+                "type": "text",
+                "properties": {
+                    "idPersona": {
+                        "type": "text"
+                    }
+                }
+            }
+        }
+
+                ],
+                "responses": {
+                    "200": {
+                        "description": "restituisce il token di risposta.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accessToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        },
+                                        "webexGuestToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        }
+    }, "/api/Persona/ConosceNuovoMaggiordomo": {
+        "post":{
+            "summary": "",
+        "description": "",
+        "operationId": "paziente post signin",
+        "requestBody": {
+            "description": "",
+            "required": true,
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "properties": {
+                            "nomeMaggiordomo": {
+            "type": "text"
+        }, "idPersona": {
+            "type": "text"
+        }
+                        }
+                    }
+                },
+                "parameters": [
+
+        {
+            "name": "nomeMaggiordomo",
+            "in": "query",
+            "required": false,
+            "schema": {
+                "type": "text",
+                "properties": {
+                    "nomeMaggiordomo": {
+                        "type": "text"
+                    }
+                }
+            }
+        }
+        ,
+        {
+            "name": "idPersona",
+            "in": "query",
+            "required": false,
+            "schema": {
+                "type": "text",
+                "properties": {
+                    "idPersona": {
+                        "type": "text"
+                    }
+                }
+            }
+        }
+
+                ],
+                "responses": {
+                    "200": {
+                        "description": "restituisce il token di risposta.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "accessToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        },
+                                        "webexGuestToken": {
+                                            "type": "string",
+                                            "format": "VARCHAR(255)",
+                                            "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        }
+    }
+    },
+    "externalDocs": {
+        "description": "Per il momento non vi sono documentazione esterne.",
+        "url": "-"
+    },
+    "components": {
+        "schemas": {},
+        "securitySchemes": {},
+        "links": {},
+        "callbacks": {}
+    },
+    "security": []
+}

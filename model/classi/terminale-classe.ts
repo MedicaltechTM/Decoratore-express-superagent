@@ -1,4 +1,4 @@
-import {  IRaccoltaPercorsi, targetTerminale } from "../tools";
+import { IRaccoltaPercorsi, targetTerminale } from "../tools";
 
 
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
@@ -82,7 +82,7 @@ export class TerminaleClasse {
     /******************************************************************* */
 
     async PrintMenuClasse() {
-        console.log('Classe :' + this.nome); 
+        console.log('Classe :' + this.nome);
         for (let index = 0; index < this.listaMetodi.length; index++) {
             const element = this.listaMetodi[index];
             const tmp = index + 1;
@@ -111,11 +111,22 @@ export class TerminaleClasse {
         }
     }
 
-    
-    SettaSwagger() {
 
-        const swaggerJson = `"paths": {    
-        `;
+    SettaSwagger() {
+        /* 
+        "paths": {  } 
+        */
+        let ritorno = '';
+        for (let index = 0; index < this.listaMetodi.length; index++) {
+            const element = this.listaMetodi[index];
+            const tmp = element.SettaSwagger();
+            if (index > 0 && tmp != undefined)
+                ritorno = ritorno + ', ';
+            if (tmp != undefined)
+                ritorno = ritorno + tmp;
+        }
+        return ritorno;
+        /* const swaggerJson = ``;
         let ritorno = '';
         let primo = false;
         for (let index = 0; index < this.listaMetodi.length; index++) {
@@ -140,7 +151,7 @@ export class TerminaleClasse {
         } catch (error) {
             console.log(error);
         }
-        return tmp;
+        return tmp; */
     }
 
 }

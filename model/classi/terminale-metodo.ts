@@ -667,17 +667,16 @@ export class TerminaleMetodo implements IDescrivibile {
     }
 
 
-    SettaSwagger(tipoInterazione: 'rotta' | 'middleware') {
+    SettaSwagger() {
 
-        if (tipoInterazione == 'middleware') {
+        if (this.tipoInterazione == 'middleware') {
             //questo deve restituire un oggetto
-            let primo = false;
+            /* let primo = false;
             let ritorno = '';
             for (let index = 0; index < this.middleware.length; index++) {
                 const element = this.middleware[index];
                 if (element instanceof TerminaleMetodo) {
                     const tt = element.SettaSwagger('middleware');
-                    /* tmp.push(tt); */
                     if (primo == false && tt != undefined) {
                         primo = true;
                         ritorno = tt + '';
@@ -688,8 +687,7 @@ export class TerminaleMetodo implements IDescrivibile {
             }
             for (let index = 0; index < this.listaParametri.length; index++) {
                 const element = this.listaParametri[index];
-                const tt = element.SettaSwagger();
-                /* tmp.push(tt); */
+                const tt = element.SettaSwagger(); 
                 if (index == 0)
                     if (primo == false) ritorno = tt;
                     else ritorno = ritorno + ',' + tt;
@@ -703,71 +701,86 @@ export class TerminaleMetodo implements IDescrivibile {
                 console.log(error);
             }
             if (primo) return undefined;
-            else return ritorno;
+            else return ritorno; */
+            return undefined;
         }
         else {
-            let primo = false;
-            const ritornoTesta = `"${this.percorsi.pathGlobal}" : { 
-                "${this.tipo}" : 
-                {
-                    "tags": [
-                    ],
-                    "summary": "${this.sommario}",
-                    "description": "${this.descrizione}",
-                    "parameters": [ `;
-            const ritornoCoda = `
-                ]
-            }
-        }
-`;
-            let ritorno = '';
-            const tmp2: any[] = [];
-            const gg = this.percorsi.pathGlobal;
-
-            for (let index = 0; index < this.middleware.length; index++) {
-                const element = this.middleware[index];
-                if (element instanceof TerminaleMetodo) {
-                    const tt = element.SettaSwagger('middleware');
-                    /* tmp2.push(tt); */
-                    if (primo == false && tt != undefined) {
-                        primo = true;
-                        ritorno = tt + '';
-                    } else if (tt != undefined) {
-                        ritorno = ritorno + ',' + tt;
-                    }
-                }
+            let schema = ``;
+            let parameters = ``;
+            for (let index = 0; index < this.listaParametri.length; index++) {
+                const element = this.listaParametri[index];
+                if (index > 0) schema = schema + ', ';
+                schema = schema + `"${element.nome}": {
+                    "type": "${element.tipo}"
+                }`;
             }
             for (let index = 0; index < this.listaParametri.length; index++) {
                 const element = this.listaParametri[index];
-                const tt = element.SettaSwagger();
-                /* tmp2.push(tt); */
-                if (index == 0)
-                    if (primo == false) ritorno = tt;
-                    else ritorno = ritorno + ',' + tt;
-                else ritorno = ritorno + ',' + tt;
-                if (primo == false) primo = true;
-            }
-            ritorno = ritornoTesta + ritorno + ritornoCoda;
-            try {
-                JSON.parse('{' + ritorno + '}')
-            } catch (error) {
-                console.log(error);
-            }
-            const tmp = {
-                gg: {
-                    "summary": this.sommario,
-                    "description": this.descrizione,
-                    "parameters": tmp2
+                if (index > 0) parameters = parameters + ', ';
+                parameters = parameters + `
+                {
+                    "name": "${element.nome}",
+                    "in": "${element.posizione}",
+                    "required": false,
+                    "schema": {
+                        "type": "${element.tipo}",
+                        "properties": {
+                            "${element.nome}": {
+                                "type": "${element.tipo}"
+                            }
+                        }
+                    }
                 }
-            };
+                `;
+            }
 
-            const tmp3 = `${gg}: {
-                "summary": ${this.sommario},
-                "description": ${this.descrizione},
-                "parameters": [${tmp2}]
+            const ritorno = `"${this.percorsi.pathGlobal}": {
+                "${this.tipo}":{
+                    "summary": "${this.sommario}",
+                "description": "${this.descrizione}",
+                "operationId": "paziente post signin",
+                "requestBody": {
+                    "description": "",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    ${schema}
+                                }
+                            }
+                        },
+                        "parameters": [
+                            ${parameters}
+                        ],
+                        "responses": {
+                            "200": {
+                                "description": "restituisce il token di risposta.",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "accessToken": {
+                                                    "type": "string",
+                                                    "format": "VARCHAR(255)",
+                                                    "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                                },
+                                                "webexGuestToken": {
+                                                    "type": "string",
+                                                    "format": "VARCHAR(255)",
+                                                    "example": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTk4ODc5MDI4LCJleHAiOjE2MDE0NzEwMjgsImF1ZCI6Imh0dHA6Ly9taXJrb3BpenppbmkuYmVzYWduby5wYXppZW50ZSIsImlzcyI6Ik1pcmtvUGl6emluaSIsInN1YiI6Im1pcmtvcGl6emluaUBiZXNhZ25vLndvcmQgIn0.FQq4ULuOWKwZys3pkXmBEVduhilA0Jw7KN9egPdfefWIf-TtNcF0ahDcWDFSEhimSIHPZYRlSBJEC7edMxu4rg"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                }                
             }`;
-            /* if (primo) return undefined;
-            else return ritorno; */
 
             return ritorno;
         }

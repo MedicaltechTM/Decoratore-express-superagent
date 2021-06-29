@@ -8,8 +8,8 @@ import * as http from 'http';
 import { ListaTerminaleTest } from "../liste/lista-terminale-test";
 
 import exphbs from 'express-handlebars';
-import { Swagger_Mio } from "../swagger";
 
+import swaggerUI from "swagger-ui-express";
 
 /**
  * 
@@ -215,13 +215,18 @@ export class Main {
     }
 
     InizializzaSwagger() {
-        /* this.serverExpressDecorato = Swagger_Mio.Configura(this.serverExpressDecorato); */
+        try {
 
-    }
-    EsponiSwagger() {
-        const swaggerJson = ``;
-        let ritorno = `
-        {
+            let swaggerClassePath = '';
+            for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
+                const element = this.listaTerminaleClassi[index];
+                const tmp = element.SettaSwagger();
+                if (index > 0 && tmp != undefined && tmp != undefined && tmp != '')
+                    swaggerClassePath = swaggerClassePath + ', ';
+                if (tmp != undefined && tmp != undefined && tmp != '')
+                    swaggerClassePath = swaggerClassePath + tmp;
+            }
+            const ritorno = ` {
             "openapi": "3.0.0",
             "servers": [
                 {
@@ -232,27 +237,57 @@ export class Main {
                 {
                     "url": "http://ss-test.medicaltech.it/",
                     "description": "indirizzo secondario nel caso quello principale non dovesse funzionare."
-  }
+                }
             ],
             "info": {
-                "description": "Documentazione delle API con le quali interrogare il server dell'applicazione STAI sicuro, per il momento qui troverai solo le api con le quali interfacciarti alla parte relativa al paziente. \nSe vi sono problemi sollevare degli issues o problemi sulla pagina di github oppure scrivere direttamente una email.",
+                "description": "Documentazione delle API con le quali interrogare il server dell'applicazione STAI sicuro, per il momento qui troverai solo le api con le quali interfacciarti alla parte relativa al paziente.Se vi sono problemi sollevare degli issues o problemi sulla pagina di github oppure scrivere direttamente una email.",
                 "version": "1.0.0",
                 "title": "STAI sicuro",
                 "termsOfService": "https://github.com/MedicaltechTM/STAI_sicuro"
             },
-        `;
-        for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
-            const element = this.listaTerminaleClassi[index];
-            element.SettaSwagger();
-            if (index == 0 && index + 1 != this.listaTerminaleClassi.length) {
-                ritorno = ritorno + ', ';
+            "tags": [],
+            "paths": {
+                ${swaggerClassePath}
+            },
+            "externalDocs": {
+                "description": "Per il momento non vi sono documentazione esterne.",
+                "url": "-"
+            },
+            "components": {
+                "schemas": {},
+                "securitySchemes": {},
+                "links": {},
+                "callbacks": {}                
+            },
+            "security": []
+        }`;
+            /* 
+            ritorno = ritorno.replace('\n', '');
+            ritorno = ritorno.replace(',\n', ',');
+            ritorno = ritorno.replace('},\n', '},');
+            ritorno = ritorno.replace('{},\n', '{},');
+            ritorno = ritorno.replace('}\n', '}');
+            ritorno = ritorno.replace('{\n', '{');
+            ritorno = ritorno.replace(']\n', ']');
+            ritorno = ritorno.replace('[\n', '[');
+            ritorno = ritorno.replace('"\n', '"'); 
+            const json = JSON.parse(ritorno); 
+            */
+            console.log(ritorno);
+            try {
+                const gg = JSON.parse(ritorno);
+                console.log(gg);
+                
+            } catch (error) {
+                console.log(error);
             }
-            if (index + 1 == this.listaTerminaleClassi.length) {
-                ritorno = ritorno + ' }';
-            }
+
+            this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
+            return ritorno;
+        } catch (error) {
+            console.log(error);
+            return undefined;
         }
-        ritorno = ritorno + '}';
-        return ritorno;
     }
 
     /************************************** */
