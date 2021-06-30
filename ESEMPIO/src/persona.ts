@@ -4,13 +4,12 @@ import { Column, Entity, getRepository, JoinColumn, OneToMany, PrimaryGeneratedC
 import { mpClas } from "../../model/classi/terminale-classe";
 import { mpMet } from "../../model/classi/terminale-metodo";
 import { mpPar } from "../../model/classi/terminale-parametro";
-import { mpTestClas } from "../../model/classi/terminale-test";
 import { ListaTerminaleParametro } from "../../model/liste/lista-terminale-parametro";
 import { IParametriEstratti } from "../../model/tools";
 import { Conoscere } from "./conoscere";
 import { Maggiordomo } from "./maggiordomo";
 
-@mpTestClas({
+/* @mpTestClas({
     nome: "Test per testare il persona",
     testUnita: [
         {
@@ -29,7 +28,7 @@ import { Maggiordomo } from "./maggiordomo";
             }
         }
     ]
-})
+}) */
 @Entity({ name: "Persona" })
 @mpClas("Persona")
 export class Persona {
@@ -64,6 +63,17 @@ export class Persona {
         this.nome = 'indefinito';
     }
 
+   /*  @mpTestMet({
+        nome: 'Test per Cambio Nome', 
+        testUnita: [
+            {
+                nome: '',
+                FunzioniDaTestare: () => {
+                    return { passato: true };
+                }
+            }
+        ]
+    }) */
     @mpMet({ path: 'CambiaNome', Istanziatore: Persona.Istanziatore })
     CambiaNome(@mpPar({ nome: 'idPersona', posizione: 'query', autenticatore: true }) idPersona: string,
         @mpPar({ nome: 'nuovoNome', posizione: 'query' }) nuovoNome: string): number {

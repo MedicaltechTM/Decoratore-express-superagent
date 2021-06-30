@@ -9,7 +9,7 @@ const connessione = <ConnectionOptions>{
     host: "localhost",
     port: 5432,
     username: "postgres",
-    password: "password", // //postgres
+    password: /* "password", */ "postgres",
     database: "postgres",//"testStaisicuro",
     synchronize: true,
     logging: false,

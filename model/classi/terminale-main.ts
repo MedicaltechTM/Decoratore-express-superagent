@@ -151,43 +151,45 @@ export class Main {
     }
 
     async StartTest() {
-        for (let index = 0; index < this.listaTerminaleTest.length; index++) {
-            const test = this.listaTerminaleTest[index];
-            if (test.listaTest) {
-                console.log("Inizio lista test con nome : " + test.listaTest.nome);
-                for (let index2 = 0; index2 < test.listaTest.testUnita.length; index2++) {
-                    const element = test.listaTest.testUnita[index2];
-                    let risultato;
-                    try {
-                        console.log("Inizio test con nome : " + element.nome);
-                        if (element) {
-                            if (element.FunzioniCreaAmbienteEsecuzione) {
-                                risultato = await element.FunzioniCreaAmbienteEsecuzione();
+        if (this.listaTerminaleTest){
+            for (let index = 0; index < this.listaTerminaleTest.length; index++) {
+                const test = this.listaTerminaleTest[index];
+                if (test.listaTest) {
+                    console.log("Inizio lista test con nome : " + test.listaTest.nome);
+                    for (let index2 = 0; index2 < test.listaTest.testUnita.length; index2++) {
+                        const element = test.listaTest.testUnita[index2];
+                        let risultato;
+                        try {
+                            console.log("Inizio test con nome : " + element.nome);
+                            if (element) {
+                                if (element.FunzioniCreaAmbienteEsecuzione) {
+                                    risultato = await element.FunzioniCreaAmbienteEsecuzione();
+                                }
+                                if (element.FunzioniDaTestare) {
+                                    risultato = await element.FunzioniDaTestare();
+                                }
+                                if (element.FunzioniDiPulizia) {
+                                    risultato = await element.FunzioniDiPulizia();
+                                }
                             }
-                            if (element.FunzioniDaTestare) {
-                                risultato = await element.FunzioniDaTestare();
+                            console.log("Fine test con nome : " + element.nome);
+                            if (risultato) {
+                                if (risultato.passato) {
+                                    console.log("TEST PASSATO.");
+                                }
+                                else {
+                                    console.log("TEST NON PASSATO.");
+                                }
+                            } else {
+                                console.log("TEST NESSUN RISULTATO.");
                             }
-                            if (element.FunzioniDiPulizia) {
-                                risultato = await element.FunzioniDiPulizia();
-                            }
+                        } catch (error) {
+                            console.log(error);
+                            console.log("TEST IN ERRORE.");
                         }
-                        console.log("Fine test con nome : " + element.nome);
-                        if (risultato) {
-                            if (risultato.passato) {
-                                console.log("TEST PASSATO.");
-                            }
-                            else {
-                                console.log("TEST NON PASSATO.");
-                            }
-                        } else {
-                            console.log("TEST NESSUN RISULTATO.");
-                        }
-                    } catch (error) {
-                        console.log(error);
-                        console.log("TEST IN ERRORE.");
                     }
+                    console.log("Fine lista test con nome : " + test.listaTest.nome);
                 }
-                console.log("Fine lista test con nome : " + test.listaTest.nome);
             }
         }
     }

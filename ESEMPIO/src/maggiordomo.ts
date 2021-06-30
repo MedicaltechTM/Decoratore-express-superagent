@@ -4,12 +4,11 @@ import { mpClas } from "../../model/classi/terminale-classe";
 //import { mpMetHtml, mpMetHtmlHandlebars } from "../../model/classi/terminale-html";
 import { mpMet } from "../../model/classi/terminale-metodo";
 import { mpPar } from "../../model/classi/terminale-parametro";
-import { mpTestClas } from "../../model/classi/terminale-test";
 import { ListaTerminaleParametro } from "../../model/liste/lista-terminale-parametro";
 import { IParametriEstratti } from "../../model/tools";
 import { Conoscere } from "./conoscere";
 
-@mpTestClas({
+/* @mpTestClas({
     nome: "Test per testare il maggiordomo",
     testUnita: [
         {
@@ -28,7 +27,7 @@ import { Conoscere } from "./conoscere";
             }
         }
     ]
-})
+}) */
 @Entity({ name: "Maggiordomo" })
 @mpClas("Maggiordomo")
 export class Maggiordomo {
@@ -100,12 +99,12 @@ export class Maggiordomo {
         ],
         listaHtml: [
             { path: 'MaggiordomoSaluta.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false },
-            { path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false }
+            { path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: true }
         ],
         RispondiConHTML: {
-            trigger: {
+            /* trigger: {
                 nome: 'trigger', posizione: 'query', valre: 'true'
-            },
+            }, */
             risposta: {
                 "2xx": {
                     html: `
@@ -122,6 +121,8 @@ export class Maggiordomo {
                         <body>
                             <h1>Ciao dal medico !!!</h1>
                             <p>{{saluto}}</p>
+                            
+                            <button onclick="this.innerHTML=Date()">cliccami, che ore sono? :</button>
                         </body>
 
                         </html>
