@@ -1,11 +1,16 @@
 
-import { IDescrivibile, IParametro,  IRitornoValidatore,  tipo, TypeDovePossoTrovarlo, TypePosizione } from "../tools";
+import { IDescrivibile, IParametro, IRitornoValidatore, tipo, TypeDovePossoTrovarlo, TypePosizione } from "../tools";
 
-import {  GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
+import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 
 
 export class TerminaleParametro implements IDescrivibile, IParametro {
+    schemaSwagger?: {
+        nome:string,
+        valoreEsempio:string,
+        tipo:string
+    }[];
 
     valore: any;
 
@@ -42,7 +47,7 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
     /*  */
 
-    
+
     SettaSwagger() {
         const ritorno =
             `{
@@ -76,6 +81,7 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
  */
 function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, posizione: TypePosizione, tipo?: tipo, descrizione?: string, sommario?: string) */ {
     return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
+
         if (parametri.tipo == undefined) parametri.tipo = 'text';
         if (parametri.descrizione == undefined) parametri.descrizione = '';
         if (parametri.sommario == undefined) parametri.sommario = '';
@@ -97,6 +103,8 @@ function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, pos
 
         if (parametri.dovePossoTrovarlo != undefined) paramestro.dovePossoTrovarlo = parametri.dovePossoTrovarlo;
         else paramestro.dovePossoTrovarlo = 'rotta';
+
+        if (parametri.schemaSwagger != undefined) paramestro.schemaSwagger = parametri.schemaSwagger;
 
         if (parametri.Validatore != undefined) paramestro.Validatore = parametri.Validatore;
 

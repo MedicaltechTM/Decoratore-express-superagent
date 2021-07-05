@@ -19,6 +19,8 @@ import Handlebars from "handlebars";
 } */
 export class TerminaleMetodo implements IDescrivibile {
 
+    schemaSwagger?: any;
+
     htmlHandlebars: {
         percorso: string, contenuto: string, percorsoIndipendente?: boolean,
         listaParametri?: { nome: string, valore: string }[]
@@ -324,49 +326,54 @@ export class TerminaleMetodo implements IDescrivibile {
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
             tmp = await this.Esegui(req);
-            if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
-            if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
-            try {
-                if (!this.VerificaTrigger(req)) {
-                    //res.status(tmp.stato).send(tmp.body);
-                    let num = 0;
-                    num = tmp.stato;
-                    //num = 404; 
-                    res.statusCode = Number.parseInt('' + num);
-                    res.send(tmp.body);
-                    passato = true;
-                }
-                else {
-                    if (this.RispondiConHTML) {
-                        let source = "";
-                        if (tmp.stato >= 200 && tmp.stato < 300 && this.RispondiConHTML.risposta["2xx"]) {
-                            if (this.RispondiConHTML.risposta["2xx"].htmlPath != undefined)
-                                source = fs.readFileSync(this.RispondiConHTML.risposta["2xx"].htmlPath).toString();
-                            else if (this.RispondiConHTML.risposta["2xx"].html != undefined)
-                                source = this.RispondiConHTML.risposta["2xx"].html;
-                            else
-                                throw new Error("Errorissimo");
-                        }
-
-                        const template = Handlebars.compile(source);
-
-                        const data = tmp.body;
-                        const result = template(data);
-
-                        res.statusCode = Number.parseInt('' + tmp.stato);
-                        res.send(result);
+            if (tmp != undefined) {
+                if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
+                if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
+                try {
+                    if (!this.VerificaTrigger(req)) {
+                        //res.status(tmp.stato).send(tmp.body);
+                        let num = 0;
+                        num = tmp.stato;
+                        //num = 404; 
+                        res.statusCode = Number.parseInt('' + num);
+                        res.send(tmp.body);
                         passato = true;
                     }
                     else {
-                        throw new Error("Errore gnel trigger");
+                        if (this.RispondiConHTML) {
+                            let source = "";
+                            if (tmp.stato >= 200 && tmp.stato < 300 && this.RispondiConHTML.risposta["2xx"]) {
+                                if (this.RispondiConHTML.risposta["2xx"].htmlPath != undefined)
+                                    source = fs.readFileSync(this.RispondiConHTML.risposta["2xx"].htmlPath).toString();
+                                else if (this.RispondiConHTML.risposta["2xx"].html != undefined)
+                                    source = this.RispondiConHTML.risposta["2xx"].html;
+                                else
+                                    throw new Error("Errorissimo");
+                            }
+
+                            const template = Handlebars.compile(source);
+
+                            const data = tmp.body;
+                            const result = template(data);
+
+                            res.statusCode = Number.parseInt('' + tmp.stato);
+                            res.send(result);
+                            passato = true;
+                        }
+                        else {
+                            throw new Error("Errore gnel trigger");
+                        }
                     }
+                } catch (error) {
+                    res.status(500).send(error);
                 }
-            } catch (error) {
-                res.status(500).send(error);
+                logOut = InizializzaLogbaseOut(res, this.nome.toString());
+                if (this.onChiamataCompletata) {
+                    this.onChiamataCompletata(logIn, tmp, logOut, undefined);
+                }
             }
-            logOut = InizializzaLogbaseOut(res, this.nome.toString());
-            if (this.onChiamataCompletata) {
-                this.onChiamataCompletata(logIn, tmp, logOut, undefined);
+            else {
+                throw new Error("Attenzione qualcosa è andato storto nell'Esegui(req), guarda @mpMet");
             }
             //return res;
         } catch (error) {
@@ -409,7 +416,7 @@ export class TerminaleMetodo implements IDescrivibile {
         this.listaParametri.push(tmp);//.lista.push({ propertyKey: propertyKey, Metodo: target });
         return tmp;
     }
-    async Esegui(req: Request): Promise<IReturn> {
+    async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
             let valido: IRitornoValidatore | undefined = { approvato: true, stato: 200, messaggio: '' };
@@ -459,12 +466,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             };
                         }
                     }
-<<<<<<< HEAD
-                return tmp;
-                    //console.log(tmpReturn);
-                    //console.log("finito!!")
-=======
->>>>>>> 6f08f8254d14199f946c48c4f4bb19c186041d8a
+                    return tmp;
                 } catch (error) {
                     if (error instanceof ErroreMio) {
                         tmp = {
@@ -511,12 +513,13 @@ export class TerminaleMetodo implements IDescrivibile {
                 }
                 return tmp;
             }
+            return undefined;
         } catch (error: any) {
             /* if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
                 //console.log("ciao");
             } */
             //console.log("Errore : ", error);
-            return {
+            return <IReturn>{
                 body: { "Errore Interno filtrato ": 'internal error!!!!' },
                 stato: 500
             };
@@ -540,17 +543,24 @@ export class TerminaleMetodo implements IDescrivibile {
                 tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
             }
         }
+        console.log(tmpReturn);
+        console.log(attore);
     }
     ConvertiInMiddleare() {
         return async (req: Request, res: Response, nex: NextFunction) => {
             try {
                 const tmp = await this.Esegui(req);
-                if (tmp.stato >= 300) {
-                    throw new Error("Errore : " + tmp.body);
+                if (tmp) {
+                    if (tmp.stato >= 300) {
+                        throw new Error("Errore : " + tmp.body);
+                    }
+                    else {
+                        nex();
+                        return nex;
+                    }
                 }
                 else {
-                    nex();
-                    return nex;
+                    throw new Error("Attenzione qualcosa è andato storto nell'Esegui(req), guarda @mpMet")
                 }
             } catch (error) {
                 return res.status(555).send("Errore : " + error);
@@ -738,17 +748,52 @@ export class TerminaleMetodo implements IDescrivibile {
             }
             for (let index = 0; index < this.listaParametri.length; index++) {
                 const element = this.listaParametri[index];
+
+                let properties = '';
+                if (element.tipo == 'array' && element.schemaSwagger) {
+                    for (let index2 = 0; index2 < element.schemaSwagger.length; index2++) {
+                        const element2 = element.schemaSwagger[index2];
+                        if (index2 > 0) properties = properties + ', ';
+                        properties = properties +
+                            `"${element2.nome}":{
+                                    "type": "${element2.tipo}",
+                                    "example": "${element2.valoreEsempio}"
+                                }`;
+                    }
+
+                }
+                let tipoArray = `"items": {
+                    "type": "object",
+                    "properties": {
+                        ${properties}
+                    }
+                }`;
                 if (index > 0) parameters = parameters + ', ';
-                parameters = parameters + `{
+                if (element.tipo == 'array' && element.schemaSwagger) {
+                    parameters = parameters + `{
                     "name": "${element.nome}",
                     "in": "${element.posizione}",
                     "description": "${element.descrizione}",
                     "required": true,
                     "schema": {
+                        "type": "array",
+                        ${tipoArray}
+                    }
+                }`;
+                }
+                else {
+                    parameters = parameters + `{
+                    "name": "${element.nome}",
+                    "in": "${element.posizione}",
+                    "description": "${element.descrizione}",
+                    "required": "true",
+                    "schema": {
                         "type": "${element.tipo}"
                     }
                 }
                 `;
+                }
+
             }
             let risposte = "";
             if (this.Risposte) {

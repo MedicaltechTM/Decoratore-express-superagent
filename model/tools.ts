@@ -217,6 +217,12 @@ export interface IParametro {
     /*indica se il paramtro è un autenticatore, per esempio come un barrer token o un username, questo puo essere reperito facimente in ListaTerminaleParametro o IParametriEstratti */
     autenticatore?: boolean,
     Validatore?: (parametro: any) => IRitornoValidatore
+
+    schemaSwagger?: {
+        nome: string,
+        valoreEsempio: string,
+        tipo:string
+    }[]
 }
 
 /**

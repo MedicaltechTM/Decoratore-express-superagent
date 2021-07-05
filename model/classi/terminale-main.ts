@@ -151,7 +151,7 @@ export class Main {
     }
 
     async StartTest() {
-        if (this.listaTerminaleTest){
+        if (this.listaTerminaleTest) {
             for (let index = 0; index < this.listaTerminaleTest.length; index++) {
                 const test = this.listaTerminaleTest[index];
                 if (test.listaTest) {
@@ -274,6 +274,7 @@ export class Main {
             ritorno = ritorno.replace('"\n', '"'); 
             const json = JSON.parse(ritorno); 
             */
+            console.log(ritorno);
             this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
             return ritorno;
         } catch (error) {
