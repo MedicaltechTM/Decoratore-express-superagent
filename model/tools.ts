@@ -261,6 +261,7 @@ export interface IClasseRiferimento {
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  */
 export interface IMetodo {
+    schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean,
     /** Specifica il tipo, questo puo essere: "get" | "put" | "post" | "patch" | "purge" | "delete" */
@@ -342,8 +343,8 @@ export interface IRisposta {
     stato: number,
     descrizione: string
     valori: {
-            nome: string,
-            tipo: tipo,
-            note?:string
-        }[]
+        nome: string,
+        tipo: tipo,
+        note?: string
+    }[]
 }
