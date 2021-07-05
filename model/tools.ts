@@ -341,10 +341,9 @@ export interface IHtml {
 export interface IRisposta {
     stato: number,
     descrizione: string
-    valori: [
-        {
+    valori: {
             nome: string,
             tipo: tipo,
-        }
-    ]
+            note?:string
+        }[]
 }
