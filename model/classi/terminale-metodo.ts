@@ -56,6 +56,7 @@ export class TerminaleMetodo implements IDescrivibile {
     }[] = [];
 
     onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
+    onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
     onParametriNonTrovati?: (nonTrovati?: INonTrovato[]) => void;
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
@@ -372,6 +373,14 @@ export class TerminaleMetodo implements IDescrivibile {
             if (this.onChiamataCompletata) {
                 this.onChiamataCompletata(logIn, tmp, logOut, error);
             }
+            if (this.onChiamataInErrore) {
+                tmp = await this.onChiamataInErrore(logIn, tmp, logOut, error);
+                let num = 0;
+                num = tmp.stato;
+                //num = 404; 
+                res.statusCode = Number.parseInt('' + num);
+                res.send(tmp.body);
+            }
             if (passato == false)
                 res.status(500).send(error);
             //return res;
@@ -411,27 +420,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
-                    let parametriTmp = parametri.valoriParametri;
-                    if (this.onPrimaDiEseguireMetodo) parametriTmp = this.onPrimaDiEseguireMetodo(parametri,
-                        this.listaParametri);
-                    let tmpReturn: any = '';
-                    if (this.AlPostoDi) {
-                        tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
-                    }
-                    else {
-                        if (this.Istanziatore) {
-                            const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
-                            tmp.attore = classeInstanziata;
-
-                            tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametriTmp);
-
-                            //console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
-                        }
-                        else {
-                            tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametriTmp);
-                            //console.log('Risposta a chiamata : ' + this.percorsi.pathGlobal);
-                        }
-                    }
+                    const tmpReturn: any = await this.EseguiMetodo(parametri);
                     if (IsJsonString(tmpReturn)) {
                         if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
                             //console.log("ciao");
@@ -442,14 +431,6 @@ export class TerminaleMetodo implements IDescrivibile {
                         else { tmp.stato = 299; }
                     }
                     else {
-                        /* if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
-                            //console.log('ciao');
-                        }
-                        if (tmpReturn instanceof ErroreMio) {
-                            //console.log('hello');
-                        } */
-
-
                         if (typeof tmpReturn === 'object' && tmpReturn !== null && 'stato' in tmpReturn && 'body' in tmpReturn) {
                             /* const tt = Object.assign({}, tmpReturn.body);
                             const tt2 = Object.assign(tmpReturn.body);
@@ -478,9 +459,12 @@ export class TerminaleMetodo implements IDescrivibile {
                             };
                         }
                     }
+<<<<<<< HEAD
                 return tmp;
                     //console.log(tmpReturn);
                     //console.log("finito!!")
+=======
+>>>>>>> 6f08f8254d14199f946c48c4f4bb19c186041d8a
                 } catch (error) {
                     if (error instanceof ErroreMio) {
                         tmp = {
@@ -503,7 +487,6 @@ export class TerminaleMetodo implements IDescrivibile {
                             stato: 500
                         };
                     }
-                    //console.log("Errore : \n" + error);
                 }
             }
             else {
@@ -537,6 +520,25 @@ export class TerminaleMetodo implements IDescrivibile {
                 body: { "Errore Interno filtrato ": 'internal error!!!!' },
                 stato: 500
             };
+        }
+    }
+
+    async EseguiMetodo(parametri: IParametriEstratti) {
+        let tmpReturn: any = '';
+        let attore;
+        if (this.AlPostoDi) {
+            tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
+        }
+        else {
+            if (this.Istanziatore) {
+                const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
+                attore = classeInstanziata;
+                //tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
+                tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
+            }
+            else {
+                tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
+            }
         }
     }
     ConvertiInMiddleare() {
