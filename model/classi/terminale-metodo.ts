@@ -753,9 +753,9 @@ export class TerminaleMetodo implements IDescrivibile {
                 if (element.tipo == 'array' && element.schemaSwagger) {
                     for (let index2 = 0; index2 < element.schemaSwagger.length; index2++) {
                         const element2 = element.schemaSwagger[index2];
-                        if (index2 > 0) properties = properties + ', ';
+                        if (index2 > 0 ) properties = properties + ', ';
                         properties = properties +
-                            `"${element2.nome}":{
+                            `"${element2.nome}": {
                                     "type": "${element2.tipo}",
                                     "example": "${element2.valoreEsempio}"
                                 }`;

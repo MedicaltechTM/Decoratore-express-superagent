@@ -124,6 +124,7 @@ export class TerminaleClasse {
                 ritorno = ritorno + ', ';
             if (tmp != undefined)
                 ritorno = ritorno + tmp;
+            console.log(ritorno);
         }
         return ritorno;
         /* const swaggerJson = ``;

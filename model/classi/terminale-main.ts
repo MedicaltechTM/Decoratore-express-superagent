@@ -274,7 +274,6 @@ export class Main {
             ritorno = ritorno.replace('"\n', '"'); 
             const json = JSON.parse(ritorno); 
             */
-            console.log(ritorno);
             this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
             return ritorno;
         } catch (error) {
