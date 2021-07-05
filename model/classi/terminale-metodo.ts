@@ -527,24 +527,22 @@ export class TerminaleMetodo implements IDescrivibile {
     }
 
     async EseguiMetodo(parametri: IParametriEstratti) {
-        let tmpReturn: any = '';
-        let attore;
+        let tmpReturn: any = ''; 
         if (this.AlPostoDi) {
             tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
         }
         else {
             if (this.Istanziatore) {
                 const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
-                attore = classeInstanziata;
-                //tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
-                tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
+                //const attore = classeInstanziata;
+                tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
+                //tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
             }
             else {
                 tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
             }
         }
-        console.log(tmpReturn);
-        console.log(attore);
+        return tmpReturn;
     }
     ConvertiInMiddleare() {
         return async (req: Request, res: Response, nex: NextFunction) => {
@@ -753,7 +751,7 @@ export class TerminaleMetodo implements IDescrivibile {
                 if (element.tipo == 'array' && element.schemaSwagger) {
                     for (let index2 = 0; index2 < element.schemaSwagger.length; index2++) {
                         const element2 = element.schemaSwagger[index2];
-                        if (index2 > 0 ) properties = properties + ', ';
+                        if (index2 > 0) properties = properties + ', ';
                         properties = properties +
                             `"${element2.nome}": {
                                     "type": "${element2.tipo}",

@@ -123,36 +123,9 @@ export class TerminaleClasse {
             if (index > 0 && tmp != undefined)
                 ritorno = ritorno + ', ';
             if (tmp != undefined)
-                ritorno = ritorno + tmp;
-            console.log(ritorno);
+                ritorno = ritorno + tmp; 
         }
-        return ritorno;
-        /* const swaggerJson = ``;
-        let ritorno = '';
-        let primo = false;
-        for (let index = 0; index < this.listaMetodi.length; index++) {
-            const element = this.listaMetodi[index];
-            if (element.tipoInterazione != 'middleware') {
-                const tt = element.SettaSwagger('rotta');
-                if (tt) {
-                    if (primo == false && tt != undefined) {
-                        primo = true;
-                        ritorno = tt + '';
-                    } else if (tt != undefined) {
-                        ritorno = ritorno + ',' + tt;
-                    }
-                }
-            }
-        }
-        const tmp = swaggerJson + ritorno + '}';
-
-        try {
-            const hhh = tmp.toString();
-            JSON.parse(tmp)
-        } catch (error) {
-            console.log(error);
-        }
-        return tmp; */
+        return ritorno; 
     }
 
 }
