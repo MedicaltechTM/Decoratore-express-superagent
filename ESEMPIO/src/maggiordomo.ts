@@ -29,7 +29,7 @@ import { Conoscere } from "./conoscere";
     ]
 }) */
 @Entity({ name: "Maggiordomo" })
-@mpClas({percorso:"Maggiordomo"})
+@mpClas({ percorso: "Maggiordomo" })
 export class Maggiordomo {
 
     static async Istanziatore(parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) {
@@ -90,54 +90,16 @@ export class Maggiordomo {
     @mpMetHtml({ path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false }) */
     @mpMet({
         path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, tipo: 'get', swaggerClassi: ['medico'],
-        listaTest: [
-            {
-                body: {},
-                header: {},
-                query: { "idMaggiordomo": '1' }
-            }
-        ],
-        listaHtml: [
-            { path: 'MaggiordomoSaluta.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false },
-            { path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: true }
-        ],
-        RispondiConHTML: {
-            /* trigger: {
-                nome: 'trigger', posizione: 'query', valre: 'true'
-            }, */
-            risposta: {
-                "2xx": {
-                    html: `
-                        <!DOCTYPE html>
-                        <html lang="en">
-
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>Document</title>
-                        </head>
-
-                        <body>
-                            <h1>Ciao dal medico !!!</h1>
-                            <p>{{saluto}}</p>
-                            
-                            <button onclick="this.innerHTML=Date()">cliccami, che ore sono? :</button>
-                        </body>
-
-                        </html>
-                        `
-                }
-            }
-        },
         Risposte: [
             {
+                descrizione: '',
                 stato: 200,
-                descrizione: 'ciao',
+                isHandlebars: false,
                 valori: [
                     {
-                        nome: "saluto",
-                        tipo: "text"
+                        nome: '',
+                        tipo: 'text',
+                        note: ''
                     }
                 ]
             }

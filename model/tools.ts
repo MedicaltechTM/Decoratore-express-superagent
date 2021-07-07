@@ -1,5 +1,6 @@
 
 import { Request, Response } from "express";
+import { Risposta } from "./classi/terminale-metodo";
 import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
 export const targetTerminale = { name: 'Terminale' };
 
@@ -288,7 +289,7 @@ export interface IMetodo {
      */
     nomiClasseRiferimento?: IClasseRiferimento[],
 
-    Risposte?: IRisposta[];
+    Risposte?: Risposta[];
 
     onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
 
@@ -314,7 +315,7 @@ export interface IMetodo {
         htmlPath?: string,
         html?: string
     }[];
-    RispondiConHTML?: {
+    /* RispondiConHTML?: {
         trigger?: { nome: string, valre: any, posizione: TypePosizione },
         risposta: {
             "2xx"?: {
@@ -338,7 +339,7 @@ export interface IMetodo {
                 html?: string
             }
         }
-    };
+    }; */
 }
 
 export interface IClasse {
