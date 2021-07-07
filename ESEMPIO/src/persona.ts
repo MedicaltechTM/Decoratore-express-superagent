@@ -30,7 +30,7 @@ import { Maggiordomo } from "./maggiordomo";
     ]
 }) */
 @Entity({ name: "Persona" })
-@mpClas("Persona")
+@mpClas({percorso:"Persona"})
 export class Persona {
 
     static async Istanziatore(parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) {

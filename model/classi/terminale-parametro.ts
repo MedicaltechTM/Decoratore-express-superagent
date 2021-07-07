@@ -85,6 +85,7 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, posizione: TypePosizione, tipo?: tipo, descrizione?: string, sommario?: string) */ {
     return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
 
+        if(parametri.obbligatorio == undefined)parametri.obbligatorio = true ;
         if (parametri.tipo == undefined) parametri.tipo = 'text';
         if (parametri.descrizione == undefined) parametri.descrizione = '';
         if (parametri.sommario == undefined) parametri.sommario = '';
@@ -112,6 +113,7 @@ function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, pos
         if (parametri.Validatore != undefined) paramestro.Validatore = parametri.Validatore;
 
         paramestro.autenticatore = parametri.autenticatore;
+        paramestro.obbligatorio = parametri.obbligatorio;
 
         SalvaListaClasseMetaData(list);
     }

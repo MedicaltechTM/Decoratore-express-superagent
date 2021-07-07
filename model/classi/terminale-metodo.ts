@@ -35,7 +35,7 @@ export class Risposta {
 
 export class TerminaleMetodo implements IDescrivibile {
 
-    swaggerClassi?: string[];
+    swaggerClassi: string[] = [];
 
     schemaSwagger?: any;
 
@@ -755,11 +755,11 @@ export class TerminaleMetodo implements IDescrivibile {
         else {
             let schema = ``;
             let parameters = ``;
-            let tags = '';
+            let tags = '"' + this.nome + '"';
             for (let index = 0; this.swaggerClassi && index < this.swaggerClassi.length; index++) {
                 const element = this.swaggerClassi[index];
-                if (index > 0) tags = tags + ', ';
-                tags = tags + element;
+                tags = tags + ', ';
+                tags = tags + '"' + element + '"';
             }
 
             for (let index = 0; index < this.listaParametri.length; index++) {
@@ -780,9 +780,6 @@ export class TerminaleMetodo implements IDescrivibile {
                         if (index2 > 0) properties = properties + ', ';
                         properties = properties +
                             `"${element2.nome}": {
-                                    "tags": [
-                                        ${tags}
-                                    ],
                                     "type": "${element2.tipo}",
                                     "example": "${element2.valoreEsempio}"
                                 }`;
@@ -796,12 +793,15 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                 }`;
                 if (index > 0) parameters = parameters + ', ';
+                if (element.obbligatorio == false) {
+                    console.log('qui');
+                }
                 if (element.tipo == 'array' && element.schemaSwagger) {
                     parameters = parameters + `{
                     "name": "${element.nome}",
                     "in": "${element.posizione}",
                     "description": "${element.descrizione}",
-                    "required": true,
+                    "required": ${element.obbligatorio},
                     "schema": {
                         "type": "array",
                         ${tipoArray}
@@ -813,7 +813,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     "name": "${element.nome}",
                     "in": "${element.posizione}",
                     "description": "${element.descrizione}",
-                    "required": "true",
+                    "required": "${element.obbligatorio}",
                     "schema": {
                         "type": "${element.tipo}"
                     }
@@ -854,15 +854,18 @@ export class TerminaleMetodo implements IDescrivibile {
 
             const ritorno = `"${this.percorsi.pathGlobal}": {
                 "${this.tipo}":{
+                    "tags": [
+                        ${tags}
+                    ],
                     "summary": "${this.sommario}",
-                "description": "${this.descrizione}",
-                "operationId": "paziente post signin",
-                "parameters": [
-                    ${parameters}
-                ],
-                "responses": {
-                    ${risposte}
-                }
+                    "description": "${this.descrizione}",
+                    "operationId": "${this.nome}",
+                    "parameters": [
+                        ${parameters}
+                    ],
+                    "responses": {
+                        ${risposte}
+                    }
                 }                
             }`;
 

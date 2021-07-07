@@ -1,4 +1,4 @@
-import { IRaccoltaPercorsi, targetTerminale } from "../tools";
+import { IClasse, IRaccoltaPercorsi, targetTerminale } from "../tools";
 
 
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
@@ -9,6 +9,9 @@ import chiedi from "prompts";
 import { Router } from "express";
 
 export class TerminaleClasse {
+
+    classeSwagger?= '';
+
     html?: string;
 
     static nomeMetadataKeyTarget = "ClasseTerminaleTarget";
@@ -47,6 +50,7 @@ export class TerminaleClasse {
 
         const pathGlobal = '/' + this.path;
         this.percorsi.pathGlobal = pathGlobal;
+        this.classeSwagger = '';
     }
 
     SettaPathRoot_e_Global(item: string, percorsi: IRaccoltaPercorsi, app: any) {
@@ -123,9 +127,9 @@ export class TerminaleClasse {
             if (index > 0 && tmp != undefined)
                 ritorno = ritorno + ', ';
             if (tmp != undefined)
-                ritorno = ritorno + tmp; 
+                ritorno = ritorno + tmp;
         }
-        return ritorno; 
+        return ritorno;
     }
 
 }
@@ -134,25 +138,36 @@ export class TerminaleClasse {
  * inizializza la classe, crea un rotta in express mediante il percorso specificato. 
  * @param percorso : di default il nome della classe
  */
-function decoratoreClasse(percorso?: string, LogGenerale?: any/*  ((logOut: any, result: any, logIn: any, errore: any) => void) */, Inizializzatore?: any): any {
+function decoratoreClasse(parametri: IClasse): any {
     return (ctr: Function) => {
         const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
         const classe = CheckClasseMetaData(ctr.name);
-        if (percorso) classe.SetPath = percorso;
+        if (parametri.percorso) classe.SetPath = parametri.percorso;
         else classe.SetPath = ctr.name;
-        if (LogGenerale) {
+        if (parametri.LogGenerale) {
             classe.listaMetodi.forEach(element => {
                 if (element.onChiamataCompletata == undefined)
-                    element.onChiamataCompletata = LogGenerale;
+                    element.onChiamataCompletata = parametri.LogGenerale;
             });
         }
-        if (Inizializzatore) {
+        if (parametri.Inizializzatore) {
             classe.listaMetodi.forEach(element => {
                 let contiene = false;
                 element.listaParametri.forEach(element => {
                     if (element.autenticatore == true) contiene = true;
                 });
-                if (contiene) element.Istanziatore = Inizializzatore;
+                if (contiene) element.Istanziatore = parametri.Inizializzatore;
+            });
+        }
+        if (parametri.classeSwagger && parametri.classeSwagger != '') {
+            classe.classeSwagger = parametri.classeSwagger;
+            classe.listaMetodi.forEach(element => {
+                if (element.swaggerClassi) {
+                    const ris = element.swaggerClassi.find(x => { if (x == parametri.classeSwagger) return true; else return false; })
+                    if (ris == undefined && parametri.classeSwagger) {
+                        element.swaggerClassi.push(parametri.classeSwagger);
+                    }
+                }
             });
         }
         SalvaListaClasseMetaData(tmp);

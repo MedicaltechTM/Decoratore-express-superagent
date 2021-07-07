@@ -217,7 +217,7 @@ export interface IParametro {
     /*indica se il paramtro è un autenticatore, per esempio come un barrer token o un username, questo puo essere reperito facimente in ListaTerminaleParametro o IParametriEstratti */
     autenticatore?: boolean,
 
-    obbligatorio: boolean;
+    obbligatorio?: boolean;
 
     Validatore?: (parametro: any) => IRitornoValidatore
 
@@ -339,6 +339,14 @@ export interface IMetodo {
             }
         }
     };
+}
+
+export interface IClasse {
+    percorso?: string,
+    LogGenerale?: any,
+    /*  ((logOut: any, result: any, logIn: any, errore: any) => void) */
+    Inizializzatore?: any,
+    classeSwagger?: string
 }
 
 export interface IHtml {

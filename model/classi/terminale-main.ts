@@ -5,7 +5,7 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import { SalvaListaClasseMetaData } from "./terminale-classe";
 
 import * as http from 'http';
-import { ListaTerminaleTest } from "../liste/lista-terminale-test";
+import { ListaTerminaleTest } from "../liste/lista-terminale-test"; 
 
 import swaggerUI from "swagger-ui-express";
 
@@ -184,6 +184,7 @@ export class Main {
     } */
 
     InizializzaSwagger() {
+        let ritorno = '';
         try {
 
             let swaggerClassePath = '';
@@ -195,7 +196,7 @@ export class Main {
                 if (tmp != undefined && tmp != undefined && tmp != '')
                     swaggerClassePath = swaggerClassePath + tmp;
             }
-            const ritorno = ` {
+            ritorno = ` {
             "openapi": "3.0.0",
             "servers": [
                 {
@@ -231,9 +232,14 @@ export class Main {
             "security": []
         }`;
 
+
             this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
 
-            const swaggerClassiTesto = [];
+            /* const swaggerClassiTesto: {
+                numeroElementi: number,
+                testo: string,
+                nomeClasse: string
+            }[] = [];
 
             for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
                 const tmpClasse = this.listaTerminaleClassi[index];
@@ -242,16 +248,77 @@ export class Main {
                     if (tmpMetodo.swaggerClassi) {
                         for (let index3 = 0; index3 < tmpMetodo.swaggerClassi.length; index3++) {
                             const classeSwagger = tmpMetodo.swaggerClassi[index3];
-                            tmpMetodo.SettaSwagger();
+
+                            const tmp = tmpMetodo.SettaSwagger();
+
+                            let inserito = false;
+
+                            for (let indexs4 = 0; indexs4 < swaggerClassiTesto.length; indexs4++) {
+                                const element = swaggerClassiTesto[indexs4];
+                                if (element.nomeClasse == classeSwagger) {
+                                    if (element.numeroElementi > 0 && tmp != undefined && tmp != undefined && tmp != '')
+                                        element.testo = element.testo + ', ';
+                                    if (tmp != undefined && tmp != undefined && tmp != '')
+                                        element.testo = element.testo + tmp;
+                                    inserito = true;
+                                }
+                            }
+                            if (tmp && inserito == false)
+                                swaggerClassiTesto.push({
+                                    nomeClasse: classeSwagger,
+                                    numeroElementi: 1,
+                                    testo: tmp
+                                });
                         }
                     }
                 }
             }
 
+            for (let index = 0; index < swaggerClassiTesto.length; index++) {
+                const element = swaggerClassiTesto[index];
+                const ritorno2 = ` {
+                    "openapi": "3.0.0",
+                    "servers": [
+                        {
+                            "url": "https://staisicuro.medicaltech.it/",
+                            "variables": {},
+                            "description": "indirizzo principale"
+                        },
+                        {
+                            "url": "http://ss-test.medicaltech.it/",
+                            "description": "indirizzo secondario nel caso quello principale non dovesse funzionare."
+                        }
+                    ],
+                    "info": {
+                        "description": "Documentazione delle API con le quali interrogare il server dell'applicazione STAI sicuro, per il momento qui troverai solo le api con le quali interfacciarti alla parte relativa al paziente.Se vi sono problemi sollevare degli issues o problemi sulla pagina di github oppure scrivere direttamente una email.",
+                        "version": "1.0.0",
+                        "title": "STAI sicuro",
+                        "termsOfService": "https://github.com/MedicaltechTM/STAI_sicuro"
+                    },
+                    "tags": [],
+                    "paths": {
+                        ${element.testo}
+                    },
+                    "externalDocs": {
+                        "description": "Per il momento non vi sono documentazione esterne.",
+                        "url": "-"
+                    },
+                    "components": {
+                        "schemas": {},
+                        "securitySchemes": {},
+                        "links": {},
+                        "callbacks": {}                
+                    },
+                    "security": []
+                }`;
+
+                this.serverExpressDecorato.use("/api-docs-" + element.nomeClasse, swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno2)));
+            } */
+
             return ritorno;
         } catch (error) {
             console.log(error);
-            return undefined;
+            return ritorno;
         }
     }
 
