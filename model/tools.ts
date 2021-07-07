@@ -216,12 +216,15 @@ export interface IParametro {
     dovePossoTrovarlo?: TypeDovePossoTrovarlo,
     /*indica se il paramtro è un autenticatore, per esempio come un barrer token o un username, questo puo essere reperito facimente in ListaTerminaleParametro o IParametriEstratti */
     autenticatore?: boolean,
+
+    obbligatorio?: boolean;
+
     Validatore?: (parametro: any) => IRitornoValidatore
 
     schemaSwagger?: {
         nome: string,
         valoreEsempio: string,
-        tipo:string
+        tipo: string
     }[]
 }
 
@@ -267,6 +270,7 @@ export interface IClasseRiferimento {
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  */
 export interface IMetodo {
+    swaggerClassi?: string[];
     schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean,
@@ -335,6 +339,14 @@ export interface IMetodo {
             }
         }
     };
+}
+
+export interface IClasse {
+    percorso?: string,
+    LogGenerale?: any,
+    /*  ((logOut: any, result: any, logIn: any, errore: any) => void) */
+    Inizializzatore?: any,
+    classeSwagger?: string
 }
 
 export interface IHtml {

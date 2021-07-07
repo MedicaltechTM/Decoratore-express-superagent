@@ -5,7 +5,7 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import { SalvaListaClasseMetaData } from "./terminale-classe";
 
 import * as http from 'http';
-import { ListaTerminaleTest } from "../liste/lista-terminale-test";
+import { ListaTerminaleTest } from "../liste/lista-terminale-test"; 
 
 import swaggerUI from "swagger-ui-express";
 
@@ -57,46 +57,14 @@ export class Main {
             const pathGlobal = '/' + this.path;
             this.percorsi.pathGlobal = pathGlobal;
 
-            //this.serverExpressDecorato.use(urlencoded({ 'extended': true })); // parse application/x-www-form-urlencoded
-            //this.serverExpressDecorato.use(bodyParser.urlencoded());
             (<any>this.serverExpressDecorato).use(express.json());
-            /* this.serverExpressDecorato.use(express.urlencoded({
-                extended: true
-            })); */
-            //this.serverExpressDecorato.use(BodyParseJson({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 
             this.serverExpressDecorato.route
             for (let index = 0; index < tmp.length; index++) {
                 const element = tmp[index];
-                /* this.serverExpressDecorato.use(bodyParser.json({
-                    limit: '50mb',
-                    verify(req: any, res, buf, encoding) {
-                        req.rawBody = buf;
-                    }
-                })); */
                 element.SettaPathRoot_e_Global(this.path, this.percorsi, this.serverExpressDecorato);
-
-                //this.serverExpressDecorato.use(element.GetPath, element.rotte);
             }
-
-            /* this.serverExpressDecorato.use(function (req, res, next) {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
-                res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-
-                //intercepts OPTIONS method
-                if ('OPTIONS' === req.method) {
-                    //respond with 200
-                    res.send(200);
-                }
-                else {
-                    //move on
-                    next();
-                }
-            }); */
-
             this.httpServer = http.createServer(this.serverExpressDecorato);
-
             SalvaListaClasseMetaData(tmp);
         }
         else {
@@ -216,6 +184,7 @@ export class Main {
     } */
 
     InizializzaSwagger() {
+        let ritorno = '';
         try {
 
             let swaggerClassePath = '';
@@ -227,7 +196,7 @@ export class Main {
                 if (tmp != undefined && tmp != undefined && tmp != '')
                     swaggerClassePath = swaggerClassePath + tmp;
             }
-            const ritorno = ` {
+            ritorno = ` {
             "openapi": "3.0.0",
             "servers": [
                 {
@@ -262,23 +231,94 @@ export class Main {
             },
             "security": []
         }`;
-            /* 
-            ritorno = ritorno.replace('\n', '');
-            ritorno = ritorno.replace(',\n', ',');
-            ritorno = ritorno.replace('},\n', '},');
-            ritorno = ritorno.replace('{},\n', '{},');
-            ritorno = ritorno.replace('}\n', '}');
-            ritorno = ritorno.replace('{\n', '{');
-            ritorno = ritorno.replace(']\n', ']');
-            ritorno = ritorno.replace('[\n', '[');
-            ritorno = ritorno.replace('"\n', '"'); 
-            const json = JSON.parse(ritorno); 
-            */
+
+
             this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
+
+            /* const swaggerClassiTesto: {
+                numeroElementi: number,
+                testo: string,
+                nomeClasse: string
+            }[] = [];
+
+            for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
+                const tmpClasse = this.listaTerminaleClassi[index];
+                for (let index2 = 0; index2 < tmpClasse.listaMetodi.length; index2++) {
+                    const tmpMetodo = tmpClasse.listaMetodi[index2];
+                    if (tmpMetodo.swaggerClassi) {
+                        for (let index3 = 0; index3 < tmpMetodo.swaggerClassi.length; index3++) {
+                            const classeSwagger = tmpMetodo.swaggerClassi[index3];
+
+                            const tmp = tmpMetodo.SettaSwagger();
+
+                            let inserito = false;
+
+                            for (let indexs4 = 0; indexs4 < swaggerClassiTesto.length; indexs4++) {
+                                const element = swaggerClassiTesto[indexs4];
+                                if (element.nomeClasse == classeSwagger) {
+                                    if (element.numeroElementi > 0 && tmp != undefined && tmp != undefined && tmp != '')
+                                        element.testo = element.testo + ', ';
+                                    if (tmp != undefined && tmp != undefined && tmp != '')
+                                        element.testo = element.testo + tmp;
+                                    inserito = true;
+                                }
+                            }
+                            if (tmp && inserito == false)
+                                swaggerClassiTesto.push({
+                                    nomeClasse: classeSwagger,
+                                    numeroElementi: 1,
+                                    testo: tmp
+                                });
+                        }
+                    }
+                }
+            }
+
+            for (let index = 0; index < swaggerClassiTesto.length; index++) {
+                const element = swaggerClassiTesto[index];
+                const ritorno2 = ` {
+                    "openapi": "3.0.0",
+                    "servers": [
+                        {
+                            "url": "https://staisicuro.medicaltech.it/",
+                            "variables": {},
+                            "description": "indirizzo principale"
+                        },
+                        {
+                            "url": "http://ss-test.medicaltech.it/",
+                            "description": "indirizzo secondario nel caso quello principale non dovesse funzionare."
+                        }
+                    ],
+                    "info": {
+                        "description": "Documentazione delle API con le quali interrogare il server dell'applicazione STAI sicuro, per il momento qui troverai solo le api con le quali interfacciarti alla parte relativa al paziente.Se vi sono problemi sollevare degli issues o problemi sulla pagina di github oppure scrivere direttamente una email.",
+                        "version": "1.0.0",
+                        "title": "STAI sicuro",
+                        "termsOfService": "https://github.com/MedicaltechTM/STAI_sicuro"
+                    },
+                    "tags": [],
+                    "paths": {
+                        ${element.testo}
+                    },
+                    "externalDocs": {
+                        "description": "Per il momento non vi sono documentazione esterne.",
+                        "url": "-"
+                    },
+                    "components": {
+                        "schemas": {},
+                        "securitySchemes": {},
+                        "links": {},
+                        "callbacks": {}                
+                    },
+                    "security": []
+                }`;
+
+                this.serverExpressDecorato.use("/api-docs-" + element.nomeClasse, swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno2)));
+            } */
+
             return ritorno;
         } catch (error) {
             console.log(error);
-            return undefined;
+            return ritorno;
         }
     }
 

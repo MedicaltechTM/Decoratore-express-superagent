@@ -7,9 +7,9 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 
 export class TerminaleParametro implements IDescrivibile, IParametro {
     schemaSwagger?: {
-        nome:string,
-        valoreEsempio:string,
-        tipo:string
+        nome: string,
+        valoreEsempio: string,
+        tipo: string
     }[];
 
     valore: any;
@@ -25,6 +25,8 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
     autenticatore: boolean;
 
+    obbligatorio: boolean;
+
 
     Validatore?: (parametro: any) => IRitornoValidatore;
     constructor(nome: string, tipo: tipo, posizione: TypePosizione, indexParameter: number) {
@@ -36,6 +38,7 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
         this.descrizione = "";
         this.sommario = "";
         this.autenticatore = false;
+        this.obbligatorio = true;
     }
 
     /******************************* */
@@ -82,6 +85,7 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, posizione: TypePosizione, tipo?: tipo, descrizione?: string, sommario?: string) */ {
     return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
 
+        if(parametri.obbligatorio == undefined)parametri.obbligatorio = true ;
         if (parametri.tipo == undefined) parametri.tipo = 'text';
         if (parametri.descrizione == undefined) parametri.descrizione = '';
         if (parametri.sommario == undefined) parametri.sommario = '';
@@ -109,6 +113,7 @@ function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, pos
         if (parametri.Validatore != undefined) paramestro.Validatore = parametri.Validatore;
 
         paramestro.autenticatore = parametri.autenticatore;
+        paramestro.obbligatorio = parametri.obbligatorio;
 
         SalvaListaClasseMetaData(list);
     }

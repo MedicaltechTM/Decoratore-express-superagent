@@ -1,4 +1,4 @@
-import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRisposta, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, IClasseRiferimento, IDescrivibile, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -17,7 +17,25 @@ import Handlebars from "handlebars";
 /* export interface ITerminaleMetodo {
 
 } */
+
+export class Risposta {
+    stato: number;
+    descrizione: string;
+    valori: {
+        nome: string,
+        tipo: tipo,
+        note?: string
+    }[];
+    constructor() {
+        this.stato = 200;
+        this.descrizione = '';
+        this.valori = [];
+    }
+}
+
 export class TerminaleMetodo implements IDescrivibile {
+
+    swaggerClassi: string[] = [];
 
     schemaSwagger?: any;
 
@@ -57,19 +75,7 @@ export class TerminaleMetodo implements IDescrivibile {
         body: any, query: any, header: any
     }[] = [];
 
-    onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
-    onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
-    onParametriNonTrovati?: (nonTrovati?: INonTrovato[]) => void;
-
-    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
-    onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any[];
-    onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
-    onPrimaDiEseguireExpress?: (req: Request) => void;
-    onPrimaDirestituireResponseExpress?: () => void;
-    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
-    Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
-
-    Risposte?: IRisposta[] = []
+    Risposte?: Risposta[] = []
 
     RispondiConHTML?: {
         trigger?: { nome: string, valre: any, posizione: TypePosizione },
@@ -96,6 +102,18 @@ export class TerminaleMetodo implements IDescrivibile {
             }
         }
     };
+
+    onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
+    onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
+    onParametriNonTrovati?: (nonTrovati?: INonTrovato[]) => void;
+
+    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
+    onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any[];
+    onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
+    onPrimaDiEseguireExpress?: (req: Request) => void;
+    onPrimaDirestituireResponseExpress?: () => void;
+    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+    Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 
     constructor(nome: string, path: string, classePath: string) {
         this.listaParametri = new ListaTerminaleParametro();
@@ -527,7 +545,7 @@ export class TerminaleMetodo implements IDescrivibile {
     }
 
     async EseguiMetodo(parametri: IParametriEstratti) {
-        let tmpReturn: any = ''; 
+        let tmpReturn: any = '';
         if (this.AlPostoDi) {
             tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
         }
@@ -579,7 +597,6 @@ export class TerminaleMetodo implements IDescrivibile {
         ////console.log(tmp);
         return tmp;
     }
-
 
     async ChiamaLaRotta(headerpath?: string) {
         try {
@@ -667,6 +684,7 @@ export class TerminaleMetodo implements IDescrivibile {
             throw new Error("Errore :" + error);
         }
     }
+
     async ChiamaLaRottaConParametri(body: any, query: any, header: any) {
         try {
             let ritorno;
@@ -737,6 +755,13 @@ export class TerminaleMetodo implements IDescrivibile {
         else {
             let schema = ``;
             let parameters = ``;
+            let tags = '"' + this.nome + '"';
+            for (let index = 0; this.swaggerClassi && index < this.swaggerClassi.length; index++) {
+                const element = this.swaggerClassi[index];
+                tags = tags + ', ';
+                tags = tags + '"' + element + '"';
+            }
+
             for (let index = 0; index < this.listaParametri.length; index++) {
                 const element = this.listaParametri[index];
                 if (index > 0) schema = schema + ', ';
@@ -744,6 +769,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     "type": "${element.tipo}"
                 }`;
             }
+
             for (let index = 0; index < this.listaParametri.length; index++) {
                 const element = this.listaParametri[index];
 
@@ -767,12 +793,15 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                 }`;
                 if (index > 0) parameters = parameters + ', ';
+                if (element.obbligatorio == false) {
+                    console.log('qui');
+                }
                 if (element.tipo == 'array' && element.schemaSwagger) {
                     parameters = parameters + `{
                     "name": "${element.nome}",
                     "in": "${element.posizione}",
                     "description": "${element.descrizione}",
-                    "required": true,
+                    "required": ${element.obbligatorio},
                     "schema": {
                         "type": "array",
                         ${tipoArray}
@@ -784,7 +813,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     "name": "${element.nome}",
                     "in": "${element.posizione}",
                     "description": "${element.descrizione}",
-                    "required": "true",
+                    "required": "${element.obbligatorio}",
                     "schema": {
                         "type": "${element.tipo}"
                     }
@@ -825,15 +854,18 @@ export class TerminaleMetodo implements IDescrivibile {
 
             const ritorno = `"${this.percorsi.pathGlobal}": {
                 "${this.tipo}":{
+                    "tags": [
+                        ${tags}
+                    ],
                     "summary": "${this.sommario}",
-                "description": "${this.descrizione}",
-                "operationId": "paziente post signin",
-                "parameters": [
-                    ${parameters}
-                ],
-                "responses": {
-                    ${risposte}
-                }
+                    "description": "${this.descrizione}",
+                    "operationId": "${this.nome}",
+                    "parameters": [
+                        ${parameters}
+                    ],
+                    "responses": {
+                        ${risposte}
+                    }
                 }                
             }`;
 
@@ -864,10 +896,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
         /* inizio a lavorare sul metodo */
         if (metodo != undefined && list != undefined && classe != undefined) {
-            /* metodo.metodoAvviabile = function (...args: any[]) {
-                var originalMethod = descriptor.value;
-                return originalMethod.apply(this, args);
-            } */
+
             if (parametri.Risposte) metodo.Risposte = parametri.Risposte;
 
             if (parametri.listaHtml) {
@@ -901,14 +930,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
             if (parametri.listaTest)
                 metodo.listaTest = parametri.listaTest;
 
-            metodo.metodoAvviabile = descriptor.value;//la prendo come riferimento 
-            /* descriptor.value = function (...args: any[]) {
-                funcToCallEveryTime(...args);
-                return originalMethod.apply(this, args);
-            } */
-            /* var originalMethod = descriptor.value;
-
-            descriptor.value = metodo.metodoAvviabile; */
+            metodo.metodoAvviabile = descriptor.value;
 
             if (parametri.percorsoIndipendente) metodo.percorsoIndipendente = parametri.percorsoIndipendente;
             else metodo.percorsoIndipendente = false;
@@ -1016,6 +1038,11 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                     }
                 }
             }
+
+            if (parametri.swaggerClassi != undefined)
+                metodo.swaggerClassi = parametri.swaggerClassi;
+
+
             SalvaListaClasseMetaData(list);
         }
         else {

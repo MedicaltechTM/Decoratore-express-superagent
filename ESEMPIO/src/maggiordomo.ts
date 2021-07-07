@@ -29,7 +29,7 @@ import { Conoscere } from "./conoscere";
     ]
 }) */
 @Entity({ name: "Maggiordomo" })
-@mpClas("Maggiordomo")
+@mpClas({percorso:"Maggiordomo"})
 export class Maggiordomo {
 
     static async Istanziatore(parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) {
@@ -89,7 +89,7 @@ export class Maggiordomo {
     @mpMetHtml({ path: 'MaggiordomoSaluta.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false })
     @mpMetHtml({ path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false }) */
     @mpMet({
-        path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, tipo: 'get',
+        path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, tipo: 'get', swaggerClassi: ['medico'],
         listaTest: [
             {
                 body: {},
