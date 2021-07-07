@@ -7,9 +7,9 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 
 export class TerminaleParametro implements IDescrivibile, IParametro {
     schemaSwagger?: {
-        nome:string,
-        valoreEsempio:string,
-        tipo:string
+        nome: string,
+        valoreEsempio: string,
+        tipo: string
     }[];
 
     valore: any;
@@ -25,6 +25,8 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
     autenticatore: boolean;
 
+    obbligatorio: boolean;
+
 
     Validatore?: (parametro: any) => IRitornoValidatore;
     constructor(nome: string, tipo: tipo, posizione: TypePosizione, indexParameter: number) {
@@ -36,6 +38,7 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
         this.descrizione = "";
         this.sommario = "";
         this.autenticatore = false;
+        this.obbligatorio = true;
     }
 
     /******************************* */

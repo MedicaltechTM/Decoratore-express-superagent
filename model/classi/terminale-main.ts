@@ -57,46 +57,14 @@ export class Main {
             const pathGlobal = '/' + this.path;
             this.percorsi.pathGlobal = pathGlobal;
 
-            //this.serverExpressDecorato.use(urlencoded({ 'extended': true })); // parse application/x-www-form-urlencoded
-            //this.serverExpressDecorato.use(bodyParser.urlencoded());
             (<any>this.serverExpressDecorato).use(express.json());
-            /* this.serverExpressDecorato.use(express.urlencoded({
-                extended: true
-            })); */
-            //this.serverExpressDecorato.use(BodyParseJson({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 
             this.serverExpressDecorato.route
             for (let index = 0; index < tmp.length; index++) {
                 const element = tmp[index];
-                /* this.serverExpressDecorato.use(bodyParser.json({
-                    limit: '50mb',
-                    verify(req: any, res, buf, encoding) {
-                        req.rawBody = buf;
-                    }
-                })); */
                 element.SettaPathRoot_e_Global(this.path, this.percorsi, this.serverExpressDecorato);
-
-                //this.serverExpressDecorato.use(element.GetPath, element.rotte);
             }
-
-            /* this.serverExpressDecorato.use(function (req, res, next) {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
-                res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-
-                //intercepts OPTIONS method
-                if ('OPTIONS' === req.method) {
-                    //respond with 200
-                    res.send(200);
-                }
-                else {
-                    //move on
-                    next();
-                }
-            }); */
-
             this.httpServer = http.createServer(this.serverExpressDecorato);
-
             SalvaListaClasseMetaData(tmp);
         }
         else {
@@ -262,19 +230,24 @@ export class Main {
             },
             "security": []
         }`;
-            /* 
-            ritorno = ritorno.replace('\n', '');
-            ritorno = ritorno.replace(',\n', ',');
-            ritorno = ritorno.replace('},\n', '},');
-            ritorno = ritorno.replace('{},\n', '{},');
-            ritorno = ritorno.replace('}\n', '}');
-            ritorno = ritorno.replace('{\n', '{');
-            ritorno = ritorno.replace(']\n', ']');
-            ritorno = ritorno.replace('[\n', '[');
-            ritorno = ritorno.replace('"\n', '"'); 
-            const json = JSON.parse(ritorno); 
-            */
+
             this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
+
+            const swaggerClassiTesto = [];
+
+            for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
+                const tmpClasse = this.listaTerminaleClassi[index];
+                for (let index2 = 0; index2 < tmpClasse.listaMetodi.length; index2++) {
+                    const tmpMetodo = tmpClasse.listaMetodi[index2];
+                    if (tmpMetodo.swaggerClassi) {
+                        for (let index3 = 0; index3 < tmpMetodo.swaggerClassi.length; index3++) {
+                            const classeSwagger = tmpMetodo.swaggerClassi[index3];
+                            tmpMetodo.SettaSwagger();
+                        }
+                    }
+                }
+            }
+
             return ritorno;
         } catch (error) {
             console.log(error);

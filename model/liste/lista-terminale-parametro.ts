@@ -1,5 +1,5 @@
 
-import {  Request } from "express";
+import { Request } from "express";
 
 import { TerminaleParametro } from "../classi/terminale-parametro";
 import { IParametri, IParametriEstratti, TypeInterazone } from "../tools";
@@ -29,22 +29,23 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                 tmp = richiesta.headers[element.nome];
             }
             else {
-                ritorno.nontrovato.push({
-                    nome: element.nome,
-                    posizioneParametro: element.indexParameter
-                });
+                if (element.obbligatorio == true) {
+                    ritorno.nontrovato.push({
+                        nome: element.nome,
+                        posizioneParametro: element.indexParameter
+                    });
+                } else {
+                    tmp = undefined;
+                }
             }
             if (element.Validatore) {
                 const rit = element.Validatore(tmp)
                 if (rit.approvato == false) {
-                    /* rit.terminale = {
-                        nome: element.nome, posizione: element.posizione, tipo: element.tipo, descrizione: element.descrizione, sommario: element.sommario
-                    } */
                     rit.terminale = element;
                     ritorno.errori.push(rit)
                 }
             }
-            
+
             ritorno.valoriParametri.push(tmp);
         }
 

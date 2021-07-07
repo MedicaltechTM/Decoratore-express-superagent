@@ -6,13 +6,14 @@ import { targetTerminale } from "../tools";
 
 export class TerminaleTest {
 
-    static nomeMetadataKeyTarget = "MetodoTerminaleTarget";
+    static nomeMetadataKeyTarget = "TestTerminaleTarget";
 
     listaTest?: ITest;
     constructor(item: any) {
         this.listaTest = item;
     }
 }
+
 function decoratoreTestClasse(parametri: ITest): any {
     return (ctr: FunctionConstructor) => {
         const tmp: ListaTerminaleTest = GetListaTestMetaData();
