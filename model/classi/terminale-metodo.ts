@@ -17,30 +17,6 @@ import Handlebars from "handlebars";
 /* export interface ITerminaleMetodo {
 
 } */
-
-export class Risposta implements IRisposta {
-    stato: number;
-    descrizione: string;
-    valori: {
-        nome: string,
-        tipo: tipo,
-        note?: string
-    }[];
-
-    trigger?: { nome: string, valre: any, posizione: TypePosizione };
-
-    htmlPath?: string;
-    html?: string;
-
-    isHandlebars: boolean = false;
-
-    constructor() {
-        this.stato = 200;
-        this.descrizione = '';
-        this.valori = [];
-    }
-}
-
 export class TerminaleMetodo implements IDescrivibile {
 
     schemaSwagger?: any;
@@ -63,7 +39,6 @@ export class TerminaleMetodo implements IDescrivibile {
     classePath = '';
     listaParametri: ListaTerminaleParametro;
     tipo: TypeMetod;
-
     tipoInterazione: TypeInterazone;
     nome: string | Symbol;
     metodoAvviabile: any;
@@ -94,33 +69,33 @@ export class TerminaleMetodo implements IDescrivibile {
     AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 
-    Risposte?: Risposta[] = []
-    /* 
-        RispondiConHTML?: {
-            trigger?: { nome: string, valre: any, posizione: TypePosizione },
-            risposta: {
-                "1xx"?: {
-                    htmlPath?: string,
-                    html?: string
-                },
-                "2xx"?: {
-                    htmlPath?: string,
-                    html?: string
-                },
-                "3xx"?: {
-                    htmlPath?: string,
-                    html?: string
-                },
-                "4xx"?: {
-                    htmlPath?: string,
-                    html?: string
-                },
-                "5xx"?: {
-                    htmlPath?: string,
-                    html?: string
-                }
+    Risposte?: IRisposta[] = []
+
+    RispondiConHTML?: {
+        trigger?: { nome: string, valre: any, posizione: TypePosizione },
+        risposta: {
+            "1xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "2xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "3xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "4xx"?: {
+                htmlPath?: string,
+                html?: string
+            },
+            "5xx"?: {
+                htmlPath?: string,
+                html?: string
             }
-        }; */
+        }
+    };
 
     constructor(nome: string, path: string, classePath: string) {
         this.listaParametri = new ListaTerminaleParametro();
@@ -365,36 +340,25 @@ export class TerminaleMetodo implements IDescrivibile {
                         passato = true;
                     }
                     else {
-                        if (this.Risposte && this.Risposte.length) {
+                        if (this.RispondiConHTML) {
                             let source = "";
-                            if (tmp.stato >= 200 && tmp.stato < 300 && this.VerificaTrigger(tmp.stato)) {
-                                const risposta = this.CercaRestituisciTrigger(req);
-                                if (risposta) {
-                                    if (risposta.html != undefined)
-                                        source = fs.readFileSync(tmp.htmlPath).toString();
-                                    else if (risposta.htmlPath != undefined)
-                                        source = tmp.html;
-                                    else
-                                        throw new Error("Errorissimo");
-                                    if (risposta.isHandlebars) {
-                                        const template = Handlebars.compile(source);
-
-                                        const data = tmp.body;
-                                        const result = template(data);
-
-                                        res.statusCode = Number.parseInt('' + tmp.stato);
-                                        res.send(result);
-                                        passato = true;
-                                    }
-                                    else{
-                                        
-                                        res.statusCode = Number.parseInt('' + tmp.stato);
-                                        res.send(source);
-                                        passato = true;
-                                    }
-                                }
-
+                            if (tmp.stato >= 200 && tmp.stato < 300 && this.RispondiConHTML.risposta["2xx"]) {
+                                if (this.RispondiConHTML.risposta["2xx"].htmlPath != undefined)
+                                    source = fs.readFileSync(this.RispondiConHTML.risposta["2xx"].htmlPath).toString();
+                                else if (this.RispondiConHTML.risposta["2xx"].html != undefined)
+                                    source = this.RispondiConHTML.risposta["2xx"].html;
+                                else
+                                    throw new Error("Errorissimo");
                             }
+
+                            const template = Handlebars.compile(source);
+
+                            const data = tmp.body;
+                            const result = template(data);
+
+                            res.statusCode = Number.parseInt('' + tmp.stato);
+                            res.send(result);
+                            passato = true;
                         }
                         else {
                             throw new Error("Errore gnel trigger");
@@ -430,45 +394,21 @@ export class TerminaleMetodo implements IDescrivibile {
         }
     }
 
-    VerificaTrigger(richiesta: Request): /* Risposta| */boolean {
+    VerificaTrigger(richiesta: Request): boolean {
 
         let tmp = undefined;
-        if (this.Risposte)
-            for (let index = 0; index < this.Risposte.length; index++) {
-                const element = this.Risposte[index];
-                if (element && element.trigger) {
-                    if (element.trigger.posizione == 'body')
-                        tmp = richiesta.body[element.trigger.nome];
-                    if (element.trigger.posizione == 'header')
-                        tmp = richiesta.headers[element.trigger.nome];
-                    if (element.trigger.posizione == 'query')
-                        tmp = richiesta.query[element.trigger.nome];
+        if (this.RispondiConHTML && this.RispondiConHTML.trigger) {
+            if (this.RispondiConHTML.trigger.posizione == 'body')
+                tmp = richiesta.body[this.RispondiConHTML.trigger.nome];
+            if (this.RispondiConHTML.trigger.posizione == 'header')
+                tmp = richiesta.headers[this.RispondiConHTML.trigger.nome];
+            if (this.RispondiConHTML.trigger.posizione == 'query')
+                tmp = richiesta.query[this.RispondiConHTML.trigger.nome];
 
-                    if (tmp == element.trigger.valre) return true;
-                    /* else return true; */
-                }
-            }
+            if (tmp == this.RispondiConHTML.trigger.valre) return false;
+            else return true;
+        }
         return false;
-    }
-    CercaRestituisciTrigger(richiesta: Request): Risposta | undefined {
-
-        let tmp = undefined;
-        if (this.Risposte)
-            for (let index = 0; index < this.Risposte.length; index++) {
-                const element = this.Risposte[index];
-                if (element && element.trigger) {
-                    if (element.trigger.posizione == 'body')
-                        tmp = richiesta.body[element.trigger.nome];
-                    if (element.trigger.posizione == 'header')
-                        tmp = richiesta.headers[element.trigger.nome];
-                    if (element.trigger.posizione == 'query')
-                        tmp = richiesta.query[element.trigger.nome];
-
-                    if (tmp == element.trigger.valre) return element;
-                    /* else return true; */
-                }
-            }
-        return undefined;
     }
 
     CercaParametroSeNoAggiungi(nome: string, parameterIndex: number, tipo: tipo, posizione: TypePosizione) {
@@ -587,7 +527,7 @@ export class TerminaleMetodo implements IDescrivibile {
     }
 
     async EseguiMetodo(parametri: IParametriEstratti) {
-        let tmpReturn: any = '';
+        let tmpReturn: any = ''; 
         if (this.AlPostoDi) {
             tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
         }
@@ -955,6 +895,8 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                 }
             }
 
+            if (parametri.RispondiConHTML)
+                metodo.RispondiConHTML = parametri.RispondiConHTML;
 
             if (parametri.listaTest)
                 metodo.listaTest = parametri.listaTest;
@@ -1172,10 +1114,5 @@ export function mpAddMiddle(item: any): MethodDecorator {
     }
 }
 
-export function mpRitorno(value: string) {
-    return function (target: ny) {
-        console.log('ciao');
-    }
-}
 
 export { decoratoreMetodo as mpMet };

@@ -248,10 +248,6 @@ export interface IClasseRiferimento {
     listaMiddleware?: any[]
 }
 
-interface ISwagger{
-    
-    schemaSwagger?: any;
-}
 /**
  * Specifica il tipo, questo puo essere: "get" | "put" | "post" | "patch" | "purge" | "delete" 
  * tipo?: TypeMetod,
@@ -270,8 +266,7 @@ interface ISwagger{
 
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  */
-export interface IMetodo extends ISwagger {
-
+export interface IMetodo {
     schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean,
