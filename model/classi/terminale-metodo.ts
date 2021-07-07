@@ -345,7 +345,7 @@ export class TerminaleMetodo implements IDescrivibile {
         let passato = false;
         let logIn: any;
         let logOut: any;
-        let tmp: any;
+        let tmp: IReturn | undefined;
         try {
             //console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
@@ -378,9 +378,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             }
                             if (risposta.isHandlebars) {
                                 const template = Handlebars.compile(source);
-
-                                const result = template(tmp.data);
-
+                                const result = template(tmp.body);
                                 res.statusCode = Number.parseInt('' + risposta.stato);
                                 res.send(result);
                                 passato = true;
@@ -389,8 +387,6 @@ export class TerminaleMetodo implements IDescrivibile {
                                 res.send(source);
                                 passato = true;
                             }
-
-
                         }
                         else {
                             throw new Error("Errore gnel trigger");
@@ -474,6 +470,7 @@ export class TerminaleMetodo implements IDescrivibile {
         this.listaParametri.push(tmp);//.lista.push({ propertyKey: propertyKey, Metodo: target });
         return tmp;
     }
+    
     async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);

@@ -291,6 +291,8 @@ export interface IMetodo {
 
     Risposte?: Risposta[];
 
+    onChiamataInErrore?: (logOut: string, result: any, logIn: string, errore: any) => IReturn
+
     onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
