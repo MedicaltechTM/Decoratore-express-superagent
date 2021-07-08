@@ -13,7 +13,7 @@ export interface IDescrivibile {
     sommario: string;
 }
 
-export type tipo = "number" | "text" | "date" | "array" | "object";
+export type tipo = "number" | "text" | "date" | "array" | "object" | "boolean";
 
 export interface ILogbase {
     data: Date;

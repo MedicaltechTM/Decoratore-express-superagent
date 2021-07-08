@@ -321,7 +321,6 @@ export class Main {
 
             return ritorno;
         } catch (error) {
-            console.log(error);
             return ritorno;
         }
     }

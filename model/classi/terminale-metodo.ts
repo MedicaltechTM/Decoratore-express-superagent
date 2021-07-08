@@ -30,7 +30,7 @@ export class Risposta {
     trigger?: { nome: string, valre: any, posizione: TypePosizione };
     htmlPath?: string;
     html?: string;
-    isHandlebars: boolean;
+    isHandlebars?: boolean;
 
     constructor() {
         this.stato = 200;
@@ -803,7 +803,9 @@ export class TerminaleMetodo implements IDescrivibile {
                 const element = this.listaParametri[index];
                 if (index > 0) schema = schema + ', ';
                 schema = schema + `"${element.nome}": {
-                    "type": "${element.tipo}"
+                    "${element.nome}":{
+                        "type": "${element.tipo}"
+                    }
                 }`;
             }
 
@@ -830,12 +832,8 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                 }`;
                 if (index > 0) parameters = parameters + ', ';
-                if (element.obbligatorio == false) {
-                    console.log('qui');
-                }
                 if (element.tipo == 'array' && element.schemaSwagger) {
                     if (element.obbligatorio) {
-                        console.log("");
                         parameters = parameters +
                             `{
                             "in": "${element.posizione}",
@@ -848,7 +846,6 @@ export class TerminaleMetodo implements IDescrivibile {
                             }
                         }`;
                     } else {
-                        console.log("");
                         parameters = parameters +
                             `{
                             "in": "${element.posizione}",
@@ -873,7 +870,7 @@ export class TerminaleMetodo implements IDescrivibile {
                 }
                 else {
                     if (element.obbligatorio) {
-                        console.log(""); parameters = parameters +
+                        parameters = parameters +
                             `{
                             "in": "${element.posizione}",
                             "name": "${element.nome}",
@@ -884,7 +881,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             }
                         }`;
                     } else {
-                        console.log(""); parameters = parameters +
+                        parameters = parameters +
                             `{
                             "in": "${element.posizione}",
                             "name": "${element.nome}",
@@ -1146,7 +1143,7 @@ function decoratoreRitorno() {
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
         /* inizio a lavorare sul metodo */
         if (metodo != undefined && list != undefined && classe != undefined) {
-            metodo.Risposte?.push({ descrizione: '', stato: 0, valori: [] });
+            metodo.Risposte?.push({ descrizione: '', stato: 0, valori: [], isHandlebars: false });
         }
     };
 }
