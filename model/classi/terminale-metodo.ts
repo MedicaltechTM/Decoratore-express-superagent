@@ -26,10 +26,17 @@ export class Risposta {
         tipo: tipo,
         note?: string
     }[];
+
+    trigger?: { nome: string, valre: any, posizione: TypePosizione };
+    htmlPath?: string;
+    html?: string;
+    isHandlebars: boolean;
+
     constructor() {
         this.stato = 200;
         this.descrizione = '';
         this.valori = [];
+        this.isHandlebars = false;
     }
 }
 
@@ -77,7 +84,7 @@ export class TerminaleMetodo implements IDescrivibile {
 
     Risposte?: Risposta[] = []
 
-    RispondiConHTML?: {
+    /* RispondiConHTML?: {
         trigger?: { nome: string, valre: any, posizione: TypePosizione },
         risposta: {
             "1xx"?: {
@@ -101,7 +108,7 @@ export class TerminaleMetodo implements IDescrivibile {
                 html?: string
             }
         }
-    };
+    }; */
 
     onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
@@ -338,7 +345,7 @@ export class TerminaleMetodo implements IDescrivibile {
         let passato = false;
         let logIn: any;
         let logOut: any;
-        let tmp: any;
+        let tmp: IReturn | undefined;
         try {
             //console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
@@ -358,25 +365,28 @@ export class TerminaleMetodo implements IDescrivibile {
                         passato = true;
                     }
                     else {
-                        if (this.RispondiConHTML) {
+                        const risposta = this.CercaRispostaConTrigger(req);
+                        if (risposta) {
                             let source = "";
-                            if (tmp.stato >= 200 && tmp.stato < 300 && this.RispondiConHTML.risposta["2xx"]) {
-                                if (this.RispondiConHTML.risposta["2xx"].htmlPath != undefined)
-                                    source = fs.readFileSync(this.RispondiConHTML.risposta["2xx"].htmlPath).toString();
-                                else if (this.RispondiConHTML.risposta["2xx"].html != undefined)
-                                    source = this.RispondiConHTML.risposta["2xx"].html;
+                            if (risposta.stato >= 200 && risposta.stato < 300 && risposta) {
+                                if (risposta.htmlPath != undefined)
+                                    source = fs.readFileSync(risposta.htmlPath).toString();
+                                else if (risposta.html != undefined)
+                                    source = risposta.html;
                                 else
                                     throw new Error("Errorissimo");
                             }
-
-                            const template = Handlebars.compile(source);
-
-                            const data = tmp.body;
-                            const result = template(data);
-
-                            res.statusCode = Number.parseInt('' + tmp.stato);
-                            res.send(result);
-                            passato = true;
+                            if (risposta.isHandlebars) {
+                                const template = Handlebars.compile(source);
+                                const result = template(tmp.body);
+                                res.statusCode = Number.parseInt('' + risposta.stato);
+                                res.send(result);
+                                passato = true;
+                            } else {
+                                res.statusCode = Number.parseInt('' + tmp.stato);
+                                res.send(source);
+                                passato = true;
+                            }
                         }
                         else {
                             throw new Error("Errore gnel trigger");
@@ -415,18 +425,44 @@ export class TerminaleMetodo implements IDescrivibile {
     VerificaTrigger(richiesta: Request): boolean {
 
         let tmp = undefined;
-        if (this.RispondiConHTML && this.RispondiConHTML.trigger) {
-            if (this.RispondiConHTML.trigger.posizione == 'body')
-                tmp = richiesta.body[this.RispondiConHTML.trigger.nome];
-            if (this.RispondiConHTML.trigger.posizione == 'header')
-                tmp = richiesta.headers[this.RispondiConHTML.trigger.nome];
-            if (this.RispondiConHTML.trigger.posizione == 'query')
-                tmp = richiesta.query[this.RispondiConHTML.trigger.nome];
 
-            if (tmp == this.RispondiConHTML.trigger.valre) return false;
-            else return true;
+        if (this.Risposte) {
+            for (let index = 0; index < this.Risposte.length; index++) {
+                const element = this.Risposte[index];
+                if (element && element.trigger) {
+                    if (element.trigger.posizione == 'body')
+                        tmp = richiesta.body[element.trigger.nome];
+                    if (element.trigger.posizione == 'header')
+                        tmp = richiesta.headers[element.trigger.nome];
+                    if (element.trigger.posizione == 'query')
+                        tmp = richiesta.query[element.trigger.nome];
+                    if (tmp == element.trigger.valre) return true;
+                }
+            }
         }
+
         return false;
+    }
+
+    CercaRispostaConTrigger(richiesta: Request): Risposta | undefined {
+
+        let tmp = undefined;
+
+        if (this.Risposte) {
+            for (let index = 0; index < this.Risposte.length; index++) {
+                const element = this.Risposte[index];
+                if (element && element.trigger) {
+                    if (element.trigger.posizione == 'body')
+                        tmp = richiesta.body[element.trigger.nome];
+                    if (element.trigger.posizione == 'header')
+                        tmp = richiesta.headers[element.trigger.nome];
+                    if (element.trigger.posizione == 'query')
+                        tmp = richiesta.query[element.trigger.nome];
+                    if (tmp == element.trigger.valre) return element;
+                }
+            }
+        }
+        return undefined;
     }
 
     CercaParametroSeNoAggiungi(nome: string, parameterIndex: number, tipo: tipo, posizione: TypePosizione) {
@@ -434,6 +470,7 @@ export class TerminaleMetodo implements IDescrivibile {
         this.listaParametri.push(tmp);//.lista.push({ propertyKey: propertyKey, Metodo: target });
         return tmp;
     }
+    
     async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
@@ -972,8 +1009,8 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                 }
             }
 
-            if (parametri.RispondiConHTML)
-                metodo.RispondiConHTML = parametri.RispondiConHTML;
+            /* if (parametri.RispondiConHTML)
+                metodo.RispondiConHTML = parametri.RispondiConHTML; */
 
             if (parametri.listaTest)
                 metodo.listaTest = parametri.listaTest;
