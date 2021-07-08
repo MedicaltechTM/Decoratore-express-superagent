@@ -368,7 +368,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         const risposta = this.CercaRispostaConTrigger(req);
                         if (risposta) {
                             let source = "";
-                            if (risposta.stato >= 200 && risposta.stato < 300 && risposta) {
+                            if (risposta.stato >= 1 && risposta.stato < 600) {
                                 if (risposta.htmlPath != undefined)
                                     source = fs.readFileSync(risposta.htmlPath).toString();
                                 else if (risposta.html != undefined)
@@ -393,7 +393,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         }
                     }
                 } catch (error) {
-                    res.status(500).send(error);
+                    res.status(598).send(error);
                 }
                 logOut = InizializzaLogbaseOut(res, this.nome.toString());
                 if (this.onChiamataCompletata) {
@@ -405,9 +405,9 @@ export class TerminaleMetodo implements IDescrivibile {
             }
             //return res;
         } catch (error) {
-            if (this.onChiamataCompletata) {
+            /* if (this.onChiamataCompletata) {
                 this.onChiamataCompletata(logIn, tmp, logOut, error);
-            }
+            } */
             if (this.onChiamataInErrore) {
                 tmp = await this.onChiamataInErrore(logIn, tmp, logOut, error);
                 let num = 0;
@@ -416,8 +416,12 @@ export class TerminaleMetodo implements IDescrivibile {
                 res.statusCode = Number.parseInt('' + num);
                 res.send(tmp.body);
             }
-            if (passato == false)
+            else if (passato == false) {
                 res.status(500).send(error);
+            }
+            else {
+                res.status(599).send(error);
+            }
             //return res;
         }
     }
@@ -470,7 +474,7 @@ export class TerminaleMetodo implements IDescrivibile {
         this.listaParametri.push(tmp);//.lista.push({ propertyKey: propertyKey, Metodo: target });
         return tmp;
     }
-    
+
     async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);

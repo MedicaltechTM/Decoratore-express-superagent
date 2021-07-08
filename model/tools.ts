@@ -272,7 +272,7 @@ export interface IClasseRiferimento {
  */
 export interface IMetodo {
     swaggerClassi?: string[];
-    schemaSwagger?: any;
+    //schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean,
     /** Specifica il tipo, questo puo essere: "get" | "put" | "post" | "patch" | "purge" | "delete" */
@@ -291,8 +291,14 @@ export interface IMetodo {
 
     Risposte?: Risposta[];
 
+    /**
+     * se impostata permette di determinare cosa succedera nel momento dell'errore
+     */
     onChiamataInErrore?: (logOut: string, result: any, logIn: string, errore: any) => IReturn
 
+    /**
+     * se impostata permette di  verificare lo stato quando il metodo va a buon fine.
+     */
     onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
@@ -300,7 +306,7 @@ export interface IMetodo {
     onPrimaDiEseguireExpress?: (req: Request) => void
 
 
-    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IReturn|any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     listaTest?: {
         /* nomeTest?:string, 
@@ -317,31 +323,6 @@ export interface IMetodo {
         htmlPath?: string,
         html?: string
     }[];
-    /* RispondiConHTML?: {
-        trigger?: { nome: string, valre: any, posizione: TypePosizione },
-        risposta: {
-            "2xx"?: {
-                htmlPath?: string,
-                html?: string
-            },
-            "1xx"?: {
-                htmlPath?: string,
-                html?: string
-            },
-            "3xx"?: {
-                htmlPath?: string,
-                html?: string
-            },
-            "4xx"?: {
-                htmlPath?: string,
-                html?: string
-            },
-            "5xx"?: {
-                htmlPath?: string,
-                html?: string
-            }
-        }
-    }; */
 }
 
 export interface IClasse {
