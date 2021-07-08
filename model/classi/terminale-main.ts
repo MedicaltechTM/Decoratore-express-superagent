@@ -5,7 +5,7 @@ import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import { SalvaListaClasseMetaData } from "./terminale-classe";
 
 import * as http from 'http';
-import { ListaTerminaleTest } from "../liste/lista-terminale-test"; 
+import { ListaTerminaleTest } from "../liste/lista-terminale-test";
 
 import swaggerUI from "swagger-ui-express";
 
@@ -183,7 +183,7 @@ export class Main {
         });
     } */
 
-    InizializzaSwagger() {
+    InizializzaSwagger(testo?: string) {
         let ritorno = '';
         try {
 
@@ -234,6 +234,10 @@ export class Main {
 
 
             this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
+
+            /* if (testo)
+                this.serverExpressDecorato.use("/api-docs-doc", swaggerUI.serve, swaggerUI.setup(JSON.parse(testo)));
+ */
 
             /* const swaggerClassiTesto: {
                 numeroElementi: number,

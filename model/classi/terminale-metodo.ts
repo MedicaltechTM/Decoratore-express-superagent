@@ -797,28 +797,76 @@ export class TerminaleMetodo implements IDescrivibile {
                     console.log('qui');
                 }
                 if (element.tipo == 'array' && element.schemaSwagger) {
-                    parameters = parameters + `{
-                    "name": "${element.nome}",
+                    if (element.obbligatorio) {
+                        console.log("");
+                        parameters = parameters +
+                            `{
+                            "in": "${element.posizione}",
+                            "name": "${element.nome}",
+                            "description": "Obbligatorio: ${element.obbligatorio}.${element.descrizione}",
+                            "required": "${element.obbligatorio}",
+                            "schema": {
+                                "type": "array",
+                                ${tipoArray}
+                            }
+                        }`;
+                    } else {
+                        console.log("");
+                        parameters = parameters +
+                            `{
+                            "in": "${element.posizione}",
+                            "name": "${element.nome}",
+                            "description": "Obbligatorio: ${element.obbligatorio}.${element.descrizione}",
+                            "schema": {
+                                "type": "array",
+                                ${tipoArray}
+                            }
+                        }`;
+                    }
+                    /* parameters = parameters + `{
                     "in": "${element.posizione}",
-                    "description": "${element.descrizione}",
-                    "required": ${element.obbligatorio},
+                    "name": "${element.nome}",
+                    "description": "${element.descrizione}. Il parametro è obbligatorio: ${element.obbligatorio}",
                     "schema": {
+                        "required": "${element.obbligatorio}",
                         "type": "array",
                         ${tipoArray}
                     }
-                }`;
+                }`; */
                 }
                 else {
-                    parameters = parameters + `{
-                    "name": "${element.nome}",
+                    if (element.obbligatorio) {
+                        console.log(""); parameters = parameters +
+                            `{
+                            "in": "${element.posizione}",
+                            "name": "${element.nome}",
+                            "description": "Obbligatorio: ${element.obbligatorio}.${element.descrizione}",
+                            "required": "${element.obbligatorio}",
+                            "schema": {
+                                "type": "${element.tipo}"
+                            }
+                        }`;
+                    } else {
+                        console.log(""); parameters = parameters +
+                            `{
+                            "in": "${element.posizione}",
+                            "name": "${element.nome}",
+                            "description": "Obbligatorio: ${element.obbligatorio}.${element.descrizione}",
+                            "schema": {
+                                "type": "${element.tipo}"
+                            }
+                        }`;
+                    }
+                    /* parameters = parameters + `{
                     "in": "${element.posizione}",
-                    "description": "${element.descrizione}",
-                    "required": "${element.obbligatorio}",
+                    "name": "${element.nome}",
+                    "description": "${element.descrizione}. Il parametro è obbligatorio: ${element.obbligatorio}",
                     "schema": {
+                        "required": "${element.obbligatorio}",
                         "type": "${element.tipo}"
                     }
                 }
-                `;
+                `; */
                 }
 
             }
@@ -1052,6 +1100,20 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
     }
 }
 
+function decoratoreRitorno() {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+
+        const list: ListaTerminaleClasse = GetListaClasseMetaData();
+        /* inizializzo metodo */
+        const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
+        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
+        /* inizio a lavorare sul metodo */
+        if (metodo != undefined && list != undefined && classe != undefined) {
+            metodo.Risposte?.push({ descrizione: '', stato: 0, valori: [] });
+        }
+    };
+}
+
 export function mpAddCors(cors: any): MethodDecorator {
     return function (
         target: Object,
@@ -1143,3 +1205,5 @@ export function mpAddMiddle(item: any): MethodDecorator {
 
 
 export { decoratoreMetodo as mpMet };
+
+export { decoratoreRitorno as mpRet };
