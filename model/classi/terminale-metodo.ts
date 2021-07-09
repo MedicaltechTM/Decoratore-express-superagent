@@ -118,6 +118,7 @@ export class TerminaleMetodo implements IDescrivibile {
     onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any[];
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
     onPrimaDiEseguireExpress?: (req: Request) => void;
+    onModificaRispostaExpress?: (dati: IReturn) => IReturn;
     onPrimaDirestituireResponseExpress?: () => void;
     AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
@@ -357,12 +358,23 @@ export class TerminaleMetodo implements IDescrivibile {
                 try {
                     if (!this.VerificaTrigger(req)) {
                         //res.status(tmp.stato).send(tmp.body);
-                        let num = 0;
-                        num = tmp.stato;
-                        //num = 404; 
-                        res.statusCode = Number.parseInt('' + num);
-                        res.send(tmp.body);
-                        passato = true;
+                        if (this.onModificaRispostaExpress) {
+                            const risposta = await this.onModificaRispostaExpress(tmp);
+                            let num = 0;
+                            num = risposta.stato;
+                            //num = 404; 
+                            res.statusCode = Number.parseInt('' + num);
+                            res.send(risposta.body);
+                            passato = true;
+                        }
+                        else {
+                            let num = 0;
+                            num = tmp.stato;
+                            //num = 404; 
+                            res.statusCode = Number.parseInt('' + num);
+                            res.send(tmp.body);
+                            passato = true;
+                        }
                     }
                     else {
                         const risposta = this.CercaRispostaConTrigger(req);
@@ -1009,7 +1021,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                     }
                 }
             }
-
+            if (parametri.onModificaRispostaExpress) metodo.onModificaRispostaExpress = parametri.onModificaRispostaExpress;
             /* if (parametri.RispondiConHTML)
                 metodo.RispondiConHTML = parametri.RispondiConHTML; */
 

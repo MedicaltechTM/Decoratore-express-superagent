@@ -291,6 +291,7 @@ export interface IMetodo {
 
     Risposte?: Risposta[];
 
+    onModificaRispostaExpress?: (dati: IReturn) => IReturn
     /**
      * se impostata permette di determinare cosa succedera nel momento dell'errore
      */
@@ -306,7 +307,7 @@ export interface IMetodo {
     onPrimaDiEseguireExpress?: (req: Request) => void
 
 
-    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IReturn|any;
+    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IReturn | any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     listaTest?: {
         /* nomeTest?:string, 
