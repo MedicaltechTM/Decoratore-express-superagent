@@ -352,29 +352,14 @@ export class TerminaleMetodo implements IDescrivibile {
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
             tmp = await this.Esegui(req);
+            if (this.onModificaRispostaExpress)
+                tmp = await this.onModificaRispostaExpress(tmp??{body:'',stato:1});
             if (tmp != undefined) {
                 if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
                 if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
                 try {
                     if (!this.VerificaTrigger(req)) {
-                        //res.status(tmp.stato).send(tmp.body);
-                        if (this.onModificaRispostaExpress) {
-                            const risposta = await this.onModificaRispostaExpress(tmp);
-                            let num = 0;
-                            num = risposta.stato;
-                            //num = 404; 
-                            res.statusCode = Number.parseInt('' + num);
-                            res.send(risposta.body);
-                            passato = true;
-                        }
-                        else {
-                            let num = 0;
-                            num = tmp.stato;
-                            //num = 404; 
-                            res.statusCode = Number.parseInt('' + num);
-                            res.send(tmp.body);
-                            passato = true;
-                        }
+                        this.Rispondi(res, tmp);
                     }
                     else {
                         const risposta = this.CercaRispostaConTrigger(req);
@@ -395,8 +380,7 @@ export class TerminaleMetodo implements IDescrivibile {
                                 res.send(result);
                                 passato = true;
                             } else {
-                                res.statusCode = Number.parseInt('' + tmp.stato);
-                                res.send(source);
+                                this.Rispondi(res, tmp);
                                 passato = true;
                             }
                         }
@@ -436,6 +420,10 @@ export class TerminaleMetodo implements IDescrivibile {
             }
             //return res;
         }
+    }
+    Rispondi(res: Response, item: IReturn) {
+        res.statusCode = Number.parseInt('' + item.stato);
+        res.send(item.body);
     }
 
     VerificaTrigger(richiesta: Request): boolean {
@@ -509,20 +497,12 @@ export class TerminaleMetodo implements IDescrivibile {
                         else { tmp.stato = 299; }
                     }
                     else {
-                        if (typeof tmpReturn === 'object' && tmpReturn !== null && 'stato' in tmpReturn && 'body' in tmpReturn) {
-                            /* const tt = Object.assign({}, tmpReturn.body);
-                            const tt2 = Object.assign(tmpReturn.body);
-                            const tt3 = Object.create(tmpReturn.body);
-                            const tt4 = Object.create({}, tmpReturn.body);
- 
-                            const tt5 = Object.assign(tmp.body, tmpReturn.body);
-                            const tt6 = Object.create(<any>tmp.body, tmpReturn.body); */
-
+                        if (typeof tmpReturn === 'object' && tmpReturn !== null && 
+                        'stato' in tmpReturn && 'body' in tmpReturn) {
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-
-                            //tmp.body = Object.assign({}, tmpReturn.body);
+                            tmp.body = Object.assign({}, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
