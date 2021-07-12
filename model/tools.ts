@@ -317,13 +317,7 @@ export interface IMetodo {
         query: any,
         header: any
     }[];
-    listaHtml?: {
-        path: string,
-        percorsoIndipendente?: boolean,
-
-        htmlPath?: string,
-        html?: string
-    }[];
+    listaHtml?: IHtml[];
 }
 
 export interface IClasse {
@@ -331,15 +325,32 @@ export interface IClasse {
     LogGenerale?: any,
     /*  ((logOut: any, result: any, logIn: any, errore: any) => void) */
     Inizializzatore?: any,
-    classeSwagger?: string
-}
+    classeSwagger?: string,
+    html?: IHtml[]
+}/* 
+export class Html implements IHtml {
 
+    path: string;
+    percorsoIndipendente?: boolean;
+
+    htmlPath?: string;
+    html?: string;
+
+    conenuto: string;
+
+    constructor() {
+        this.path = '';
+        this.conenuto = '';
+    }
+}
+ */
 export interface IHtml {
     path: string,
     percorsoIndipendente?: boolean,
 
     htmlPath?: string,
-    html?: string
+    html?: string,
+    contenuto:string
 }
 
 export interface IRisposta {

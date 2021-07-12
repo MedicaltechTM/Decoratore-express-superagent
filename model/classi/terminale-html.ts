@@ -19,18 +19,18 @@ function decoratoreMetodoHtml(parametri: IHtml): MethodDecorator {
             if (parametri.percorsoIndipendente == undefined) parametri.percorsoIndipendente = false;
 
             if (parametri.html != undefined && parametri.htmlPath == undefined
-                && metodo.html.find(x => { if (x.percorso == parametri.path) return true; else return false; }) == undefined) {
+                && metodo.html.find(x => { if (x.path == parametri.path) return true; else return false; }) == undefined) {
                 metodo.html?.push({
                     contenuto: parametri.html,
-                    percorso: parametri.path,
+                    path: parametri.path,
                     percorsoIndipendente: parametri.percorsoIndipendente
                 });
                 // metodo.html?.contenuto = parametri.html;
             } else if (parametri.html == undefined && parametri.htmlPath != undefined
-                && metodo.html.find(x => { if (x.percorso == parametri.path) return true; else return false; }) == undefined) {
+                && metodo.html.find(x => { if (x.path == parametri.path) return true; else return false; }) == undefined) {
                 metodo.html.push({
                     contenuto: fs.readFileSync(parametri.htmlPath).toString(),
-                    percorso: parametri.path,
+                    path: parametri.path,
                     percorsoIndipendente: parametri.percorsoIndipendente
                 });
                 // metodo.html?.contenuto = fs.readFileSync(parametri.htmlPath).toString();
