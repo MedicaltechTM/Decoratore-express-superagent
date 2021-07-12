@@ -89,8 +89,8 @@ export class Maggiordomo {
     @mpMetHtml({ path: 'MaggiordomoSaluta.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false })
     @mpMetHtml({ path: 'MaggiordomoSaluta2.html', htmlPath: 'ESEMPIO/html/MaggiordomoSaluta.html', percorsoIndipendente: false }) */
     @mpMet({
-        path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, tipo: 'get', 
-        swaggerClassi: ['medico'], 
+        path: 'MaggiordomoSaluta', Istanziatore: Maggiordomo.Istanziatore, tipo: 'get',
+        swaggerClassi: ['medico'],
         Risposte: [
             {
                 descrizione: '',
@@ -103,8 +103,8 @@ export class Maggiordomo {
                         note: ''
                     }
                 ],
-                trigger:{nome:'html',posizione:'query',valre:'true'},
-                html : `
+                trigger: { nome: 'html', posizione: 'query', valre: 'true' },
+                html: `
                     <!DOCTYPE html>
                     <html lang="en">
 
@@ -137,5 +137,20 @@ export class Maggiordomo {
         return "Buon giorno signor : " + nome;
     }
 
+    @mpMet({ path: 'MaggiordomoSalutaChiConCondizione' })
+    MaggiordomoSalutaConCondizione(@mpPar({ nome: 'nome', posizione: 'query' }) nome: string,
+        @mpPar({ nome: 'nomeFacoltativo', posizione: 'query', obbligatorio: false }) nomeFacoltativo?: string,): any {
+        console.log("Buon giorno signor : " + nome);
+        if (nomeFacoltativo) {
+            console.log("Buon giorno se non ci fosse stato lei ..." + nomeFacoltativo)
+            const salutoUno = "Buon giorno signor : " + nome;
+            const salutoDue="Buon giorno se non ci fosse stato lei ..." + nomeFacoltativo;
+            return [
+                salutoUno,
+                salutoDue
+            ]
+        } else
+            return "Buon giorno signor : " + nome;
+    }
 }
 
