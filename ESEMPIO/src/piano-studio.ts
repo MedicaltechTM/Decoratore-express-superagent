@@ -5,6 +5,10 @@ import { mpClas } from "../../model/classi/terminale-classe";
 import { ListaTerminaleParametro } from "../../model/liste/lista-terminale-parametro";
 import { IParametriEstratti } from "../../model/tools";
 
+/* 
+Ogni piano di studio inizia e poi viene alimentato man mano nel tempo.
+Ogni piano  ha un elenco si sessini, queste si alimenteranno ad ogni sessione che puo variare nel tempo
+*/
 @Entity({ name: "PianoStudio" })
 @mpClas({ percorso: "PianoStudio" })
 export class PianoStudio {
@@ -40,7 +44,7 @@ export class PianoStudio {
     //@OneToMany(type => ListaSessioneStudio, conoscere => conoscere.id)
     @OneToOne(() => ListaSessioneStudio)
     @JoinColumn({ name: "listaSessioneStudio" })
-    sessioniStudio: ListaSessioneStudio[] = [];
+    listaSsessioniStudio: ListaSessioneStudio[] = [];
 
     constructor(nomePianoStudio: string) {
         this.dataInizioStudio = new Date(Date.now());
@@ -49,10 +53,13 @@ export class PianoStudio {
 
 
 }
+/* 
 
+*/
 @Entity({ name: "SessioneStudio" })
 @mpClas({ percorso: "SessioneStudio" })
 export class SessioneStudio {
+
     @PrimaryGeneratedColumn()
     id?: number;
 
@@ -65,7 +72,7 @@ export class SessioneStudio {
     @Column({ type: "varchar" })
     riassunto?: string;
     @Column({ type: "int" })
-    tempoDiDurata=0;
+    tempoDiDurata = 0;
     @Column({ type: "varchar" })
     commentoRapido?: string;
     @Column({ type: "varchar" })
@@ -73,11 +80,11 @@ export class SessioneStudio {
     @Column({ type: "varchar" })
     paroleChiave?: string;
 
+    listaPomodori?: ListaPomodori[] = [];
     /* constructor(tempoDiDurata: number) {
         this.data = new Date(Date.now());
         this.tempoDiDurata = tempoDiDurata;
     } */
-
 }
 
 @Entity({ name: "ListaSessioneStudio" })
@@ -93,4 +100,56 @@ export class ListaSessioneStudio extends Array<SessioneStudio> {
         this.tempoDiDurata = tempoDiDurata;
     } */
 
+}
+
+@Entity({ name: "ListaPomodori" })
+@mpClas({ percorso: "ListaPomodori" })
+export class ListaPomodori extends Array<Pomodoro> {
+
+    @PrimaryGeneratedColumn()
+    id?: number;
+
+    AggiungiPomodoro() {
+        return '';
+    }
+    GetNextPomodoro() {
+        if (condition) {
+            
+        }
+        return '';
+    }
+
+
+    /* constructor(tempoDiDurata: number) {
+        this.data = new Date(Date.now());
+        this.tempoDiDurata = tempoDiDurata;
+    } */
+
+}
+
+
+class Pomodoro {
+    tempo?: string;
+    /* constructor(parameters) {
+        
+    } */
+}
+
+class PomodoroStudio extends Pomodoro {
+    constructor() {
+        super();
+    }
+}
+class PomodoroRiposo extends Pomodoro {
+    constructor() {
+        super();
+    }
+}
+class PomodoroRiassuntivo extends Pomodoro {
+    constructor() {
+        super();
+    }
+}
+type TtPomodoro ={
+    "b"|"a"
 }
