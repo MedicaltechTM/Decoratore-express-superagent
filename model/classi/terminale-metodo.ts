@@ -353,8 +353,11 @@ export class TerminaleMetodo implements IDescrivibile {
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
             tmp = await this.Esegui(req);
-            if (this.onModificaRispostaExpress)
-                tmp = await this.onModificaRispostaExpress(tmp??{body:'',stato:1});
+            if (this.onModificaRispostaExpress) {
+                const tmp1 = await this.onModificaRispostaExpress(tmp ?? { body: '', stato: 1 });
+                if (tmp && tmp.attore)
+                    tmp1.attore = tmp.attore;
+            }
             if (tmp != undefined) {
                 if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
                 if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
@@ -422,9 +425,9 @@ export class TerminaleMetodo implements IDescrivibile {
             else {
                 res.status(599).send(error);
             }
-            
+
             if (this.onLog) {
-                this.onLog(logIn, tmp, logOut, undefined);
+                this.onLog(logIn, tmp, logOut, error);
             }
             //return res;
         }
@@ -494,7 +497,8 @@ export class TerminaleMetodo implements IDescrivibile {
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
-                    const tmpReturn: any = await this.EseguiMetodo(parametri);
+                    const tmpRitorno = await this.EseguiMetodo(parametri);
+                    const tmpReturn: any = tmpRitorno.result;
                     if (IsJsonString(tmpReturn)) {
                         if (tmpReturn.name === "ErroreMio" || tmpReturn.name === "ErroreGenerico") {
                             //console.log("ciao");
@@ -505,8 +509,8 @@ export class TerminaleMetodo implements IDescrivibile {
                         else { tmp.stato = 299; }
                     }
                     else {
-                        if (typeof tmpReturn === 'object' && tmpReturn !== null && 
-                        'stato' in tmpReturn && 'body' in tmpReturn) {
+                        if (typeof tmpReturn === 'object' && tmpReturn !== null &&
+                            'stato' in tmpReturn && 'body' in tmpReturn) {
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
@@ -525,6 +529,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             };
                         }
                     }
+                    tmp.attore = tmpRitorno.attore;
                     return tmp;
                 } catch (error) {
                     if (error instanceof ErroreMio) {
@@ -587,13 +592,14 @@ export class TerminaleMetodo implements IDescrivibile {
 
     async EseguiMetodo(parametri: IParametriEstratti) {
         let tmpReturn: any = '';
+        let attore = undefined;
         if (this.AlPostoDi) {
             tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
         }
         else {
             if (this.Istanziatore) {
                 const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
-                //const attore = classeInstanziata;
+                attore = classeInstanziata;
                 tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
                 //tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
             }
@@ -601,7 +607,10 @@ export class TerminaleMetodo implements IDescrivibile {
                 tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
             }
         }
-        return tmpReturn;
+        return {
+            attore: attore,
+            result: tmpReturn
+        };
     }
     ConvertiInMiddleare() {
         return async (req: Request, res: Response, nex: NextFunction) => {
@@ -1043,7 +1052,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
             else metodo.path = parametri.path;
 
             if (parametri.onChiamataCompletata != null) metodo.onChiamataCompletata = parametri.onChiamataCompletata;
-            
+
             if (parametri.onLog != null) metodo.onLog = parametri.onLog;
 
             if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;

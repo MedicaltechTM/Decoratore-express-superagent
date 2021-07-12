@@ -146,8 +146,8 @@ function decoratoreClasse(parametri: IClasse): any {
         else classe.SetPath = ctr.name;
         if (parametri.LogGenerale) {
             classe.listaMetodi.forEach(element => {
-                if (element.onChiamataCompletata == undefined)
-                    element.onChiamataCompletata = parametri.LogGenerale;
+                if (element.onLog == undefined)
+                    element.onLog = parametri.LogGenerale;
             });
         }
         if (parametri.Inizializzatore) {
