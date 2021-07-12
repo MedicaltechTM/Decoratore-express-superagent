@@ -301,6 +301,7 @@ export interface IMetodo {
      * se impostata permette di  verificare lo stato quando il metodo va a buon fine.
      */
     onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
+    onLog?: (logOut: string, result: any, logIn: string, errore: any) => void
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
 

@@ -110,6 +110,7 @@ export class TerminaleMetodo implements IDescrivibile {
         }
     }; */
 
+    onLog?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
     onParametriNonTrovati?: (nonTrovati?: INonTrovato[]) => void;
@@ -411,6 +412,9 @@ export class TerminaleMetodo implements IDescrivibile {
                 if (this.onChiamataCompletata) {
                     this.onChiamataCompletata(logIn, tmp, logOut, undefined);
                 }
+                if (this.onLog) {
+                    this.onLog(logIn, tmp, logOut, undefined);
+                }
             }
             else {
                 throw new Error("Attenzione qualcosa è andato storto nell'Esegui(req), guarda @mpMet");
@@ -433,6 +437,10 @@ export class TerminaleMetodo implements IDescrivibile {
             }
             else {
                 res.status(599).send(error);
+            }
+            
+            if (this.onLog) {
+                this.onLog(logIn, tmp, logOut, undefined);
             }
             //return res;
         }
@@ -1055,6 +1063,8 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
             else metodo.path = parametri.path;
 
             if (parametri.onChiamataCompletata != null) metodo.onChiamataCompletata = parametri.onChiamataCompletata;
+            
+            if (parametri.onLog != null) metodo.onLog = parametri.onLog;
 
             if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
 
