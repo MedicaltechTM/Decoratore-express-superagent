@@ -351,7 +351,7 @@ export class TerminaleMetodo implements IDescrivibile {
             if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
             tmp = await this.Esegui(req);
             if (this.onModificaRispostaExpress)
-                tmp = await this.onModificaRispostaExpress(tmp??{body:'',stato:1});
+                tmp = await this.onModificaRispostaExpress(tmp ?? { body: '', stato: 1 });
             if (tmp != undefined) {
                 if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
                 if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
@@ -495,8 +495,8 @@ export class TerminaleMetodo implements IDescrivibile {
                         else { tmp.stato = 299; }
                     }
                     else {
-                        if (typeof tmpReturn === 'object' && tmpReturn !== null && 
-                        'stato' in tmpReturn && 'body' in tmpReturn) {
+                        if (typeof tmpReturn === 'object' && tmpReturn !== null &&
+                            'stato' in tmpReturn && 'body' in tmpReturn) {
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }

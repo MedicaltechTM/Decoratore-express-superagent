@@ -33,6 +33,12 @@ export class TerminaleClasse {
 
     percorsi: IRaccoltaPercorsi;
 
+    /* listaTest: {
+        nomeTest: string,
+        numeroEsecuzione: number,
+        nomemetodoChiamato: string,
+        risultatiAspettati: number[]
+    }[] = []; */
 
     html: IHtml[] = [];
 
@@ -167,6 +173,9 @@ function decoratoreClasse(parametri: IClasse): any {
     return (ctr: Function) => {
         const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
         const classe = CheckClasseMetaData(ctr.name);
+/* 
+        if (parametri.listaTest) classe.listaTest = parametri.listaTest; */
+
         if (parametri.percorso) classe.SetPath = parametri.percorso;
         else classe.SetPath = ctr.name;
 

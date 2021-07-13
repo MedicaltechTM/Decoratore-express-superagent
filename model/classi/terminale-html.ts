@@ -1,6 +1,6 @@
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import { IHtml, targetTerminale } from "../tools";
-import { CheckClasseMetaData, GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
+import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import fs from "fs";
 
 

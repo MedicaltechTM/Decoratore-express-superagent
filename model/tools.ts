@@ -326,7 +326,13 @@ export interface IClasse {
     /*  ((logOut: any, result: any, logIn: any, errore: any) => void) */
     Inizializzatore?: any,
     classeSwagger?: string,
-    html?: IHtml[]
+    html?: IHtml[]/* ,
+    listaTest?:{
+        nomeTest: string,
+        numeroEsecuzione: number,
+        nomemetodoChiamato: string,
+        risultatiAspettati: number[]
+    }[]; */
 }/* 
 export class Html implements IHtml {
 
