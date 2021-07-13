@@ -47,19 +47,29 @@ function decoratoreMetodoHtml(parametri: IHtml): MethodDecorator {
 function decoratoreClasseHtml(parametri: IHtml): any {
     return (ctr: Function) => {
         const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
-        const classe = CheckClasseMetaData(ctr.name);
+        /*const classe = CheckClasseMetaData(ctr.name);
 
+        
+         for (let index = 0; index < this.html.length; index++) {
+            const element = this.html[index];
+            //element.ConfiguraRotteHtml(app, this.percorsi.pathGlobal,)
+            if (element.percorsoIndipendente)
+                this.ConfiguraRotteHtml(app, element.path, element.contenuto);
+            else
+                this.ConfiguraRotteHtml(app, pathGlobal + '/' + element.path, element.contenuto);
+        }
         if (parametri.html != undefined || parametri.htmlPath != undefined) {
             if (parametri.html != undefined && parametri.htmlPath == undefined) {
                 classe.html = parametri.html;
             } else if (parametri.html == undefined && parametri.htmlPath != undefined) {
                 classe.html = fs.readFileSync(parametri.htmlPath).toString();
-            }
-            SalvaListaClasseMetaData(tmp);
-        }
-        else {
-            console.log("non cìe nulla in html");
-        }
-    }
+            } 
+            */
+        SalvaListaClasseMetaData(tmp);
+    /*}
+     else {
+    console.log("non cìe nulla in html");
+} */
+}/*  */
 }
 

@@ -181,8 +181,8 @@ export class TerminaleMetodo implements IDescrivibile {
             percorsoTmp = '';
             for (let index = 0; index < this.html.length; index++) {
                 const element = this.html[index];
-                if (element.percorsoIndipendente) percorsoTmp = '/' + element.percorso;
-                else percorsoTmp = pathGlobalTmp + '/' + element.percorso;
+                if (element.percorsoIndipendente) percorsoTmp = '/' + element.path;
+                else percorsoTmp = pathGlobalTmp + '/' + element.path;
 
                 if (this.metodoAvviabile != undefined) {
                     this.ConfiguraRotteHtml(app, percorsoTmp, element.contenuto);
@@ -981,18 +981,18 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                     if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
 
                     if (element.html != undefined && element.htmlPath == undefined
-                        && metodo.html.find(x => { if (x.percorso == element.path) return true; else return false; }) == undefined) {
+                        && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
                         metodo.html?.push({
                             contenuto: element.html,
-                            percorso: element.path,
+                            path: element.path,
                             percorsoIndipendente: element.percorsoIndipendente
                         });
                         // metodo.html?.contenuto = element.html;
                     } else if (element.html == undefined && element.htmlPath != undefined
-                        && metodo.html.find(x => { if (x.percorso == element.path) return true; else return false; }) == undefined) {
+                        && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
                         metodo.html.push({
                             contenuto: fs.readFileSync(element.htmlPath).toString(),
-                            percorso: element.path,
+                            path: element.path,
                             percorsoIndipendente: element.percorsoIndipendente
                         });
                         // metodo.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
