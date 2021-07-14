@@ -186,6 +186,7 @@ export class Main {
             }
             return ritorno;
         }
+        return ritorno;
     }
 
 
