@@ -1,4 +1,4 @@
-import { IClasse, IRaccoltaPercorsi, targetTerminale } from "../tools";
+import { IClasse, IRaccoltaPercorsi, targetTerminale, IHtml } from "../tools";
 
 
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
@@ -6,13 +6,13 @@ import { ListaTerminaleMetodo } from "../liste/lista-terminale-metodo";
 import { TerminaleMetodo } from "./terminale-metodo";
 
 import chiedi from "prompts";
-import { Router } from "express";
+import { Request, Router, Response } from "express";
+import fs from 'fs';
 
 export class TerminaleClasse {
 
     classeSwagger?= '';
 
-    html?: string;
 
     static nomeMetadataKeyTarget = "ClasseTerminaleTarget";
 
@@ -32,6 +32,15 @@ export class TerminaleClasse {
     }
 
     percorsi: IRaccoltaPercorsi;
+
+    /* listaTest: {
+        nomeTest: string,
+        numeroEsecuzione: number,
+        nomemetodoChiamato: string,
+        risultatiAspettati: number[]
+    }[] = []; */
+
+    html: IHtml[] = [];
 
     constructor(nome: string, path?: string, headerPath?: string, port?: number) {
         this.id = Math.random().toString();
@@ -63,6 +72,16 @@ export class TerminaleClasse {
 
         const pathGlobal = percorsi.pathGlobal + '/' + this.path;
         this.percorsi.pathGlobal = pathGlobal;
+
+        for (let index = 0; index < this.html.length; index++) {
+            const element = this.html[index];
+            //element.ConfiguraRotteHtml(app, this.percorsi.pathGlobal,)
+            if (element.percorsoIndipendente)
+                this.ConfiguraRotteHtml(app, element.path, element.contenuto);
+            else
+                this.ConfiguraRotteHtml(app, pathGlobal + '/' + element.path, element.contenuto);
+        }
+
         for (let index = 0; index < this.listaMetodi.length; index++) {
             const element = this.listaMetodi[index];
             if (element.tipoInterazione == 'rotta' || element.tipoInterazione == 'ambo') {
@@ -132,6 +151,18 @@ export class TerminaleClasse {
         return ritorno;
     }
 
+    ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
+        app.get(percorsoTmp,
+            //this.cors,
+            //this.helmet,
+            async (req: Request, res: Response) => {
+                if (this.html)
+                    res.send(contenuto);
+                else
+                    res.sendStatus(404);
+            });
+    }
+
 }
 
 /**
@@ -142,14 +173,54 @@ function decoratoreClasse(parametri: IClasse): any {
     return (ctr: Function) => {
         const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
         const classe = CheckClasseMetaData(ctr.name);
+/* 
+        if (parametri.listaTest) classe.listaTest = parametri.listaTest; */
+
         if (parametri.percorso) classe.SetPath = parametri.percorso;
         else classe.SetPath = ctr.name;
+
+        if (parametri.html) {
+            classe.html = [];
+            for (let index = 0; index < parametri.html.length; index++) {
+                const element = parametri.html[index];
+                if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
+
+                if (element.html != undefined && element.htmlPath == undefined
+                    && classe.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
+                    classe.html.push({
+                        contenuto: element.html,
+                        path: element.path,
+                        percorsoIndipendente: element.percorsoIndipendente
+                    });
+                    // metodo.html?.contenuto = element.html;
+                } else if (element.html == undefined && element.htmlPath != undefined
+                    && classe.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
+
+                    try {
+                        classe.html.push({
+                            contenuto: fs.readFileSync(element.htmlPath).toString(),
+                            path: element.path,
+                            percorsoIndipendente: element.percorsoIndipendente
+                        });
+                    } catch (error) {
+                        classe.html.push({
+                            contenuto: 'Nessun contenuto',
+                            path: element.path,
+                            percorsoIndipendente: element.percorsoIndipendente
+                        });
+                    }
+                    // metodo.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
+                }
+            }
+        }
+
         if (parametri.LogGenerale) {
             classe.listaMetodi.forEach(element => {
                 if (element.onLog == undefined)
                     element.onLog = parametri.LogGenerale;
             });
         }
+
         if (parametri.Inizializzatore) {
             classe.listaMetodi.forEach(element => {
                 let contiene = false;
@@ -159,6 +230,7 @@ function decoratoreClasse(parametri: IClasse): any {
                 if (contiene) element.Istanziatore = parametri.Inizializzatore;
             });
         }
+
         if (parametri.classeSwagger && parametri.classeSwagger != '') {
             classe.classeSwagger = parametri.classeSwagger;
             classe.listaMetodi.forEach(element => {
@@ -170,6 +242,7 @@ function decoratoreClasse(parametri: IClasse): any {
                 }
             });
         }
+
         SalvaListaClasseMetaData(tmp);
     }
 }

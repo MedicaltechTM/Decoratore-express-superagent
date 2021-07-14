@@ -8,6 +8,7 @@ import * as http from 'http';
 import { ListaTerminaleTest } from "../liste/lista-terminale-test";
 
 import swaggerUI from "swagger-ui-express";
+import { IReturnTest, TerminaleTest } from "./terminale-test";
 
 /**
  * 
@@ -119,44 +120,49 @@ export class Main {
     }
 
     async StartTest() {
+
         if (this.listaTerminaleTest) {
+            this.listaTerminaleTest.sort((x: TerminaleTest, y: TerminaleTest) => {
+                if (x.test.numeroRootTest < x.test.numeroRootTest) return -1;
+                else if (x.test.numeroRootTest > x.test.numeroRootTest) return 1;
+                else {
+                    if (x.test.numero < x.test.numero) return -1;
+                    else if (x.test.numero > x.test.numero) return 1;
+                    else return 0;
+                };
+            });
             for (let index = 0; index < this.listaTerminaleTest.length; index++) {
                 const test = this.listaTerminaleTest[index];
-                if (test.listaTest) {
-                    console.log("Inizio lista test con nome : " + test.listaTest.nome);
-                    for (let index2 = 0; index2 < test.listaTest.testUnita.length; index2++) {
-                        const element = test.listaTest.testUnita[index2];
-                        let risultato;
-                        try {
-                            console.log("Inizio test con nome : " + element.nome);
-                            if (element) {
-                                if (element.FunzioniCreaAmbienteEsecuzione) {
-                                    risultato = await element.FunzioniCreaAmbienteEsecuzione();
-                                }
-                                if (element.FunzioniDaTestare) {
-                                    risultato = await element.FunzioniDaTestare();
-                                }
-                                if (element.FunzioniDiPulizia) {
-                                    risultato = await element.FunzioniDiPulizia();
-                                }
+                if (test.test) {
+                    console.log("Inizio lista test con nome : " + test.test.nome + ', numero :' + test.test.numero + ' :!:');
+                    try {
+                        let risultato: IReturnTest | undefined = undefined;
+                        if (test.test) {
+                            if (test.test.testUnita.FunzioniCreaAmbienteEsecuzione) {
+                                risultato = await test.test.testUnita.FunzioniCreaAmbienteEsecuzione();
                             }
-                            console.log("Fine test con nome : " + element.nome);
-                            if (risultato) {
-                                if (risultato.passato) {
-                                    console.log("TEST PASSATO.");
-                                }
-                                else {
-                                    console.log("TEST NON PASSATO.");
-                                }
-                            } else {
-                                console.log("TEST NESSUN RISULTATO.");
+                            if (test.test.testUnita.FunzioniDaTestare) {
+                                risultato = await test.test.testUnita.FunzioniDaTestare();
                             }
-                        } catch (error) {
-                            console.log(error);
-                            console.log("TEST IN ERRORE.");
+                            if (test.test.testUnita.FunzioniDiPulizia) {
+                                risultato = await test.test.testUnita.FunzioniDiPulizia();
+                            }
                         }
+                        if (risultato) {
+                            if (risultato.passato) {
+                                console.log("TEST PASSATO.");
+                            }
+                            else {
+                                console.log("TEST NON PASSATO.");
+                            }
+                        } else {
+                            console.log("TEST NESSUN RISULTATO.");
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        console.log("TEST IN ERRORE.");
                     }
-                    console.log("Fine lista test con nome : " + test.listaTest.nome);
+                    console.log("Fine test con nome : " + test.test.nome + ', numero :' + test.test.numero + ' :!:');
                 }
             }
         }
