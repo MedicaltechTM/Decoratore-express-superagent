@@ -8,7 +8,7 @@ import * as http from 'http';
 import { ListaTerminaleTest } from "../liste/lista-terminale-test";
 
 import swaggerUI from "swagger-ui-express";
-import { IReturnTest, TerminaleTest } from "./terminale-test";
+import { GetListaTestMetaData, IReturnTest, ITest, SalvaListaTerminaleMetaData, TerminaleTest } from "./terminale-test";
 
 /**
  * 
@@ -119,7 +119,7 @@ export class Main {
         this.serverExpressDecorato.listen(this.percorsi.porta)
     }
 
-    async StartTest() {
+    async StartTest(numeroRootTest?: number) {
 
         if (this.listaTerminaleTest) {
             this.listaTerminaleTest.sort((x: TerminaleTest, y: TerminaleTest) => {
@@ -133,20 +133,19 @@ export class Main {
             });
             for (let index = 0; index < this.listaTerminaleTest.length; index++) {
                 const test = this.listaTerminaleTest[index];
-                if (test.test) {
+                if (test.test &&
+                    ((numeroRootTest == undefined) || (numeroRootTest == test.test.numeroRootTest))) {
                     console.log("Inizio lista test con nome : " + test.test.nome + ', numero :' + test.test.numero + ' :!:');
                     try {
                         let risultato: IReturnTest | undefined = undefined;
-                        if (test.test) {
-                            if (test.test.testUnita.FunzioniCreaAmbienteEsecuzione) {
-                                risultato = await test.test.testUnita.FunzioniCreaAmbienteEsecuzione();
-                            }
-                            if (test.test.testUnita.FunzioniDaTestare) {
-                                risultato = await test.test.testUnita.FunzioniDaTestare();
-                            }
-                            if (test.test.testUnita.FunzioniDiPulizia) {
-                                risultato = await test.test.testUnita.FunzioniDiPulizia();
-                            }
+                        if (test.test.testUnita.FunzioniCreaAmbienteEsecuzione) {
+                            risultato = await test.test.testUnita.FunzioniCreaAmbienteEsecuzione();
+                        }
+                        if (test.test.testUnita.FunzioniDaTestare) {
+                            risultato = await test.test.testUnita.FunzioniDaTestare();
+                        }
+                        if (test.test.testUnita.FunzioniDiPulizia) {
+                            risultato = await test.test.testUnita.FunzioniDiPulizia();
                         }
                         if (risultato) {
                             if (risultato.passato) {
@@ -166,6 +165,39 @@ export class Main {
                 }
             }
         }
+    }
+    GetTest() {
+        const ritorno: number[] = [];
+        if (this.listaTerminaleTest) {
+            this.listaTerminaleTest.sort((x: TerminaleTest, y: TerminaleTest) => {
+                if (x.test.numeroRootTest < x.test.numeroRootTest) return -1;
+                else if (x.test.numeroRootTest > x.test.numeroRootTest) return 1;
+                else {
+                    if (x.test.numero < x.test.numero) return -1;
+                    else if (x.test.numero > x.test.numero) return 1;
+                    else return 0;
+                };
+            });
+            for (let index = 0; index < this.listaTerminaleTest.length; index++) {
+                const element = this.listaTerminaleTest[index];
+                if (ritorno.find(x => { if (x == element.test.numeroRootTest) return true; else return false; }) == undefined) {
+                    ritorno.push(element.test.numeroRootTest);
+                }
+            }
+            return ritorno;
+        }
+    }
+
+
+    AggiungiTest(parametri: ITest[]) {
+        const tmp: ListaTerminaleTest = GetListaTestMetaData();
+        for (let index = 0; index < parametri.length; index++) {
+            const element = parametri[index];
+            tmp.AggiungiElemento(new TerminaleTest(element));
+        };
+        SalvaListaTerminaleMetaData(tmp);
+
+        this.listaTerminaleTest = Reflect.getMetadata(ListaTerminaleTest.nomeMetadataKeyTarget, targetTerminale);
     }
 
     /* InizializzaHandlebars() {
