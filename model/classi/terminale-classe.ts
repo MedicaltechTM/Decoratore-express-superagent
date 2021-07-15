@@ -77,7 +77,7 @@ export class TerminaleClasse {
             const element = this.html[index];
             //element.ConfiguraRotteHtml(app, this.percorsi.pathGlobal,)
             if (element.percorsoIndipendente)
-                this.ConfiguraRotteHtml(app, element.path, element.contenuto);
+                this.ConfiguraRotteHtml(app, '/' + element.path, element.contenuto);
             else
                 this.ConfiguraRotteHtml(app, pathGlobal + '/' + element.path, element.contenuto);
         }

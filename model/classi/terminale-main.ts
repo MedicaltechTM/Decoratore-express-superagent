@@ -60,7 +60,6 @@ export class Main {
 
             (<any>this.serverExpressDecorato).use(express.json());
 
-            this.serverExpressDecorato.route
             for (let index = 0; index < tmp.length; index++) {
                 const element = tmp[index];
                 element.SettaPathRoot_e_Global(this.path, this.percorsi, this.serverExpressDecorato);
@@ -131,6 +130,7 @@ export class Main {
                     else return 0;
                 };
             });
+            const risultati =[];
             for (let index = 0; index < this.listaTerminaleTest.length; index++) {
                 const test = this.listaTerminaleTest[index];
                 if (test.test &&
@@ -150,20 +150,36 @@ export class Main {
                         if (risultato) {
                             if (risultato.passato) {
                                 console.log("TEST PASSATO.");
+                                risultati.push("Test con nome : " + test.test.nome + ',| numero :' + test.test.numero + ',| passato :PASSATO' + ' :!:');
                             }
                             else {
                                 console.log("TEST NON PASSATO.");
+                                risultati.push("Test con nome : " + test.test.nome + ',| numero :' + test.test.numero + ',| passato :NON PASSATO' + ' :!:');
                             }
                         } else {
                             console.log("TEST NESSUN RISULTATO.");
+                            risultati.push("Test con nome : " + test.test.nome + ',| numero :' + test.test.numero + ',| passato :NESSUN RISULTATO' + ' :!:');
                         }
                     } catch (error) {
                         console.log(error);
                         console.log("TEST IN ERRORE.");
+                        risultati.push("Test con nome : " + test.test.nome + ',| numero :' + test.test.numero + ',| passato :TEST IN ERRORE' + ' :!:');
                     }
-                    console.log("Fine test con nome : " + test.test.nome + ', numero :' + test.test.numero + ' :!:');
+                    console.log("Fine test con nome : " + test.test.nome + ',| numero :' + test.test.numero + ' :!:');
                 }
             }
+            console.log('********************************************************************************************************************')
+            console.log('********************************************************************************************************************')
+            console.log('********************************************************************************************************************')
+            console.log('\n\n\n');
+            risultati.forEach(element => {
+                console.log(element);
+                
+            });
+            console.log('\n\n\n');            
+            console.log('********************************************************************************************************************')
+            console.log('********************************************************************************************************************')
+            console.log('********************************************************************************************************************')
         }
     }
     GetTest() {
