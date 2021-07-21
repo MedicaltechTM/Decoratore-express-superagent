@@ -171,7 +171,7 @@ export class TerminaleClasse {
  */
 function decoratoreClasse(parametri: IClasse): any {
     return (ctr: Function) => {
-        const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
+        const tmp: ListaTerminaleClasse = GetListaClasseMetaData();
         const classe = CheckClasseMetaData(ctr.name);
 /* 
         if (parametri.listaTest) classe.listaTest = parametri.listaTest; */

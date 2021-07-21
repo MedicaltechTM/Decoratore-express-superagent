@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:copy": "ts-node -T scripts/copyFiles.ts",
     "build:tsc": "tsc --build tsconfig.json",
-		"build": "rimraf dist && npm run build:tsc && npm run build:copy"
+    "build": "rimraf dist && npm run build:tsc && npm run build:copy"
   },
   "author": "mirko pizzini",
   "license": "ISC",
