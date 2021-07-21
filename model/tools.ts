@@ -181,6 +181,15 @@ export interface IReturn {
     inErrore?: IRitornoValidatore[];
     attore?: any;
 }
+
+export interface IRitornoValidatore {
+    body?: object | string,
+    approvato: boolean,
+    stato?: number,
+    messaggio: string,
+    terminale?: IParametro
+}
+
 export interface IResponse {
     body: string
 }
@@ -240,12 +249,6 @@ export interface IRaccoltaPercorsi {
 
 export type TypeMetod = "get" | "put" | "post" | "patch" | "purge" | "delete";
 
-export interface IRitornoValidatore {
-    approvato: boolean,
-    stato: number,
-    messaggio: string,
-    terminale?: IParametro
-}
 
 export interface IClasseRiferimento {
     nome: string,
