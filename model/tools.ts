@@ -249,6 +249,12 @@ export interface IRaccoltaPercorsi {
 
 export type TypeMetod = "get" | "put" | "post" | "patch" | "purge" | "delete";
 
+export interface IRitornoValidatore {
+    approvato?: boolean,
+    stato: number,
+    messaggio: any,//string,
+    terminale?: IParametro
+}
 
 export interface IClasseRiferimento {
     nome: string,
@@ -306,7 +312,7 @@ export interface IMetodo {
     onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
     onLog?: (logOut: string, result: any, logIn: string, errore: any) => void
 
-    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
+    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore| void;
 
     onPrimaDiEseguireExpress?: (req: Request) => void
 
