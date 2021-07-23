@@ -111,13 +111,13 @@ export class TerminaleMetodo implements IDescrivibile {
     onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
     onParametriNonTrovati?: (nonTrovati?: INonTrovato[]) => void;
-
-    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
     onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any[];
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
     onPrimaDiEseguireExpress?: (req: Request) => void;
     onModificaRispostaExpress?: (dati: IReturn) => IReturn;
     onPrimaDirestituireResponseExpress?: () => void;
+
+    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
     AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 
@@ -477,8 +477,10 @@ export class TerminaleMetodo implements IDescrivibile {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
             let valido: IRitornoValidatore | undefined = { approvato: true, stato: 200, messaggio: '' };
-            if (this.Validatore) valido = this.Validatore(parametri, this.listaParametri);
-            if ((valido && valido.approvato) || (!valido && parametri.errori.length == 0)) {
+            if (this.Validatore) valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
+            /* verifico che il metodo possa essere eseguito come volevasi ovvero approvato = true o undefiend */
+            if ((valido && (valido.approvato == undefined || valido.approvato == true))
+                || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
                     body: {}, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
@@ -539,7 +541,7 @@ export class TerminaleMetodo implements IDescrivibile {
                         };
                     }
                 }
-            }
+            }/* altrimenti lo vado a costruire */
             else {
                 let tmp: IReturn = {
                     body: parametri.errori,
@@ -552,13 +554,6 @@ export class TerminaleMetodo implements IDescrivibile {
                         body: valido.messaggio,
                         stato: 500,
                     }
-                } else {
-                    tmp = {
-                        body: parametri.errori,
-                        nonTrovati: parametri.nontrovato,
-                        inErrore: parametri.errori,
-                        stato: 500
-                    };
                 }
                 return tmp;
             }

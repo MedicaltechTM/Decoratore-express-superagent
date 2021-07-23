@@ -124,7 +124,10 @@ export class Maggiordomo {
                 `
 
             }
-        ]
+        ],
+        Validatore: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro)=>{
+            console.log('ciao');            
+        }
     })
     MaggiordomoSaluta(@mpPar({ nome: 'idMaggiordomo', posizione: 'query', autenticatore: true }) idMaggiordomo: string): any {
         console.log("Sono il maggiordomo : " + this.nome);
