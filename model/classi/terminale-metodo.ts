@@ -14,6 +14,9 @@ import superagent from "superagent";
 
 import Handlebars from "handlebars";
 
+
+import { spawn } from "child_process";
+
 /* export interface ITerminaleMetodo {
 
 } */
@@ -406,9 +409,6 @@ export class TerminaleMetodo implements IDescrivibile {
             }
             //return res;
         } catch (error) {
-            /* if (this.onChiamataCompletata) {
-                this.onChiamataCompletata(logIn, tmp, logOut, error);
-            } */
             if (this.onChiamataInErrore) {
                 tmp = await this.onChiamataInErrore(logIn, tmp, logOut, error);
                 let num = 0;
@@ -417,6 +417,9 @@ export class TerminaleMetodo implements IDescrivibile {
                 res.statusCode = Number.parseInt('' + num);
                 res.send(tmp.body);
             }
+            /* else if (this.onChiamataCompletata) {
+                this.onChiamataCompletata(logIn, tmp, logOut, error);
+            } */
             else if (passato == false) {
                 res.status(500).send(error);
             }
@@ -563,11 +566,11 @@ export class TerminaleMetodo implements IDescrivibile {
                     stato: 500
                 };
                 if (valido) {
-                    if(valido.body != undefined)
-                    tmp = {
-                        body: valido.body,
-                        stato: 500,
-                    }
+                    if (valido.body != undefined)
+                        tmp = {
+                            body: valido.body,
+                            stato: 500,
+                        }
                 }
                 return tmp;
             }
@@ -587,6 +590,7 @@ export class TerminaleMetodo implements IDescrivibile {
     async EseguiMetodo(parametri: IParametriEstratti) {
         let tmpReturn: any = '';
         let attore = undefined;
+        let count = 0;
         if (this.AlPostoDi) {
             tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
         }
@@ -594,11 +598,32 @@ export class TerminaleMetodo implements IDescrivibile {
             if (this.Istanziatore) {
                 const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
                 attore = classeInstanziata;
-                tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
+                const proc = spawn(
+                    tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri)
+                );
+                while (tmpReturn == '') {
+                    if (count > 10) {
+                        count = 0;
+                        proc.kill('SIGINT');
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    count++;
+                }
+                // è giusta ma ho provato la soluzione 2 //tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
                 //tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
             }
             else {
-                tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
+                const proc = spawn(
+                    tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri)
+                );
+                while (tmpReturn == '') {
+                    if (count > 10) {
+                        count = 0;
+                        proc.kill('SIGINT');
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    count++;
+                }
             }
         }
         return {
