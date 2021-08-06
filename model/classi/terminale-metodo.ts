@@ -15,7 +15,7 @@ import superagent from "superagent";
 import Handlebars from "handlebars";
 
 
-import { spawn } from "child_process";
+/* import { fork } from "child_process"; */
 
 /* export interface ITerminaleMetodo {
 
@@ -590,7 +590,7 @@ export class TerminaleMetodo implements IDescrivibile {
     async EseguiMetodo(parametri: IParametriEstratti) {
         let tmpReturn: any = '';
         let attore = undefined;
-        let count = 0;
+        /* let count = 0; */
         if (this.AlPostoDi) {
             tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
         }
@@ -598,9 +598,11 @@ export class TerminaleMetodo implements IDescrivibile {
             if (this.Istanziatore) {
                 const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
                 attore = classeInstanziata;
-                const proc = spawn(
-                    tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri)
-                );
+                tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
+                /* const proc = fork(__filename, ['child'],
+                    tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri));
+                proc.on('error', (err) => {
+                }); 
                 while (tmpReturn == '') {
                     if (count > 10) {
                         count = 0;
@@ -608,14 +610,18 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     await new Promise(resolve => setTimeout(resolve, 5000));
                     count++;
-                }
+                } */
                 // è giusta ma ho provato la soluzione 2 //tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
                 //tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
             }
             else {
-                const proc = spawn(
-                    tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri)
-                );
+
+                tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
+
+                /* const proc = fork(__filename, ['child'],
+                    tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri));
+                proc.on('error', (err) => {
+                }); 
                 while (tmpReturn == '') {
                     if (count > 10) {
                         count = 0;
@@ -623,7 +629,7 @@ export class TerminaleMetodo implements IDescrivibile {
                     }
                     await new Promise(resolve => setTimeout(resolve, 5000));
                     count++;
-                }
+                } */
             }
         }
         return {
