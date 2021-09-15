@@ -38,6 +38,7 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     tmp = undefined;
                 }
             }
+            ritorno.valoriParametri.push(tmp);
             if (element.Validatore) {
                 const rit = element.Validatore(tmp)
                 if (rit.approvato == false) {
@@ -46,7 +47,6 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                 }
             }
 
-            ritorno.valoriParametri.push(tmp);
         }
 
         return ritorno;

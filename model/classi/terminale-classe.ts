@@ -13,7 +13,6 @@ export class TerminaleClasse {
 
     classeSwagger?= '';
 
-
     static nomeMetadataKeyTarget = "ClasseTerminaleTarget";
 
     listaMetodi: ListaTerminaleMetodo;
@@ -63,7 +62,11 @@ export class TerminaleClasse {
     }
 
     SettaPathRoot_e_Global(item: string, percorsi: IRaccoltaPercorsi, app: any) {
-
+        const pathGlobal = this.SettaPercorsi(percorsi);
+        this.ConfiguraListaRotteHTML(app, pathGlobal);
+        this.listaMetodi.ConfiguraListaRotteApplicazione(app, this.percorsi);
+    }
+    SettaPercorsi(percorsi: IRaccoltaPercorsi): string {
         if (percorsi.patheader == undefined) this.percorsi.patheader = "localhost";
         else this.percorsi.patheader = percorsi.patheader;
 
@@ -72,24 +75,7 @@ export class TerminaleClasse {
 
         const pathGlobal = percorsi.pathGlobal + '/' + this.path;
         this.percorsi.pathGlobal = pathGlobal;
-
-        for (let index = 0; index < this.html.length; index++) {
-            const element = this.html[index];
-            //element.ConfiguraRotteHtml(app, this.percorsi.pathGlobal,)
-            if (element.percorsoIndipendente)
-                this.ConfiguraRotteHtml(app, '/' + element.path, element.contenuto);
-            else
-                this.ConfiguraRotteHtml(app, pathGlobal + '/' + element.path, element.contenuto);
-        }
-
-        for (let index = 0; index < this.listaMetodi.length; index++) {
-            const element = this.listaMetodi[index];
-            if (element.tipoInterazione == 'rotta' || element.tipoInterazione == 'ambo') {
-                //element.ConfiguraRotta(this.rotte, this.percorsi);
-                element.ConfiguraRottaApplicazione(app, this.percorsi);
-            }
-            //element.listaRotteGeneraChiavi=this.listaMetodiGeneraKey;
-        }
+        return pathGlobal;
     }
 
     CercaMetodoSeNoAggiungiMetodo(nome: string) {
@@ -162,6 +148,16 @@ export class TerminaleClasse {
                     res.sendStatus(404);
             });
     }
+    ConfiguraListaRotteHTML(app: any, pathGlobal: string) {
+        for (let index = 0; index < this.html.length; index++) {
+            const element = this.html[index];
+            //element.ConfiguraRotteHtml(app, this.percorsi.pathGlobal,)
+            if (element.percorsoIndipendente)
+                this.ConfiguraRotteHtml(app, '/' + element.path, element.contenuto);
+            else
+                this.ConfiguraRotteHtml(app, pathGlobal + '/' + element.path, element.contenuto);
+        }
+    }
 
 }
 
@@ -173,8 +169,8 @@ function decoratoreClasse(parametri: IClasse): any {
     return (ctr: Function) => {
         const tmp: ListaTerminaleClasse = GetListaClasseMetaData();
         const classe = CheckClasseMetaData(ctr.name);
-/* 
-        if (parametri.listaTest) classe.listaTest = parametri.listaTest; */
+        /* 
+                if (parametri.listaTest) classe.listaTest = parametri.listaTest; */
 
         if (parametri.percorso) classe.SetPath = parametri.percorso;
         else classe.SetPath = ctr.name;
