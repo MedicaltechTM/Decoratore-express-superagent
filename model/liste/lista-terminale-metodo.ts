@@ -1,5 +1,5 @@
 import { TerminaleMetodo } from "../classi/terminale-metodo";
-import { targetTerminale } from "../tools";
+import { IRaccoltaPercorsi, targetTerminale } from "../tools";
 
 export class ListaTerminaleMetodo extends Array<TerminaleMetodo> {
     static nomeMetadataKeyTarget = "ListaTerminaleMetodo";
@@ -24,6 +24,16 @@ export class ListaTerminaleMetodo extends Array<TerminaleMetodo> {
         }
         this.push(item);
         return item;
+    }
+    ConfiguraListaRotteApplicazione(app: any,  percorsi: IRaccoltaPercorsi) {
+        for (let index = 0; index < this.length; index++) {
+            const element = this[index];
+            if (element.tipoInterazione == 'rotta' || element.tipoInterazione == 'ambo') {
+                //element.ConfiguraRotta(this.rotte, this.percorsi);
+                element.ConfiguraRottaApplicazione(app, percorsi);
+            }
+            //element.listaRotteGeneraChiavi=this.listaMetodiGeneraKey;
+        }
     }
 }
 

@@ -43,7 +43,9 @@ export class Risposta {
     }
 }
 
-export class TerminaleMetodo implements IDescrivibile {
+class {}
+
+export class TerminaleMetodo implements IDescrivibile, IMetodo {
 
     swaggerClassi: string[] = [];
 
@@ -141,6 +143,12 @@ export class TerminaleMetodo implements IDescrivibile {
         //this.listaRotteGeneraChiavi = [];
     }
 
+    /**
+     * punto di inizio per la costruzione del server express con le retto 
+     * presenti
+     * @param app 
+     * @param percorsi 
+     */
     ConfiguraRottaApplicazione(app: any, percorsi: IRaccoltaPercorsi) {
         this.percorsi.patheader = percorsi.patheader;
         this.percorsi.porta = percorsi.porta;
@@ -196,8 +204,14 @@ export class TerminaleMetodo implements IDescrivibile {
         }
 
     }
+    /**
+     * configura le rotte del server express, 
+     * @param app : dovra avere l'istanza di express
+     * @param percorsoTmp : il percorso, questo dovra essere alimentato anche con il nome del metodo nel caso sia chiamato tramite ConfiguraRotteSwitch
+     * @param middlew : la lista dei middleware
+     */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = {};
+        let corsOptions = { };
         switch (this.tipo) {
             case 'get':
                 (<IReturn>this.metodoAvviabile).body;
@@ -323,7 +337,7 @@ export class TerminaleMetodo implements IDescrivibile {
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = {};
+        let corsOptions = { };
         corsOptions = {
             methods: 'GET',
         }
@@ -344,6 +358,11 @@ export class TerminaleMetodo implements IDescrivibile {
             });
     }
 
+    /**
+     * Rappresenta la chiamata express
+     * @param req 
+     * @param res 
+     */
     async ChiamataGenerica(req: Request, res: Response) {
         let passato = false;
         let logIn: any;
@@ -490,13 +509,13 @@ export class TerminaleMetodo implements IDescrivibile {
     async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
-            let valido: IRitornoValidatore | undefined = { approvato: true, stato: 200, messaggio: '' };
+            let valido: IRitornoValidatore | undefined | void = { approvato: true, stato: 200, messaggio: '' };
             if (this.Validatore) valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
             /* verifico che il metodo possa essere eseguito come volevasi ovvero approvato = true o undefiend */
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: {}, nonTrovati: parametri.nontrovato,
+                    body: { }, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -517,7 +536,7 @@ export class TerminaleMetodo implements IDescrivibile {
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({}, tmpReturn.body);
+                            tmp.body = Object.assign({ }, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
@@ -999,7 +1018,7 @@ export class TerminaleMetodo implements IDescrivibile {
  * crea una rotta con il nome della classe e la aggiunge alla classe di riferimento, il tipo del metodo dipende dal tipo di parametro.
  * @param parametri : 
  * tipo?: Specifica il tipo, questo puo essere: "get" | "put" | "post" | "patch" | "purge" | "delete" 
- * path?: specifica il percorso di una particolare, se non impostato prende il nome della classe  
+ * path?: specifica il percorso di una particolare rotta, se non impostato prende il nome della classe  
  * interazione?: l'interazione è come viene gestito il metodo, puo essere : "rotta" | "middleware" | "ambo"  
  * descrizione?: la descrizione è utile piu nel menu o in caso di output  
  * sommario?: il sommario è una versione piu semplice della descrizione  
@@ -1245,7 +1264,7 @@ export function mpAddHelmet(helmet: any): MethodDecorator {
             metodo.helmet = helmet;
         }
         else {
-            //console.log("Errore mio!");
+            console.log("Errore mio!");            
         }
         SalvaListaClasseMetaData(list);
     }

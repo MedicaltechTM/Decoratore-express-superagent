@@ -49,7 +49,7 @@ export class Main {
         this.listaTerminaleTest = Reflect.getMetadata(ListaTerminaleTest.nomeMetadataKeyTarget, targetTerminale);
     }
 
-    Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean) {
+    Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean, helmet:) {
         const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
 
         if (tmp.length > 0) {
