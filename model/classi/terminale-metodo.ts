@@ -490,8 +490,20 @@ export class TerminaleMetodo implements IDescrivibile {
     async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
-            let valido: IRitornoValidatore | undefined = { approvato: true, stato: 200, messaggio: '' };
-            if (this.Validatore) valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
+            let valido: IRitornoValidatore | undefined =undefined;
+            if (this.Validatore) {
+                valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
+                console.log("C1");                
+            }
+            else if (parametri.errori.length > 0) {
+                valido = undefined;
+                console.log("C2");
+            }
+            else{
+                valido = { approvato: true, stato: 200, messaggio: '' };
+                console.log("C3");
+            }
+
             /* verifico che il metodo possa essere eseguito come volevasi ovvero approvato = true o undefiend */
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
