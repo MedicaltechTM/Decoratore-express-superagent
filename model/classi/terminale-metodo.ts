@@ -43,7 +43,9 @@ export class Risposta {
     }
 }
 
-class {}
+/* class Express {
+
+} */
 
 export class TerminaleMetodo implements IDescrivibile, IMetodo {
 
@@ -116,7 +118,6 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
     onLog?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
-    onParametriNonTrovati?: (nonTrovati?: INonTrovato[]) => void;
     onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any[];
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
     onPrimaDiEseguireExpress?: (req: Request) => void;
@@ -229,7 +230,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                     this.helmet,
                     middlew,
                     async (req: Request, res: Response) => {
-                        ////console.log("GET");
+                        //console.log("GET");
                         await this.ChiamataGenerica(req, res);
                     });
                 break;
@@ -379,11 +380,10 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                     tmp1.attore = tmp.attore;
             }
             if (tmp != undefined) {
-                if (this.onParametriNonTrovati) this.onParametriNonTrovati(tmp.nonTrovati);
                 if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
                 try {
                     if (!this.VerificaTrigger(req)) {
-                        this.Rispondi(res, tmp);
+                        Rispondi(res, tmp);
                     }
                     else {
                         const risposta = this.CercaRispostaConTrigger(req);
@@ -404,12 +404,12 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                                 res.send(result);
                                 passato = true;
                             } else {
-                                this.Rispondi(res, tmp);
+                                Rispondi(res, tmp);
                                 passato = true;
                             }
                         }
                         else {
-                            throw new Error("Errore gnel trigger");
+                            throw new Error("Errore nel trigger");
                         }
                     }
                 } catch (error) {
@@ -426,7 +426,6 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             else {
                 throw new Error("Attenzione qualcosa è andato storto nell'Esegui(req), guarda @mpMet");
             }
-            //return res;
         } catch (error) {
             if (this.onChiamataInErrore) {
                 tmp = await this.onChiamataInErrore(logIn, tmp, logOut, error);
@@ -451,10 +450,6 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             }
             //return res;
         }
-    }
-    Rispondi(res: Response, item: IReturn) {
-        res.statusCode = Number.parseInt('' + item.stato);
-        res.send(item.body);
     }
 
     VerificaTrigger(richiesta: Request): boolean {
@@ -1300,3 +1295,8 @@ export function mpAddMiddle(item: any): MethodDecorator {
 export { decoratoreMetodo as mpMet };
 
 export { decoratoreRitorno as mpRet };
+
+function Rispondi(res: Response, item: IReturn) {
+    res.statusCode = Number.parseInt('' + item.stato);
+    res.send(item.body);
+}

@@ -46,9 +46,7 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     ritorno.errori.push(rit)
                 }
             }
-
         }
-
         return ritorno;
     }
 
