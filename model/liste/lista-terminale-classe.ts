@@ -40,6 +40,7 @@ export class ListaTerminaleClasse extends Array<TerminaleClasse> {
     CercaMetodo() {
 
     }
+    
     AggiungiElemento(item: TerminaleClasse) {
         for (let index = 0; index < this.length; index++) {
             const element = this[index];

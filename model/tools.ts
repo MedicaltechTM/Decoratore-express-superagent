@@ -182,6 +182,14 @@ export interface IReturn {
     attore?: any;
 }
 
+export interface IRitornoValidatore {
+    body?: object | string,
+    approvato: boolean,
+    messaggio: string,
+    stato?: number,
+    terminale?: IParametro
+}
+
 export interface IResponse {
     body: string
 }
