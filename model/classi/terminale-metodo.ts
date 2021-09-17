@@ -1,4 +1,4 @@
-import { ErroreMio, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, INonTrovato, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -212,7 +212,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
      * @param middlew : la lista dei middleware
      */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = { };
+        let corsOptions = {};
         switch (this.tipo) {
             case 'get':
                 (<IReturn>this.metodoAvviabile).body;
@@ -338,7 +338,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = { };
+        let corsOptions = {};
         corsOptions = {
             methods: 'GET',
         }
@@ -504,16 +504,16 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
     async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
-            let valido: IRitornoValidatore | undefined =undefined;
+            let valido: IRitornoValidatore | undefined = undefined;
             if (this.Validatore) {
                 valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
-                console.log("C1");                
+                console.log("C1");
             }
             else if (parametri.errori.length > 0) {
-                valido = undefined;
+                valido = { approvato: false, stato: 200, messaggio: '' };
                 console.log("C2");
             }
-            else{
+            else {
                 valido = { approvato: true, stato: 200, messaggio: '' };
                 console.log("C3");
             }
@@ -522,7 +522,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: { }, nonTrovati: parametri.nontrovato,
+                    body: {}, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -543,7 +543,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({ }, tmpReturn.body);
+                            tmp.body = Object.assign({}, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
@@ -1190,7 +1190,6 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
             if (parametri.swaggerClassi != undefined)
                 metodo.swaggerClassi = parametri.swaggerClassi;
 
-
             SalvaListaClasseMetaData(list);
         }
         else {
@@ -1271,7 +1270,7 @@ export function mpAddHelmet(helmet: any): MethodDecorator {
             metodo.helmet = helmet;
         }
         else {
-            console.log("Errore mio!");            
+            console.log("Errore mio!");
         }
         SalvaListaClasseMetaData(list);
     }
