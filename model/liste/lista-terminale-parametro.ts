@@ -2,7 +2,7 @@
 import { Request } from "express";
 
 import { TerminaleParametro } from "../classi/terminale-parametro";
-import { IParametri, IParametriEstratti, TypeInterazone } from "../tools";
+import { ErroreMio, IParametri, IParametriEstratti, TypeInterazone } from "../tools";
 
 import chiedi from "prompts";
 
@@ -45,6 +45,18 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     rit.terminale = element;
                     ritorno.errori.push(rit)
                 }
+            }
+
+            if(element.autenticatore== true && tmp == undefined){
+                //throw new Error("Attenzione autenticazione mancante.");
+                throw new ErroreMio({
+                    codiceErrore:401,
+                    messaggio:'Attenzione autenticazione mancante.'
+                });
+                /* return new ErroreMio({
+                    codiceErrore:500,
+                    messaggio:'Attenzione autenticazione mancante.'
+                }); */
             }
         }
         return ritorno;

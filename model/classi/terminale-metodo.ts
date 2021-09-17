@@ -1,4 +1,4 @@
-import { ErroreMio, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -376,8 +376,9 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             tmp = await this.Esegui(req);
             if (this.onModificaRispostaExpress) {
                 const tmp1 = await this.onModificaRispostaExpress(tmp ?? { body: '', stato: 1 });
-                if (tmp && tmp.attore)
-                    tmp1.attore = tmp.attore;
+                /* if (tmp && tmp.attore)
+                    tmp1.attore = tmp.attore; */
+                tmp = tmp1;
             }
             if (tmp != undefined) {
                 if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
@@ -436,11 +437,22 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                 res.send(tmp.body);
             }
             else if (passato == false) {
-                res.status(500).send({
-                    error: error,
-                    passato: passato,
-                    info: ''
-                });
+                if (error instanceof ErroreMio) {
+                    //console.log("ciao");
+                    /* return <IReturn>{
+                        stato: (<ErroreMio>error).codiceErrore,
+                        body: {
+                            errore: (<ErroreMio>error).message
+                        }
+                    }; */
+                    res.status((<ErroreMio>error).codiceErrore).send({ errore: (<ErroreMio>error).message });
+                } else {
+                    res.status(500).send({
+                        error: error,
+                        passato: passato,
+                        info: ''
+                    });
+                }
             }
             else {
                 res.status(500).send({
@@ -511,11 +523,11 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             let valido: IRitornoValidatore | undefined = undefined;
             if (this.Validatore) {
                 valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
-                console.log("C1");
+                //console.log("C1");
             }
             else if (parametri.errori.length > 0) {
                 valido = { approvato: false, stato: 200, messaggio: '' };
-                console.log("C2");
+                //console.log("C2");
             }
             else {
                 valido = { approvato: true, stato: 200, messaggio: '' };
@@ -538,7 +550,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                         if ('body' in tmpReturn) { tmp.body = tmpReturn.body; }
                         else { tmp.body = tmpReturn; }
                         if ('stato' in tmpReturn) { tmp.stato = tmpReturn.stato; }
-                        else { tmp.stato = 299; }
+                        else { tmp.stato = 298; }
                     }
                     else {
                         if (typeof tmpReturn === 'object' && tmpReturn !== null &&
@@ -598,14 +610,14 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                     if (valido.body != undefined)
                         tmp = {
                             body: valido.body,
-                            stato: 500,
+                            stato: valido.stato ?? 500,
                         }
                 }
                 return tmp;
             }
             return undefined;
         } catch (error: any) {
-            throw new error;
+            throw error;
             /* if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
                 //console.log("ciao");
             } */
@@ -663,6 +675,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             }
         }
         return {
+            attore: attore,
             result: tmpReturn
         };
     }
@@ -1201,6 +1214,41 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
         //return descriptor;
     }
 }
+function decoratoreMetodoEventi(parametri: IMetodoEventi): MethodDecorator {
+    return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+        const list: ListaTerminaleClasse = GetListaClasseMetaData();
+        /* inizializzo metodo */
+        const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
+        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
+        /* inizio a lavorare sul metodo */
+        if (metodo != undefined && list != undefined && classe != undefined) {
+
+            metodo.metodoAvviabile = descriptor.value;
+
+            if (parametri.onChiamataCompletata != null) metodo.onChiamataCompletata = parametri.onChiamataCompletata;
+
+            if (parametri.onLog != null) metodo.onLog = parametri.onLog;
+
+            if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
+
+            if (parametri.onPrimaDiEseguireExpress != null) metodo.onPrimaDiEseguireExpress = parametri.onPrimaDiEseguireExpress;
+
+            if (parametri.AlPostoDi != null && parametri.AlPostoDi != undefined) {
+                metodo.AlPostoDi = parametri.AlPostoDi;
+            }
+
+            if (parametri.Istanziatore != null && parametri.Istanziatore != undefined) {
+                metodo.Istanziatore = parametri.Istanziatore;
+            }
+
+            SalvaListaClasseMetaData(list);
+        }
+        else {
+            //console.log("Errore mio!");
+        }
+        //return descriptor;
+    }
+}
 
 function decoratoreRitorno() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -1305,6 +1353,8 @@ export function mpAddMiddle(item: any): MethodDecorator {
     }
 }
 
+
+export { decoratoreMetodoEventi as mpMetEvent };
 
 export { decoratoreMetodo as mpMet };
 

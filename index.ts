@@ -1,6 +1,6 @@
 import { Main } from "./model/classi/terminale-main";
 import { mpClas } from "./model/classi/terminale-classe";
-import { mpMet } from "./model/classi/terminale-metodo";
+import { mpMet, mpMetEvent } from "./model/classi/terminale-metodo";
 import { mpPar } from "./model/classi/terminale-parametro";
 import { mpTestClas, mpTestMet } from "./model/classi/terminale-test";
 import { mpMetHtml } from './model/classi/terminale-html';
@@ -13,6 +13,7 @@ import "reflect-metadata";
 
 export { Main as Main };
 export { mpMet as mpMet };
+export { mpMetEvent as mpMetEvent };
 export { mpPar as mpPar };
 export { mpClas as mpClas };
 

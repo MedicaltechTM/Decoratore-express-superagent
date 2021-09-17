@@ -13,6 +13,7 @@ function Controllo<T>(item: {
             else if (item.getCheck == undefined) {
                 return value;
             }
+            return value;
         };
         const setter = function (newVal: T) {
             if (item.setCheck instanceof Error) {

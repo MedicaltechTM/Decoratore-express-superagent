@@ -339,6 +339,27 @@ export interface IMetodo {
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 
 }
+export interface IMetodoEventi{
+    
+    onModificaRispostaExpress?: (dati: IReturn) => IReturn;
+    /**
+     * se impostata permette di determinare cosa succedera nel momento dell'errore
+     */
+    onChiamataInErrore?: (logOut: string, result: any, logIn: string, errore: any) => IReturn;
+
+    /**
+     * se impostata permette di  verificare lo stato quando il metodo va a buon fine.
+     */
+    onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void;
+    onLog?: (logOut: string, result: any, logIn: string, errore: any) => void;
+
+    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
+
+    onPrimaDiEseguireExpress?: (req: Request) => void
+
+    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IReturn | any;
+    Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+}
 
 export interface IClasse {
     percorso?: string,
@@ -353,7 +374,8 @@ export interface IClasse {
         nomemetodoChiamato: string,
         risultatiAspettati: number[]
     }[]; */
-}/* 
+}
+/* 
 export class Html implements IHtml {
 
     path: string;
