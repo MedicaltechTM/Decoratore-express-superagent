@@ -61,8 +61,8 @@ export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): ILogbas
 }
 export function InizializzaLogbaseOut(res: Response, nomeMetodo?: string): ILogbase {
 
-    const params = {};
-    const body = {};
+    const params = { };
+    const body = { };
     const data = new Date(Date.now());
     const header = res.getHeaders();
     const local = res.socket?.localAddress + " : " + res.socket?.localPort;
@@ -308,6 +308,16 @@ export interface IMetodo {
 
     Risposte?: Risposta[];
 
+    listaTest?: {
+        /* nomeTest?:string, 
+        posizione?:number,
+        nomeTestGenerico?:string, */
+        body: any,
+        query: any,
+        header: any
+    }[];
+    
+    listaHtml?: IHtml[];
     onModificaRispostaExpress?: (dati: IReturn) => IReturn
     /**
      * se impostata permette di determinare cosa succedera nel momento dell'errore
@@ -320,22 +330,14 @@ export interface IMetodo {
     onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
     onLog?: (logOut: string, result: any, logIn: string, errore: any) => void
 
-    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore| void;
+    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
 
     onPrimaDiEseguireExpress?: (req: Request) => void
 
 
     AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IReturn | any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
-    listaTest?: {
-        /* nomeTest?:string, 
-        posizione?:number,
-        nomeTestGenerico?:string, */
-        body: any,
-        query: any,
-        header: any
-    }[];
-    listaHtml?: IHtml[];
+
 }
 
 export interface IClasse {
@@ -374,7 +376,7 @@ export interface IHtml {
 
     htmlPath?: string,
     html?: string,
-    contenuto:string
+    contenuto: string
 }
 
 export interface IRisposta {
@@ -386,3 +388,4 @@ export interface IRisposta {
         note?: string
     }[]
 }
+

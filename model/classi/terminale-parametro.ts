@@ -71,7 +71,7 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 }
 
 /**
- * 
+ * di default mette obbligatorio a true
  * @param parametri 
  *  nome: nome del parametro, in pratica il nome della variabile o un nome assonante (parlante) 
  *  posizione: la posizione rispetto alla chiamata, ovvero: "body" | "query" | "header" 

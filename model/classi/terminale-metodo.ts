@@ -435,16 +435,20 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                 res.statusCode = Number.parseInt('' + num);
                 res.send(tmp.body);
             }
-            /* else if (this.onChiamataCompletata) {
-                this.onChiamataCompletata(logIn, tmp, logOut, error);
-            } */
             else if (passato == false) {
-                res.status(500).send(error);
+                res.status(500).send({
+                    error: error,
+                    passato: passato,
+                    info: ''
+                });
             }
             else {
-                res.status(599).send(error);
+                res.status(500).send({
+                    error: error,
+                    passato: passato,
+                    info: ''
+                });
             }
-
             if (this.onLog) {
                 this.onLog(logIn, tmp, logOut, error);
             }
@@ -515,7 +519,6 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             }
             else {
                 valido = { approvato: true, stato: 200, messaggio: '' };
-                console.log("C3");
             }
 
             /* verifico che il metodo possa essere eseguito come volevasi ovvero approvato = true o undefiend */
@@ -602,14 +605,15 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             }
             return undefined;
         } catch (error: any) {
+            throw new error;
             /* if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
                 //console.log("ciao");
             } */
             //console.log("Errore : ", error);
-            return <IReturn>{
+            /* return <IReturn>{
                 body: { "Errore Interno filtrato ": 'internal error!!!!' },
                 stato: 500
-            };
+            }; */
         }
     }
 
@@ -659,7 +663,6 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             }
         }
         return {
-            attore: attore,
             result: tmpReturn
         };
     }
