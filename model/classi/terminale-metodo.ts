@@ -435,16 +435,20 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                 res.statusCode = Number.parseInt('' + num);
                 res.send(tmp.body);
             }
-            /* else if (this.onChiamataCompletata) {
-                this.onChiamataCompletata(logIn, tmp, logOut, error);
-            } */
             else if (passato == false) {
-                res.status(500).send(error);
+                res.status(500).send({
+                    error: error,
+                    passato: passato,
+                    info: ''
+                });
             }
             else {
-                res.status(599).send(error);
+                res.status(500).send({
+                    error: error,
+                    passato: passato,
+                    info: ''
+                });
             }
-
             if (this.onLog) {
                 this.onLog(logIn, tmp, logOut, error);
             }
@@ -504,18 +508,15 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
     async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
-            let valido: IRitornoValidatore | undefined =undefined;
+            let valido: IRitornoValidatore | undefined = undefined;
             if (this.Validatore) {
                 valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
-                console.log("C1");                
             }
             else if (parametri.errori.length > 0) {
                 valido = undefined;
-                console.log("C2");
             }
-            else{
+            else {
                 valido = { approvato: true, stato: 200, messaggio: '' };
-                console.log("C3");
             }
 
             /* verifico che il metodo possa essere eseguito come volevasi ovvero approvato = true o undefiend */
@@ -602,14 +603,15 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             }
             return undefined;
         } catch (error: any) {
+            throw new error;
             /* if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
                 //console.log("ciao");
             } */
             //console.log("Errore : ", error);
-            return <IReturn>{
+            /* return <IReturn>{
                 body: { "Errore Interno filtrato ": 'internal error!!!!' },
                 stato: 500
-            };
+            }; */
         }
     }
 
@@ -659,7 +661,6 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             }
         }
         return {
-            attore: attore,
             result: tmpReturn
         };
     }
@@ -1271,7 +1272,7 @@ export function mpAddHelmet(helmet: any): MethodDecorator {
             metodo.helmet = helmet;
         }
         else {
-            console.log("Errore mio!");            
+            console.log("Errore mio!");
         }
         SalvaListaClasseMetaData(list);
     }

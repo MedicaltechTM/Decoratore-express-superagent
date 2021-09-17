@@ -1,6 +1,8 @@
+
+
 function Controllo<T>(item: {
-    getCheck?: (valore: T) => boolean,
-    setCheck?: (valore: T) => boolean
+    getCheck?: (valore: T) => boolean | Error,
+    setCheck?: (valore: T) => boolean | T | Error
 }) {
     return function (target: Object, propertyKey: string) {
         let value: T;
@@ -13,12 +15,24 @@ function Controllo<T>(item: {
             }
         };
         const setter = function (newVal: T) {
-            if (item.setCheck && item.setCheck(newVal) == true) {
+            if (item.setCheck instanceof Error) {
+                console.log('ciao');
+            }
+            else if (item.setCheck instanceof Boolean) {
                 value = newVal;
+            }
+            else if (item.setCheck) {
+                const tmp = item.setCheck;
+                value = <any>tmp;
+            } else {
+                value = newVal;
+            }
+            /* if (item.setCheck && item.setCheck(newVal) == true) {
+                value = newVal;                
             }
             else if (item.setCheck == undefined) {
                 value = newVal;
-            }
+            } */
         };
         Object.defineProperty(target, propertyKey, {
             get: getter,

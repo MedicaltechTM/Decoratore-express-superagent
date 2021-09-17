@@ -3,6 +3,23 @@ import chiedi from "prompts";
 import { createConnection, ConnectionOptions } from "typeorm";
 import { Main } from "./model/classi/terminale-main";
 
+class Persona {
+    @Controllo({
+        getCheck: (valore) => {
+            return true;
+        },
+        setCheck: (valore) => {
+            
+            return 'true';
+        }
+    })
+    nome: string;
+    cognome: string;
+    constructor() {
+        this.nome = '';
+        this.cognome = '';
+    }
+}
 
 const connessione = <ConnectionOptions>{
     type: "postgres",
