@@ -1,4 +1,4 @@
-import { IClasse, IRaccoltaPercorsi, targetTerminale, IHtml } from "../tools";
+import { IClasse, IRaccoltaPercorsi, targetTerminale, IHtml, IGestorePercorsiPath } from "../tools";
 
 
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
@@ -9,7 +9,7 @@ import chiedi from "prompts";
 import { Request, Router, Response } from "express";
 import fs from 'fs';
 
-export class TerminaleClasse {
+export class TerminaleClasse implements IGestorePercorsiPath {
 
     classeSwagger?= '';
 
@@ -31,13 +31,6 @@ export class TerminaleClasse {
     }
 
     percorsi: IRaccoltaPercorsi;
-
-    /* listaTest: {
-        nomeTest: string,
-        numeroEsecuzione: number,
-        nomemetodoChiamato: string,
-        risultatiAspettati: number[]
-    }[] = []; */
 
     html: IHtml[] = [];
 

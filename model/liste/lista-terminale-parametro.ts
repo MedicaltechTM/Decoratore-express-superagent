@@ -46,17 +46,20 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     ritorno.errori.push(rit)
                 }
             }
+            else{
+                if (tmp == undefined && element.obbligatorio == true){
+                    ritorno.errori.push({
+                        approvato: false,
+                        messaggio:'Attenzione parametro: '+ element.nome +', segnato come obbligatorio. Messaggio auto creato.'
+                    })                    
+                }
+            }
 
             if(element.autenticatore== true && tmp == undefined){
-                //throw new Error("Attenzione autenticazione mancante.");
                 throw new ErroreMio({
                     codiceErrore:401,
                     messaggio:'Attenzione autenticazione mancante.'
                 });
-                /* return new ErroreMio({
-                    codiceErrore:500,
-                    messaggio:'Attenzione autenticazione mancante.'
-                }); */
             }
         }
         return ritorno;

@@ -1,4 +1,4 @@
-import { IRaccoltaPercorsi, targetTerminale } from "../tools";
+import { IGestorePercorsiPath, IRaccoltaPercorsi, targetTerminale } from "../tools";
 
 import express from "express";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
@@ -32,7 +32,7 @@ export function mpMain(path: string) {
         }; */
     }
 }
-export class Main {
+export class Main implements IGestorePercorsiPath {
     percorsi: IRaccoltaPercorsi;
     path: string;
     serverExpressDecorato: express.Express;

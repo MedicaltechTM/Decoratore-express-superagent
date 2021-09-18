@@ -1,6 +1,6 @@
 
 import { Request, Response } from "express";
-import { Risposta } from "./classi/terminale-metodo";
+import { Risposta, RispostaControllo } from "./classi/terminale-metodo";
 import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
 export const targetTerminale = { name: 'Terminale' };
 
@@ -268,6 +268,9 @@ export interface IClasseRiferimento {
     nome: string,
     listaMiddleware?: any[]
 }
+export interface IGestorePercorsiPath {
+    percorsi: IRaccoltaPercorsi;
+}
 
 /**
  * Specifica il tipo, questo puo essere: "get" | "put" | "post" | "patch" | "purge" | "delete" 
@@ -287,7 +290,12 @@ export interface IClasseRiferimento {
 
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  */
-export interface IMetodo {
+export interface IMetodo extends ICaratteristicheMetodo, IMetodoEventi {
+
+}
+export interface ICaratteristicheMetodo {
+    RisposteDiControllo?: RispostaControllo[];
+    risposteControllateMandatorie?: boolean;
     swaggerClassi?: string[];
     //schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
@@ -306,7 +314,7 @@ export interface IMetodo {
      */
     nomiClasseRiferimento?: IClasseRiferimento[],
 
-    Risposte?: Risposta[];
+   /*  Risposte?: Risposta[]; */
 
     listaTest?: {
         /* nomeTest?:string, 
@@ -316,31 +324,11 @@ export interface IMetodo {
         query: any,
         header: any
     }[];
-    
+
     listaHtml?: IHtml[];
-    onModificaRispostaExpress?: (dati: IReturn) => IReturn
-    /**
-     * se impostata permette di determinare cosa succedera nel momento dell'errore
-     */
-    onChiamataInErrore?: (logOut: string, result: any, logIn: string, errore: any) => IReturn
-
-    /**
-     * se impostata permette di  verificare lo stato quando il metodo va a buon fine.
-     */
-    onChiamataCompletata?: (logOut: string, result: any, logIn: string, errore: any) => void
-    onLog?: (logOut: string, result: any, logIn: string, errore: any) => void
-
-    Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
-
-    onPrimaDiEseguireExpress?: (req: Request) => void
-
-
-    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IReturn | any;
-    Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
-
 }
-export interface IMetodoEventi{
-    
+export interface IMetodoEventi {
+
     onModificaRispostaExpress?: (dati: IReturn) => IReturn;
     /**
      * se impostata permette di determinare cosa succedera nel momento dell'errore

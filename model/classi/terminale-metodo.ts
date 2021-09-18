@@ -1,4 +1,4 @@
-import { ErroreMio, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IGestorePercorsiPath, IHtml, IMetodo, IMetodoEventi, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -21,6 +21,15 @@ import Handlebars from "handlebars";
 
 } */
 
+export class RispostaControllo {
+    trigger: number;
+    risposta?: Risposta;
+    onModificaRisposta?: (dati: IReturn) => IReturn | Promise<IReturn>;
+    constructor() {
+        this.trigger = 0;
+    }
+}
+
 export class Risposta {
     stato: number;
     descrizione: string;
@@ -30,7 +39,7 @@ export class Risposta {
         note?: string
     }[];
 
-    trigger?: { nome: string, valre: any, posizione: TypePosizione };
+    trigger?: { nome: string, valore: any, posizione: TypePosizione };
     htmlPath?: string;
     html?: string;
     isHandlebars?: boolean;
@@ -47,7 +56,8 @@ export class Risposta {
 
 } */
 
-export class TerminaleMetodo implements IDescrivibile, IMetodo {
+export class TerminaleMetodo implements
+    IDescrivibile, IMetodo/* , IGestorePercorsiPath, ICaratteristicheMetodo */ {
 
     swaggerClassi: string[] = [];
 
@@ -70,13 +80,14 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
     listaParametri: ListaTerminaleParametro;
     tipo: TypeMetod;
     tipoInterazione: TypeInterazone;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     nome: string | Symbol;
     metodoAvviabile: any;
     path: string;
 
     cors: any;
     helmet: any;
-
+    risposteControllateMandatorie = false;
     middleware: any[] = [];
 
     descrizione: string;
@@ -87,10 +98,11 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
         body: any, query: any, header: any
     }[] = [];
 
-    Risposte?: Risposta[] = []
+    RisposteDiControllo?: RispostaControllo[] = [];
+    /* Risposte?: Risposta[] = [] */
 
     /* RispondiConHTML?: {
-        trigger?: { nome: string, valre: any, posizione: TypePosizione },
+        trigger?: { nome: string, valore: any, posizione: TypePosizione },
         risposta: {
             "1xx"?: {
                 htmlPath?: string,
@@ -212,7 +224,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
      * @param middlew : la lista dei middleware
      */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = {};
+        let corsOptions = { };
         switch (this.tipo) {
             case 'get':
                 (<IReturn>this.metodoAvviabile).body;
@@ -338,7 +350,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = {};
+        let corsOptions = { };
         corsOptions = {
             methods: 'GET',
         }
@@ -374,6 +386,9 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
             tmp = await this.Esegui(req);
+            if (this.risposteControllateMandatorie == true && this.VerificaPresenzaRispostaControllata(tmp) == false) {
+                throw new Error("Attenzione, cosa stai facendo?");
+            }
             if (this.onModificaRispostaExpress) {
                 const tmp1 = await this.onModificaRispostaExpress(tmp ?? { body: '', stato: 1 });
                 /* if (tmp && tmp.attore)
@@ -384,7 +399,11 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                 if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
                 try {
                     if (!this.VerificaTrigger(req)) {
-                        Rispondi(res, tmp);
+
+                        if (this.VerificaPresenzaRispostaControllata(tmp) && this.EseguiRispostaControllata) {
+                            tmp = await this.EseguiRispostaControllata(tmp);
+                        }
+                        Rispondi(res, tmp ?? { stato: 500, body: 'Attenzione! Rimpiazzato.' });
                     }
                     else {
                         const risposta = this.CercaRispostaConTrigger(req);
@@ -467,14 +486,41 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             //return res;
         }
     }
+    VerificaPresenzaRispostaControllata(item: IReturn | undefined): boolean {
+        if (this.RisposteDiControllo != undefined) {
+            for (let index = 0; index < this.RisposteDiControllo.length; index++) {
+                const element = this.RisposteDiControllo[index];
+                if (element.trigger == item?.stato) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    async EseguiRispostaControllata(item: IReturn | undefined): Promise<IReturn | undefined> {
+        if (this.RisposteDiControllo != undefined) {
+            for (let index = 0; index < this.RisposteDiControllo.length; index++) {
+                const element = this.RisposteDiControllo[index];
+                if ((element).trigger == item?.stato) {
+                    if ((element).onModificaRisposta && element) {
+                        const tmp = await element.onModificaRisposta(item);
+                        return tmp;
+                    }
+                    else {
+                        return item;
+                    }
+                }
+            }
+        }
+    }
 
     VerificaTrigger(richiesta: Request): boolean {
 
         let tmp = undefined;
 
-        if (this.Risposte) {
-            for (let index = 0; index < this.Risposte.length; index++) {
-                const element = this.Risposte[index];
+        if (this.RisposteDiControllo) {
+            for (let index = 0; index < this.RisposteDiControllo.length; index++) {
+                const element = this.RisposteDiControllo[index].risposta;
                 if (element && element.trigger) {
                     if (element.trigger.posizione == 'body')
                         tmp = richiesta.body[element.trigger.nome];
@@ -482,7 +528,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                         tmp = richiesta.headers[element.trigger.nome];
                     if (element.trigger.posizione == 'query')
                         tmp = richiesta.query[element.trigger.nome];
-                    if (tmp == element.trigger.valre) return true;
+                    if (tmp == element.trigger.valore) return true;
                 }
             }
         }
@@ -494,9 +540,9 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
 
         let tmp = undefined;
 
-        if (this.Risposte) {
-            for (let index = 0; index < this.Risposte.length; index++) {
-                const element = this.Risposte[index];
+        if (this.RisposteDiControllo) {
+            for (let index = 0; index < this.RisposteDiControllo.length; index++) {
+                const element = this.RisposteDiControllo[index].risposta;
                 if (element && element.trigger) {
                     if (element.trigger.posizione == 'body')
                         tmp = richiesta.body[element.trigger.nome];
@@ -504,7 +550,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                         tmp = richiesta.headers[element.trigger.nome];
                     if (element.trigger.posizione == 'query')
                         tmp = richiesta.query[element.trigger.nome];
-                    if (tmp == element.trigger.valre) return element;
+                    if (tmp == element.trigger.valore) return element;
                 }
             }
         }
@@ -537,7 +583,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: {}, nonTrovati: parametri.nontrovato,
+                    body: { }, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -558,7 +604,7 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({}, tmpReturn.body);
+                            tmp.body = Object.assign({ }, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
@@ -615,8 +661,10 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                 }
                 return tmp;
             }
-            return undefined;
+            //return undefined;
+            throw new Error("Attenzione qualcosa è andato storto.");
         } catch (error: any) {
+            console.log('ciao');
             throw error;
             /* if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
                 //console.log("ciao");
@@ -985,20 +1033,21 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
 
             }
             let risposte = "";
-            if (this.Risposte) {
-                for (let index = 0; index < this.Risposte.length; index++) {
-                    const element = this.Risposte[index];
+            if (this.RisposteDiControllo) {
+                for (let index = 0; index < this.RisposteDiControllo.length; index++) {
+                    const element = this.RisposteDiControllo[index].risposta;
                     let tt = '';
-                    for (let indexj = 0; indexj < element.valori.length; indexj++) {
-                        const element2 = element.valori[indexj];
-                        if (indexj > 0) tt = tt + ', ';
-                        tt = tt +
-                            `"${element2.nome}": {
+                    if (element) {
+                        for (let indexj = 0; indexj < element.valori.length; indexj++) {
+                            const element2 = element.valori[indexj];
+                            if (indexj > 0) tt = tt + ', ';
+                            tt = tt +
+                                `"${element2.nome}": {
                             "type": "${element2.tipo}"
                         }`;
-                    }
-                    if (index > 0) risposte = risposte + ', ';
-                    risposte = risposte + `"${element.stato}": {
+                        }
+                        if (index > 0) risposte = risposte + ', ';
+                        risposte = risposte + `"${element.stato}": {
                         "description": "${element.descrizione}",
                         "content": {
                             "application/json": {
@@ -1011,6 +1060,8 @@ export class TerminaleMetodo implements IDescrivibile, IMetodo {
                             }
                         }
                     }`;
+
+                    }
                 }
             }
 
@@ -1249,6 +1300,152 @@ function decoratoreMetodoEventi(parametri: IMetodoEventi): MethodDecorator {
         //return descriptor;
     }
 }
+function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDecorator {
+    return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+        const list: ListaTerminaleClasse = GetListaClasseMetaData();
+        /* inizializzo metodo */
+        const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
+        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
+        /* inizio a lavorare sul metodo */
+        if (metodo != undefined && list != undefined && classe != undefined) {
+
+            if (parametri.Risposte) metodo.Risposte = parametri.Risposte;
+
+            if (parametri.listaHtml) {
+                for (let index = 0; index < parametri.listaHtml.length; index++) {
+                    const element = parametri.listaHtml[index];
+                    if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
+
+                    if (element.html != undefined && element.htmlPath == undefined
+                        && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
+                        metodo.html?.push({
+                            contenuto: element.html,
+                            path: element.path,
+                            percorsoIndipendente: element.percorsoIndipendente
+                        });
+                        // metodo.html?.contenuto = element.html;
+                    } else if (element.html == undefined && element.htmlPath != undefined
+                        && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
+                        metodo.html.push({
+                            contenuto: fs.readFileSync(element.htmlPath).toString(),
+                            path: element.path,
+                            percorsoIndipendente: element.percorsoIndipendente
+                        });
+                        // metodo.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
+                    }
+                }
+            }
+
+            if (parametri.listaTest)
+                metodo.listaTest = parametri.listaTest;
+
+            metodo.metodoAvviabile = descriptor.value;
+
+            if (parametri.percorsoIndipendente) metodo.percorsoIndipendente = parametri.percorsoIndipendente;
+            else metodo.percorsoIndipendente = false;
+
+            if (parametri.nomiClasseRiferimento != undefined)
+                metodo.nomiClassiDiRiferimento = parametri.nomiClasseRiferimento;
+
+            if (parametri.tipo != undefined) metodo.tipo = parametri.tipo;
+            else if (parametri.tipo == undefined && metodo.listaParametri.length == 0) metodo.tipo = 'get';
+            else if (parametri.tipo == undefined && metodo.listaParametri.length > 0) metodo.tipo = 'post';
+            //else if (parametri.tipo == undefined && metodo.listaParametri.length < 0) metodo.tipo = 'post';
+            else metodo.tipo = 'get';
+
+            if (parametri.descrizione != undefined) metodo.descrizione = parametri.descrizione;
+            else metodo.descrizione = '';
+
+            if (parametri.sommario != undefined) metodo.sommario = parametri.sommario;
+            else metodo.sommario = '';
+
+            if (parametri.interazione != undefined) metodo.tipoInterazione = parametri.interazione;
+            else metodo.tipoInterazione = 'rotta';
+
+            if (parametri.path == undefined) metodo.path = propertyKey.toString();
+            else metodo.path = parametri.path;
+
+            /* configuro i middleware */
+            if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
+
+                const listaMidd = GetListaMiddlewareMetaData();
+                const midd = listaMidd.CercaConNomeSeNoAggiungi(propertyKey.toString());
+                midd.metodoAvviabile = descriptor.value;
+                midd.listaParametri = metodo.listaParametri;
+                SalvaListaMiddlewareMetaData(listaMidd);
+            }
+            if (parametri.nomiClasseRiferimento != undefined && parametri.nomiClasseRiferimento.length > 0) {
+                for (let index = 0; index < parametri.nomiClasseRiferimento.length; index++) {
+                    const element = parametri.nomiClasseRiferimento[index];
+                    const classeTmp = list.CercaConNomeSeNoAggiungi(element.nome);
+                    const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
+                    /* configuro il metodo */
+                    metodoTmp.metodoAvviabile = descriptor.value;
+
+                    if (parametri.tipo != undefined) metodoTmp.tipo = parametri.tipo;
+                    else metodoTmp.tipo = 'get';
+
+                    if (parametri.descrizione != undefined) metodoTmp.descrizione = parametri.descrizione;
+                    else metodoTmp.descrizione = '';
+
+                    if (parametri.sommario != undefined) metodoTmp.sommario = parametri.sommario;
+                    else metodoTmp.sommario = '';
+
+                    if (parametri.interazione != undefined) metodoTmp.tipoInterazione = parametri.interazione;
+                    else metodoTmp.tipoInterazione = 'rotta';
+
+                    if (parametri.path == undefined) metodoTmp.path = propertyKey.toString();
+                    else metodoTmp.path = parametri.path;
+
+                    for (let index = 0; index < metodo.listaParametri.length; index++) {
+                        const element = metodo.listaParametri[index];
+                        /* configuro i parametri */
+                        const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nome, element.indexParameter,
+                            element.tipo, element.posizione);
+                        if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
+                        else paramestro.descrizione = '';
+
+                        if (parametri.sommario != undefined) paramestro.sommario = element.sommario;
+                        else paramestro.sommario = '';
+
+                    }
+                    if (element.listaMiddleware) {
+                        for (let index = 0; index < element.listaMiddleware.length; index++) {
+                            const middlewareTmp = element.listaMiddleware[index];
+                            let midd = undefined;
+                            const listaMidd = GetListaMiddlewareMetaData();
+                            if (typeof middlewareTmp === 'string' || middlewareTmp instanceof String) {
+                                midd = listaMidd.CercaConNomeSeNoAggiungi(String(middlewareTmp));
+                                SalvaListaMiddlewareMetaData(listaMidd);
+                            }
+                            else {
+                                midd = middlewareTmp;
+                            }
+
+
+                            if (metodoTmp != undefined && list != undefined && classeTmp != undefined) {
+                                metodoTmp.middleware.push(midd);
+                                SalvaListaClasseMetaData(list);
+                            }
+                            else {
+                                //console.log("Errore mio!");
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (parametri.swaggerClassi != undefined)
+                metodo.swaggerClassi = parametri.swaggerClassi;
+
+            SalvaListaClasseMetaData(list);
+        }
+        else {
+            //console.log("Errore mio!");
+        }
+        //return descriptor;
+    }
+}
 
 function decoratoreRitorno() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -1360,7 +1557,11 @@ export { decoratoreMetodo as mpMet };
 
 export { decoratoreRitorno as mpRet };
 
+export { decoratoreMetodoProprieta as mpMetProprita }
+
 function Rispondi(res: Response, item: IReturn) {
+
     res.statusCode = Number.parseInt('' + item.stato);
     res.send(item.body);
 }
+

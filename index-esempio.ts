@@ -1,25 +1,49 @@
 
 import chiedi from "prompts";
 import { createConnection, ConnectionOptions } from "typeorm";
+import { IParametriEstratti, mpMet, mpMetEvent, mpMetPropieta } from ".";
 import { Main } from "./model/classi/terminale-main";
+import { IReturn } from "./model/tools";
 
-/* class Persona {
+class Persona {
     @Controllo({
         getCheck: (valore) => {
             return true;
         },
         setCheck: (valore) => {
-            
+
             return 'true';
         }
-    })
-    nome: string;
+    }) nome: string;
     cognome: string;
     constructor() {
         this.nome = '';
         this.cognome = '';
     }
-} */
+
+    @mpMetEvent({
+        Validatore: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => {
+            return undefined;
+        }
+    })
+    @mpMetPropieta({
+        tipo: 'get', path: 'Saluta', risposteControllateMandatorie: true,
+        RisposteDiControllo: [
+            {
+                trigger: 200,
+                onModificaRisposta: (dati: IReturn) => {
+                    return dati;
+                }
+            },
+            {
+                trigger: 400
+            }
+        ]
+    })
+    Saluta() {
+        return 'Nome :' + this.nome + '; Cognome: ' + this.cognome + '||';
+    }
+}
 
 const connessione = <ConnectionOptions>{
     type: "postgres",
