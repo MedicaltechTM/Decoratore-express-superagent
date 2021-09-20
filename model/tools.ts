@@ -13,7 +13,7 @@ export interface IDescrivibile {
     sommario: string;
 }
 
-export type tipo = "number" | "text" | "date" | "array" | "object" | "boolean";
+export type tipo = "number" | "text" | "date" | "array" | "object" | "boolean" | "any";
 
 export interface ILogbase {
     data: Date;
@@ -174,6 +174,10 @@ export function GestioneErrore(item: IGestioneErrore): ErroreMio {
 
 export type TypeInterazone = "rotta" | "middleware" | 'ambo';
 
+/*!!!
+si potrebbe mettere un trovati cosi da averlo in questo caso e
+ ìn tutti gli altri quando si vanno ad estrarre i parametri. 
+ */
 export interface IReturn {
     body: object | string;
     stato: number;
@@ -295,7 +299,6 @@ export interface IMetodo extends ICaratteristicheMetodo, IMetodoEventi {
 }
 export interface ICaratteristicheMetodo {
     RisposteDiControllo?: RispostaControllo[];
-    risposteControllateMandatorie?: boolean;
     swaggerClassi?: string[];
     //schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
@@ -328,8 +331,6 @@ export interface ICaratteristicheMetodo {
     listaHtml?: IHtml[];
 }
 export interface IMetodoEventi {
-
-    onModificaRispostaExpress?: (dati: IReturn) => IReturn;
     /**
      * se impostata permette di determinare cosa succedera nel momento dell'errore
      */
@@ -343,10 +344,13 @@ export interface IMetodoEventi {
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
 
-    onPrimaDiEseguireExpress?: (req: Request) => void
-
-    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IReturn | any;
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+    
+    onRispostaControllatePradefinita?: (dati: IReturn) => IReturn | Promise<IReturn>;
+}
+
+export interface IMetodoParametri{
+    listaParametri: IParametro[];
 }
 
 export interface IClasse {

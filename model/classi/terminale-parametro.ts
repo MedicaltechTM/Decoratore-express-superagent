@@ -68,6 +68,38 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
         }
         return ritorno;
     }
+
+    Verifica(): boolean {
+        try {
+            switch (this.tipo) {
+                case 'array':
+                    this.valore = Array(this.valore);
+                    break;
+                case 'boolean':
+                    this.valore = Boolean(this.valore);
+                    break;
+                case 'date':
+                    this.valore = new Date(this.valore);
+                    break;
+                case 'number':
+                    this.valore = Number(this.valore);
+                    break;
+                case 'object':
+                    this.valore = Object(this.valore);
+                    break;
+                case 'text':
+                    this.valore = String(this.valore);
+                    break;
+                case 'any': break;
+                default:
+                    throw new Error("Valore non trovato");
+            }
+            return true;
+        } catch (error) {
+            console.log('ciao');
+            throw new Error("Errore!");
+        }
+    }
 }
 
 /**
@@ -85,8 +117,8 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, posizione: TypePosizione, tipo?: tipo, descrizione?: string, sommario?: string) */ {
     return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
 
-        if(parametri.obbligatorio == undefined)parametri.obbligatorio = true ;
-        if (parametri.tipo == undefined) parametri.tipo = 'text';
+        if (parametri.obbligatorio == undefined) parametri.obbligatorio = true;
+        if (parametri.tipo == undefined) parametri.tipo = 'any';
         if (parametri.descrizione == undefined) parametri.descrizione = '';
         if (parametri.sommario == undefined) parametri.sommario = '';
         if (parametri.nome == undefined) parametri.nome = parameterIndex.toString();

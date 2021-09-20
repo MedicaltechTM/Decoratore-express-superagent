@@ -1,9 +1,10 @@
 
 import chiedi from "prompts";
 import { createConnection, ConnectionOptions } from "typeorm";
-import { IParametriEstratti, mpMet, mpMetEvent, mpMetPropieta } from ".";
+import { IParametriEstratti, mpMet, mpMetEvent, mpMetPropieta, mpPar } from ".";
 import { Main } from "./model/classi/terminale-main";
 import { IReturn } from "./model/tools";
+
 
 class Persona {
     @Controllo({
@@ -15,6 +16,13 @@ class Persona {
             return 'true';
         }
     }) nome: string;
+    
+    public get Nome() : string {
+        console.log('ciao');
+        
+        return this.nome;
+    }
+    
     cognome: string;
     constructor() {
         this.nome = '';
@@ -40,7 +48,9 @@ class Persona {
             }
         ]
     })
-    Saluta() {
+    Saluta(@mpPar({
+        
+    }) kikko:string) {
         return 'Nome :' + this.nome + '; Cognome: ' + this.cognome + '||';
     }
 }

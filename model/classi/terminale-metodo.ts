@@ -1,6 +1,6 @@
-import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IGestorePercorsiPath, IHtml, IMetodo, IMetodoEventi, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IGestorePercorsiPath, IHtml, IMetodo, IMetodoEventi, IMetodoParametri, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
-import { TerminaleParametro } from "./terminale-parametro";
+import { mpPar, TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
 import { Request, Response, NextFunction } from "express";
 import { GetListaMiddlewareMetaData, SalvaListaMiddlewareMetaData } from "../liste/lista-terminale-metodo";
@@ -13,6 +13,7 @@ import fs from "fs";
 import superagent from "superagent";
 
 import Handlebars from "handlebars";
+import { randomInt } from "crypto";
 
 
 /* import { fork } from "child_process"; */
@@ -87,7 +88,6 @@ export class TerminaleMetodo implements
 
     cors: any;
     helmet: any;
-    risposteControllateMandatorie = false;
     middleware: any[] = [];
 
     descrizione: string;
@@ -126,18 +126,16 @@ export class TerminaleMetodo implements
             }
         }
     }; */
-
+    onRispostaControllatePradefinita?: (dati: IReturn) => IReturn | Promise<IReturn>;
     onLog?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
     onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any[];
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
-    onPrimaDiEseguireExpress?: (req: Request) => void;
-    onModificaRispostaExpress?: (dati: IReturn) => IReturn;
     onPrimaDirestituireResponseExpress?: () => void;
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
-    AlPostoDi?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
+
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 
     constructor(nome: string, path: string, classePath: string) {
@@ -384,57 +382,56 @@ export class TerminaleMetodo implements
         try {
             //console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
-            if (this.onPrimaDiEseguireExpress) this.onPrimaDiEseguireExpress(req);
             tmp = await this.Esegui(req);
-            if (this.risposteControllateMandatorie == true && this.VerificaPresenzaRispostaControllata(tmp) == false) {
-                throw new Error("Attenzione, cosa stai facendo?");
-            }
-            if (this.onModificaRispostaExpress) {
-                const tmp1 = await this.onModificaRispostaExpress(tmp ?? { body: '', stato: 1 });
-                /* if (tmp && tmp.attore)
-                    tmp1.attore = tmp.attore; */
-                tmp = tmp1;
-            }
-            if (tmp != undefined) {
-                if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
-                try {
-                    if (!this.VerificaTrigger(req)) {
 
-                        if (this.VerificaPresenzaRispostaControllata(tmp) && this.EseguiRispostaControllata) {
-                            tmp = await this.EseguiRispostaControllata(tmp);
-                        }
-                        Rispondi(res, tmp ?? { stato: 500, body: 'Attenzione! Rimpiazzato.' });
-                    }
-                    else {
-                        const risposta = this.CercaRispostaConTrigger(req);
-                        if (risposta) {
-                            let source = "";
-                            if (risposta.stato >= 1 && risposta.stato < 600) {
-                                if (risposta.htmlPath != undefined)
-                                    source = fs.readFileSync(risposta.htmlPath).toString();
-                                else if (risposta.html != undefined)
-                                    source = risposta.html;
-                                else
-                                    throw new Error("Errorissimo");
+            if (tmp != undefined) {
+                if (this.onRispostaControllatePradefinita && this.VerificaPresenzaRispostaControllata(tmp) == false) {
+                    const rispostaPilotata = await this.onRispostaControllatePradefinita(tmp)
+                    Rispondi(res, rispostaPilotata);
+                    //throw new Error("Attenzione, cosa stai facendo?");
+                }
+                else {
+                    try {
+                        if (!this.VerificaTrigger(req)) {
+
+                            if (this.VerificaPresenzaRispostaControllata(tmp) && this.EseguiRispostaControllata) {
+                                tmp = await this.EseguiRispostaControllata(tmp);
                             }
-                            if (risposta.isHandlebars) {
-                                const template = Handlebars.compile(source);
-                                const result = template(tmp.body);
-                                res.statusCode = Number.parseInt('' + risposta.stato);
-                                res.send(result);
-                                passato = true;
-                            } else {
-                                Rispondi(res, tmp);
-                                passato = true;
-                            }
+                            Rispondi(res, tmp ?? ConstruisciErrore('Attenzione! Rimpiazzato.'));
                         }
                         else {
-                            throw new Error("Errore nel trigger");
+                            const risposta = this.CercaRispostaConTrigger(req);
+                            if (risposta) {
+                                let source = "";
+                                if (risposta.stato >= 1 && risposta.stato < 600) {
+                                    if (risposta.htmlPath != undefined)
+                                        source = fs.readFileSync(risposta.htmlPath).toString();
+                                    else if (risposta.html != undefined)
+                                        source = risposta.html;
+                                    else
+                                        throw new Error("Errorissimo");
+                                }
+                                if (risposta.isHandlebars) {
+                                    const template = Handlebars.compile(source);
+                                    const result = template(tmp.body);
+                                    res.statusCode = Number.parseInt('' + risposta.stato);
+                                    res.send(result);
+                                    passato = true;
+                                } else {
+                                    Rispondi(res, tmp);
+                                    passato = true;
+                                }
+                            }
+                            else {
+                                throw new Error("Errore nel trigger");
+                            }
                         }
+                    } catch (error) {
+                        res.status(598).send(error);
                     }
-                } catch (error) {
-                    res.status(598).send(error);
                 }
+                if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
+
                 logOut = InizializzaLogbaseOut(res, this.nome.toString());
                 if (this.onChiamataCompletata) {
                     this.onChiamataCompletata(logIn, tmp, logOut, undefined);
@@ -497,14 +494,18 @@ export class TerminaleMetodo implements
         }
         return false;
     }
-    async EseguiRispostaControllata(item: IReturn | undefined): Promise<IReturn | undefined> {
+    async EseguiRispostaControllata(item: IReturn | undefined): IReturn | Promise<IReturn> {
         if (this.RisposteDiControllo != undefined) {
             for (let index = 0; index < this.RisposteDiControllo.length; index++) {
                 const element = this.RisposteDiControllo[index];
                 if ((element).trigger == item?.stato) {
                     if ((element).onModificaRisposta && element) {
                         const tmp = await element.onModificaRisposta(item);
-                        return tmp;
+                        if (tmp)
+                            return tmp;
+                        else {
+                            return ConstruisciErrore('Attenzione errore!');
+                        }
                     }
                     else {
                         return item;
@@ -566,6 +567,13 @@ export class TerminaleMetodo implements
     async Esegui(req: Request): Promise<IReturn | undefined> {
         try {
             const parametri = this.listaParametri.EstraiParametriDaRequest(req);
+            /*!!!
+            Qui bisogna che ci metto qualcosa per convertire i parametri in una chimata, quindi 
+            connettermi al db ed estrarli con una query.
+            i parametri devono essere segnalati come tali.
+            come fare a gestire il ritorno, perche io cosi facendo sto eseguendo una select
+            come eseguire una delete o una set? 
+            */
             let valido: IRitornoValidatore | undefined = undefined;
             if (this.Validatore) {
                 valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
@@ -666,14 +674,6 @@ export class TerminaleMetodo implements
         } catch (error: any) {
             console.log('ciao');
             throw error;
-            /* if ('name' in error && error.name === "ErroreMio" || error.name === "ErroreGenerico") {
-                //console.log("ciao");
-            } */
-            //console.log("Errore : ", error);
-            /* return <IReturn>{
-                body: { "Errore Interno filtrato ": 'internal error!!!!' },
-                stato: 500
-            }; */
         }
     }
 
@@ -681,46 +681,41 @@ export class TerminaleMetodo implements
         let tmpReturn: any = '';
         let attore = undefined;
         /* let count = 0; */
-        if (this.AlPostoDi) {
-            tmpReturn = await this.AlPostoDi(parametri, this.listaParametri);
+        if (this.Istanziatore) {
+            const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
+            attore = classeInstanziata;
+            tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
+            /* const proc = fork(__filename, ['child'],
+                tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri));
+            proc.on('error', (err) => {
+            }); 
+            while (tmpReturn == '') {
+                if (count > 10) {
+                    count = 0;
+                    proc.kill('SIGINT');
+                }
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                count++;
+            } */
+            // è giusta ma ho provato la soluzione 2 //tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
+            //tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
         }
         else {
-            if (this.Istanziatore) {
-                const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
-                attore = classeInstanziata;
-                tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
-                /* const proc = fork(__filename, ['child'],
-                    tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri));
-                proc.on('error', (err) => {
-                }); 
-                while (tmpReturn == '') {
-                    if (count > 10) {
-                        count = 0;
-                        proc.kill('SIGINT');
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 5000));
-                    count++;
-                } */
-                // è giusta ma ho provato la soluzione 2 //tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
-                //tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
-            }
-            else {
 
-                tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
+            tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
 
-                /* const proc = fork(__filename, ['child'],
-                    tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri));
-                proc.on('error', (err) => {
-                }); 
-                while (tmpReturn == '') {
-                    if (count > 10) {
-                        count = 0;
-                        proc.kill('SIGINT');
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 5000));
-                    count++;
-                } */
-            }
+            /* const proc = fork(__filename, ['child'],
+                tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri));
+            proc.on('error', (err) => {
+            }); 
+            while (tmpReturn == '') {
+                if (count > 10) {
+                    count = 0;
+                    proc.kill('SIGINT');
+                }
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                count++;
+            } */
         }
         return {
             attore: attore,
@@ -1110,7 +1105,7 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
         /* inizio a lavorare sul metodo */
         if (metodo != undefined && list != undefined && classe != undefined) {
 
-            if (parametri.Risposte) metodo.Risposte = parametri.Risposte;
+            if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
 
             if (parametri.listaHtml) {
                 for (let index = 0; index < parametri.listaHtml.length; index++) {
@@ -1136,9 +1131,6 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
                     }
                 }
             }
-            if (parametri.onModificaRispostaExpress) metodo.onModificaRispostaExpress = parametri.onModificaRispostaExpress;
-            /* if (parametri.RispondiConHTML)
-                metodo.RispondiConHTML = parametri.RispondiConHTML; */
 
             if (parametri.listaTest)
                 metodo.listaTest = parametri.listaTest;
@@ -1174,12 +1166,6 @@ function decoratoreMetodo(parametri: IMetodo): MethodDecorator {
             if (parametri.onLog != null) metodo.onLog = parametri.onLog;
 
             if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
-
-            if (parametri.onPrimaDiEseguireExpress != null) metodo.onPrimaDiEseguireExpress = parametri.onPrimaDiEseguireExpress;
-
-            if (parametri.AlPostoDi != null && parametri.AlPostoDi != undefined) {
-                metodo.AlPostoDi = parametri.AlPostoDi;
-            }
 
             if (parametri.Istanziatore != null && parametri.Istanziatore != undefined) {
                 metodo.Istanziatore = parametri.Istanziatore;
@@ -1281,12 +1267,6 @@ function decoratoreMetodoEventi(parametri: IMetodoEventi): MethodDecorator {
             if (parametri.onLog != null) metodo.onLog = parametri.onLog;
 
             if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
-
-            if (parametri.onPrimaDiEseguireExpress != null) metodo.onPrimaDiEseguireExpress = parametri.onPrimaDiEseguireExpress;
-
-            if (parametri.AlPostoDi != null && parametri.AlPostoDi != undefined) {
-                metodo.AlPostoDi = parametri.AlPostoDi;
-            }
 
             if (parametri.Istanziatore != null && parametri.Istanziatore != undefined) {
                 metodo.Istanziatore = parametri.Istanziatore;
@@ -1447,6 +1427,29 @@ function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDec
     }
 }
 
+
+function decoratoreMetodoParametri(parametri: IMetodoParametri): MethodDecorator {
+    return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+        const list: ListaTerminaleClasse = GetListaClasseMetaData();
+        /* inizializzo metodo */
+        const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
+        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
+        /* inizio a lavorare sul metodo */
+        if (metodo != undefined && list != undefined && classe != undefined) {
+            metodo.metodoAvviabile = descriptor.value;
+            for (let index = 0; index < parametri.listaParametri.length; index++) {
+                const element = parametri.listaParametri[index];
+                mpPar(element);
+            }
+            SalvaListaClasseMetaData(list);
+        }
+        else {
+            //console.log("Errore mio!");
+        }
+        //return descriptor;
+    }
+}
+
 function decoratoreRitorno() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
 
@@ -1563,5 +1566,14 @@ function Rispondi(res: Response, item: IReturn) {
 
     res.statusCode = Number.parseInt('' + item.stato);
     res.send(item.body);
+}
+
+function ConstruisciErrore(messaggio: string): IReturn {
+    return {
+        stato: 500,
+        body: {
+            errore: messaggio
+        }
+    }
 }
 

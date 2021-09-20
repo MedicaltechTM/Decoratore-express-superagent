@@ -46,19 +46,23 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                     ritorno.errori.push(rit)
                 }
             }
-            else{
-                if (tmp == undefined && element.obbligatorio == true){
+            else {
+                if (element.Verifica() == true) {
                     ritorno.errori.push({
                         approvato: false,
-                        messaggio:'Attenzione parametro: '+ element.nome +', segnato come obbligatorio. Messaggio auto creato.'
-                    })                    
+                        messaggio: 'Attenzione parametro: ' + element.nome + 'parametro non convertibile.'
+                    })
+                } else if (tmp == undefined && element.obbligatorio == true) {
+                    ritorno.errori.push({
+                        approvato: false,
+                        messaggio: 'Attenzione parametro: ' + element.nome + ', segnato come obbligatorio. Messaggio auto creato.'
+                    })
                 }
             }
-
-            if(element.autenticatore== true && tmp == undefined){
+            if (element.autenticatore == true && tmp == undefined) {
                 throw new ErroreMio({
-                    codiceErrore:401,
-                    messaggio:'Attenzione autenticazione mancante.'
+                    codiceErrore: 401,
+                    messaggio: 'Attenzione autenticazione mancante.'
                 });
             }
         }
