@@ -1,6 +1,6 @@
 
 import { Request, Response } from "express";
-import { Risposta, RispostaControllo } from "./classi/terminale-metodo";
+import { RispostaControllo } from "./classi/terminale-metodo";
 import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
 export const targetTerminale = { name: 'Terminale' };
 

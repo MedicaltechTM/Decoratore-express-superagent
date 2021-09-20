@@ -1,4 +1,4 @@
-import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IGestorePercorsiPath, IHtml, IMetodo, IMetodoEventi, IMetodoParametri, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, IMetodoParametri, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { mpPar, TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -13,7 +13,6 @@ import fs from "fs";
 import superagent from "superagent";
 
 import Handlebars from "handlebars";
-import { randomInt } from "crypto";
 
 
 /* import { fork } from "child_process"; */
@@ -1463,9 +1462,9 @@ function decoratoreRitorno() {
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
         /* inizio a lavorare sul metodo */
-        /* if (metodo != undefined && list != undefined && classe != undefined) {
-            metodo.RisposteDiControllo?.push({ descrizione: '', stato: 0, valori: [], isHandlebars: false });
-        } */
+        if (metodo != undefined && list != undefined && classe != undefined) {
+            metodo.RisposteDiControllo?.push({ trigger: 200, risposta: { descrizione: '', stato: 0, valori: [], isHandlebars: false } });
+        }
     };
 }
 
@@ -1566,6 +1565,8 @@ export { decoratoreMetodo as mpMet };
 export { decoratoreRitorno as mpRet };
 
 export { decoratoreMetodoProprieta as mpMetProprita }
+
+export { decoratoreMetodoParametri as mpMetPar }
 
 function Rispondi(res: Response, item: IReturn) {
 
