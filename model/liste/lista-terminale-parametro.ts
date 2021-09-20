@@ -39,6 +39,7 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                 }
             }
             ritorno.valoriParametri.push(tmp);
+            element.valore = tmp;
             if (element.Validatore) {
                 const rit = element.Validatore(tmp)
                 if (rit.approvato == false) {
@@ -47,14 +48,16 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                 }
             }
             else {
-                if (element.Verifica() == true) {
+               /*  if (TerminaleParametro.Verifica(element.tipo, tmp) == true) { */ if (element.Verifica() == false) {
                     ritorno.errori.push({
                         approvato: false,
-                        messaggio: 'Attenzione parametro: ' + element.nome + 'parametro non convertibile.'
+                        terminale: element,
+                        messaggio: 'Attenzione parametro: ' + element.nome + ', parametro non convertibile.'
                     })
                 } else if (tmp == undefined && element.obbligatorio == true) {
                     ritorno.errori.push({
                         approvato: false,
+                        terminale: element,
                         messaggio: 'Attenzione parametro: ' + element.nome + ', segnato come obbligatorio. Messaggio auto creato.'
                     })
                 }

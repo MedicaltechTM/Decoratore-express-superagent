@@ -100,6 +100,36 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
             throw new Error("Errore!");
         }
     }
+    static Verifica(tipo: tipo, valore: any): boolean {
+        try {
+            switch (tipo) {
+                case 'array':
+                    valore = Array(valore);
+                    break;
+                case 'boolean':
+                    valore = Boolean(valore);
+                    break;
+                case 'date':
+                    valore = new Date(valore);
+                    break;
+                case 'number':
+                    valore = Number(valore);
+                    break;
+                case 'object':
+                    valore = Object(valore);
+                    break;
+                case 'text':
+                    valore = String(valore);
+                    break;
+                case 'any': break;
+                default:
+                    return false;
+            }
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
 }
 
 /**
