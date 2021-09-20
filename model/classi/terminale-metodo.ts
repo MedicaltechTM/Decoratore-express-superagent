@@ -222,7 +222,7 @@ export class TerminaleMetodo implements
      * @param middlew : la lista dei middleware
      */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = { };
+        let corsOptions = {};
         switch (this.tipo) {
             case 'get':
                 (<IReturn>this.metodoAvviabile).body;
@@ -348,7 +348,7 @@ export class TerminaleMetodo implements
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = { };
+        let corsOptions = {};
         corsOptions = {
             methods: 'GET',
         }
@@ -494,7 +494,7 @@ export class TerminaleMetodo implements
         }
         return false;
     }
-    async EseguiRispostaControllata(item: IReturn | undefined): IReturn | Promise<IReturn> {
+    async EseguiRispostaControllata(item: IReturn | undefined): Promise<IReturn> {
         if (this.RisposteDiControllo != undefined) {
             for (let index = 0; index < this.RisposteDiControllo.length; index++) {
                 const element = this.RisposteDiControllo[index];
@@ -512,6 +512,11 @@ export class TerminaleMetodo implements
                     }
                 }
             }
+        }
+        if (item)
+            return item;
+        else {
+            return ConstruisciErrore('Attenzione errore!');
         }
     }
 
@@ -591,7 +596,7 @@ export class TerminaleMetodo implements
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: { }, nonTrovati: parametri.nontrovato,
+                    body: {}, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -612,7 +617,7 @@ export class TerminaleMetodo implements
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({ }, tmpReturn.body);
+                            tmp.body = Object.assign({}, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
@@ -1289,7 +1294,7 @@ function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDec
         /* inizio a lavorare sul metodo */
         if (metodo != undefined && list != undefined && classe != undefined) {
 
-            if (parametri.Risposte) metodo.Risposte = parametri.Risposte;
+            if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
 
             if (parametri.listaHtml) {
                 for (let index = 0; index < parametri.listaHtml.length; index++) {
@@ -1458,9 +1463,9 @@ function decoratoreRitorno() {
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
         /* inizio a lavorare sul metodo */
-        if (metodo != undefined && list != undefined && classe != undefined) {
-            metodo.Risposte?.push({ descrizione: '', stato: 0, valori: [], isHandlebars: false });
-        }
+        /* if (metodo != undefined && list != undefined && classe != undefined) {
+            metodo.RisposteDiControllo?.push({ descrizione: '', stato: 0, valori: [], isHandlebars: false });
+        } */
     };
 }
 

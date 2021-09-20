@@ -1,12 +1,12 @@
 
 import chiedi from "prompts";
 import { createConnection, ConnectionOptions } from "typeorm";
-import { IParametriEstratti, mpMet, mpMetEvent, mpMetPropieta, mpPar } from ".";
+/* import { IParametriEstratti, mpMet, mpMetEvent, mpMetPropieta, mpPar } from "."; */
 import { Main } from "./model/classi/terminale-main";
-import { IReturn } from "./model/tools";
+/* import { IReturn } from "./model/tools"; */
 
 
-class Persona {
+/* class Persona {
     @Controllo({
         getCheck: (valore) => {
             return true;
@@ -53,7 +53,7 @@ class Persona {
     }) kikko:string) {
         return 'Nome :' + this.nome + '; Cognome: ' + this.cognome + '||';
     }
-}
+} */
 
 const connessione = <ConnectionOptions>{
     type: "postgres",
