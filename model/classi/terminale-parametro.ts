@@ -130,6 +130,37 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
             return false;
         }
     }
+
+    static CostruisciTerminaleParametro(parametri: IParametro, terminale: TerminaleParametro) {
+
+        if (parametri.descrizione != undefined) parametri.descrizione = terminale.descrizione;
+        else terminale.descrizione = '';
+
+        if (parametri.sommario != undefined) parametri.sommario = terminale.sommario;
+        else terminale.sommario = '';
+
+        if (parametri.dovePossoTrovarlo != undefined) parametri.dovePossoTrovarlo = terminale.dovePossoTrovarlo;
+        else terminale.dovePossoTrovarlo = 'rotta';
+
+        if (parametri.schemaSwagger != undefined) parametri.schemaSwagger = terminale.schemaSwagger;
+
+        if (parametri.Validatore != undefined) parametri.Validatore = terminale.Validatore;
+
+        terminale.autenticatore = parametri.autenticatore ?? false;
+        terminale.obbligatorio = parametri.obbligatorio ?? true;
+
+        return terminale;
+    }
+    static NormalizzaValori(parametri: IParametro, nomeDafault: string) {
+        if (parametri.obbligatorio == undefined) parametri.obbligatorio = true;
+        if (parametri.tipo == undefined) parametri.tipo = 'any';
+        if (parametri.descrizione == undefined) parametri.descrizione = '';
+        if (parametri.sommario == undefined) parametri.sommario = '';
+        if (parametri.nome == undefined) parametri.nome = nomeDafault;
+        if (parametri.posizione == undefined) parametri.posizione = 'query';
+        if (parametri.autenticatore == undefined) parametri.autenticatore = false;
+        return parametri;
+    }
 }
 
 /**
@@ -147,35 +178,15 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, posizione: TypePosizione, tipo?: tipo, descrizione?: string, sommario?: string) */ {
     return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
 
-        if (parametri.obbligatorio == undefined) parametri.obbligatorio = true;
-        if (parametri.tipo == undefined) parametri.tipo = 'any';
-        if (parametri.descrizione == undefined) parametri.descrizione = '';
-        if (parametri.sommario == undefined) parametri.sommario = '';
-        if (parametri.nome == undefined) parametri.nome = parameterIndex.toString();
-        if (parametri.posizione == undefined) parametri.posizione = 'query';
-        if (parametri.autenticatore == undefined) parametri.autenticatore = false;
+        parametri = TerminaleParametro.NormalizzaValori(parametri, parameterIndex.toString());
 
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
-        const paramestro = metodo.CercaParametroSeNoAggiungi(parametri.nome, parameterIndex,
-            parametri.tipo, parametri.posizione);
+        const terminaleParametro = metodo.CercaParametroSeNoAggiungi(parametri.nome ?? '', parameterIndex,
+            parametri.tipo ?? 'any', parametri.posizione ?? 'query');
 
-        if (parametri.descrizione != undefined) paramestro.descrizione = parametri.descrizione;
-        else paramestro.descrizione = '';
-
-        if (parametri.sommario != undefined) paramestro.sommario = parametri.sommario;
-        else paramestro.sommario = '';
-
-        if (parametri.dovePossoTrovarlo != undefined) paramestro.dovePossoTrovarlo = parametri.dovePossoTrovarlo;
-        else paramestro.dovePossoTrovarlo = 'rotta';
-
-        if (parametri.schemaSwagger != undefined) paramestro.schemaSwagger = parametri.schemaSwagger;
-
-        if (parametri.Validatore != undefined) paramestro.Validatore = parametri.Validatore;
-
-        paramestro.autenticatore = parametri.autenticatore;
-        paramestro.obbligatorio = parametri.obbligatorio;
+        TerminaleParametro.CostruisciTerminaleParametro(parametri, terminaleParametro);
 
         SalvaListaClasseMetaData(list);
     }
