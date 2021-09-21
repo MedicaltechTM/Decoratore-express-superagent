@@ -2,6 +2,8 @@
 import { Request, Response } from "express";
 import { RispostaControllo } from "./classi/terminale-metodo";
 import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
+import { Options as OptSlowDows } from "express-slow-down";
+import { Options as OptRateLimit } from "express-rate-limit";
 export const targetTerminale = { name: 'Terminale' };
 
 
@@ -61,8 +63,8 @@ export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): ILogbas
 }
 export function InizializzaLogbaseOut(res: Response, nomeMetodo?: string): ILogbase {
 
-    const params = { };
-    const body = { };
+    const params = {};
+    const body = {};
     const data = new Date(Date.now());
     const header = res.getHeaders();
     const local = res.socket?.localAddress + " : " + res.socket?.localPort;
@@ -294,7 +296,7 @@ export interface IGestorePercorsiPath {
 
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  */
-export interface IMetodo extends ICaratteristicheMetodo, IMetodoEventi {
+export interface IMetodo extends ICaratteristicheMetodo, IMetodoEventi, IMetodoLimitation {
 
 }
 export interface ICaratteristicheMetodo {
@@ -317,7 +319,7 @@ export interface ICaratteristicheMetodo {
      */
     nomiClasseRiferimento?: IClasseRiferimento[],
 
-   /*  Risposte?: Risposta[]; */
+    /*  Risposte?: Risposta[]; */
 
     listaTest?: {
         /* nomeTest?:string, 
@@ -345,11 +347,14 @@ export interface IMetodoEventi {
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
 
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
-    
+
     onRispostaControllatePradefinita?: (dati: IReturn) => IReturn | Promise<IReturn>;
 }
+export interface IMetodoLimitation {
+    slow_down?: OptSlowDows, rate_limit?: OptRateLimit
+}
 
-export interface IMetodoParametri{
+export interface IMetodoParametri {
     listaParametri: IParametro[];
 }
 

@@ -9,6 +9,7 @@ import { ListaTerminaleTest } from "../liste/lista-terminale-test";
 
 import swaggerUI from "swagger-ui-express";
 import { GetListaTestMetaData, IReturnTest, ITest, SalvaListaTerminaleMetaData, TerminaleTest } from "./terminale-test";
+import cookieParser from "cookie-parser";
 
 /**
  * 
@@ -59,6 +60,7 @@ export class Main implements IGestorePercorsiPath {
             this.percorsi.pathGlobal = pathGlobal;
 
             (<any>this.serverExpressDecorato).use(express.json());
+            (<any>this.serverExpressDecorato).use(cookieParser())
 
             for (let index = 0; index < tmp.length; index++) {
                 const element = tmp[index];

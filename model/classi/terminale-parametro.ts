@@ -133,22 +133,23 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 
     static CostruisciTerminaleParametro(parametri: IParametro, terminale: TerminaleParametro) {
 
-        if (parametri.descrizione != undefined) parametri.descrizione = terminale.descrizione;
-        else terminale.descrizione = '';
+        if (terminale && parametri) {
+            if (parametri.descrizione != undefined) terminale.descrizione = parametri.descrizione;
+            else terminale.descrizione = '';
 
-        if (parametri.sommario != undefined) parametri.sommario = terminale.sommario;
-        else terminale.sommario = '';
+            if (parametri.sommario != undefined) terminale.sommario = parametri.sommario;
+            else terminale.sommario = '';
 
-        if (parametri.dovePossoTrovarlo != undefined) parametri.dovePossoTrovarlo = terminale.dovePossoTrovarlo;
-        else terminale.dovePossoTrovarlo = 'rotta';
+            if (parametri.dovePossoTrovarlo != undefined) terminale.dovePossoTrovarlo = parametri.dovePossoTrovarlo;
+            else terminale.dovePossoTrovarlo = 'rotta';
 
-        if (parametri.schemaSwagger != undefined) parametri.schemaSwagger = terminale.schemaSwagger;
+            if (parametri.schemaSwagger != undefined) terminale.schemaSwagger = parametri.schemaSwagger;
 
-        if (parametri.Validatore != undefined) parametri.Validatore = terminale.Validatore;
+            if (parametri.Validatore != undefined) terminale.Validatore = parametri.Validatore;
 
-        terminale.autenticatore = parametri.autenticatore ?? false;
-        terminale.obbligatorio = parametri.obbligatorio ?? true;
-
+            terminale.autenticatore = parametri.autenticatore ?? false;
+            terminale.obbligatorio = parametri.obbligatorio ?? true;
+        }
         return terminale;
     }
     static NormalizzaValori(parametri: IParametro, nomeDafault: string) {
@@ -178,11 +179,12 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, posizione: TypePosizione, tipo?: tipo, descrizione?: string, sommario?: string) */ {
     return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
 
-        parametri = TerminaleParametro.NormalizzaValori(parametri, parameterIndex.toString());
-
+        
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
+        
+        parametri = TerminaleParametro.NormalizzaValori(parametri, parameterIndex.toString());
         const terminaleParametro = metodo.CercaParametroSeNoAggiungi(parametri.nome ?? '', parameterIndex,
             parametri.tipo ?? 'any', parametri.posizione ?? 'query');
 

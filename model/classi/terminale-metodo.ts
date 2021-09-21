@@ -1,6 +1,6 @@
 import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, IMetodoParametri, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IParametro, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
-import { GetListaClasseMetaData, SalvaListaClasseMetaData, TerminaleClasse } from "./terminale-classe";
-import { mpPar, TerminaleParametro } from "./terminale-parametro";
+import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
+import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
 import { Request, Response, NextFunction } from "express";
 import { GetListaMiddlewareMetaData, SalvaListaMiddlewareMetaData } from "../liste/lista-terminale-metodo";
@@ -14,6 +14,9 @@ import superagent from "superagent";
 
 import Handlebars from "handlebars";
 
+import slowDown, { Options as OptSlowDows } from "express-slow-down";
+import rateLimit, { Options as OptRateLimit } from "express-rate-limit";
+//import csrf from "csurf";
 
 /* import { fork } from "child_process"; */
 
@@ -58,7 +61,15 @@ export class Risposta {
 
 export class TerminaleMetodo implements
     IDescrivibile, IMetodo/* , IGestorePercorsiPath, ICaratteristicheMetodo */ {
-
+    slow_down: OptSlowDows = {
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        delayAfter: 100, // allow 100 requests per 15 minutes, then...
+        delayMs: 500 // begin adding 500ms of delay per request above 100:
+    };
+    rate_limit: OptRateLimit = {
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100
+    };
     swaggerClassi: string[] = [];
 
     schemaSwagger?: any;
@@ -221,7 +232,10 @@ export class TerminaleMetodo implements
      * @param middlew : la lista dei middleware
      */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = { };
+        let corsOptions = {};
+        const apiRateLimiter = rateLimit(this.rate_limit);
+        const apiSpeedLimiter = slowDown(this.slow_down);
+        //const csrfProtection = csrf({ cookie: true })
         switch (this.tipo) {
             case 'get':
                 (<IReturn>this.metodoAvviabile).body;
@@ -238,6 +252,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("GET");
                         await this.ChiamataGenerica(req, res);
@@ -258,6 +273,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("POST");
                         await this.ChiamataGenerica(req, res);
@@ -278,6 +294,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("DELETE");
                         await this.ChiamataGenerica(req, res);
@@ -298,6 +315,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PATCH");
                         await this.ChiamataGenerica(req, res);
@@ -318,6 +336,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PURGE");
                         await this.ChiamataGenerica(req, res);
@@ -338,6 +357,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PUT");
                         await this.ChiamataGenerica(req, res);
@@ -347,7 +367,7 @@ export class TerminaleMetodo implements
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = { };
+        let corsOptions = {};
         corsOptions = {
             methods: 'GET',
         }
@@ -563,14 +583,18 @@ export class TerminaleMetodo implements
     }
 
     CercaParametroSeNoAggiungi(nome: string, parameterIndex: number, tipo: tipo, posizione: TypePosizione) {
-
-        if (this.listaParametri.length > parameterIndex) {
+        let presente = false;
+        for (let index = 0; index < this.listaParametri.length && presente == false; index++) {
+            const element = this.listaParametri[index];
+            if (element.indexParameter == parameterIndex) presente = true;
+        }
+        if (presente == false) {
             const tmp = new TerminaleParametro(nome, tipo, posizione, parameterIndex);
             this.listaParametri.push(tmp);//.lista.push({ propertyKey: propertyKey, Metodo: target });
             return tmp;
         }
         else {
-            const tmp = this.listaParametri[parameterIndex];
+            const tmp = this.listaParametri[parameterIndex - 1];
             return tmp;
         }
     }
@@ -602,7 +626,7 @@ export class TerminaleMetodo implements
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: { }, nonTrovati: parametri.nontrovato,
+                    body: {}, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -623,7 +647,7 @@ export class TerminaleMetodo implements
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({ }, tmpReturn.body);
+                            tmp.body = Object.assign({}, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
@@ -1107,7 +1131,9 @@ export class TerminaleMetodo implements
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  * @returns 
  */
-function decoratoreMetodo(parametri: IMetodo, listaParametri?: IParametro[]): MethodDecorator {
+function decoratoreMetodo(parametri: IMetodo,
+    listaParametri?: IParametro[], risposteDiControllo?: RispostaControllo[],
+    slow_down?: OptSlowDows, rate_limit?: OptRateLimit): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
         /* inizializzo metodo */
@@ -1115,8 +1141,18 @@ function decoratoreMetodo(parametri: IMetodo, listaParametri?: IParametro[]): Me
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
         /* inizio a lavorare sul metodo */
         if (metodo != undefined && list != undefined && classe != undefined) {
+            if (listaParametri)
+                for (let index = listaParametri.length - 1; index >= 0; index--) {
+                    //for (let index = 0; index < listaParametri.length; index++) {
+                    let parametri = listaParametri[index];
+                    parametri = TerminaleParametro.NormalizzaValori(parametri, index.toString());
+                    const terminaleParametro = metodo.CercaParametroSeNoAggiungi(parametri.nome ?? '', index,
+                        parametri.tipo ?? 'any', parametri.posizione ?? 'query');
+                    TerminaleParametro.CostruisciTerminaleParametro(parametri, terminaleParametro);
+                }
 
             if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
+            else if(risposteDiControllo) metodo.RisposteDiControllo= risposteDiControllo;
 
             if (parametri.listaHtml) {
                 for (let index = 0; index < parametri.listaHtml.length; index++) {
@@ -1142,6 +1178,9 @@ function decoratoreMetodo(parametri: IMetodo, listaParametri?: IParametro[]): Me
                     }
                 }
             }
+
+            if (slow_down) metodo.slow_down = slow_down;
+            if (rate_limit) metodo.rate_limit = rate_limit;
 
             if (parametri.listaTest)
                 metodo.listaTest = parametri.listaTest;
@@ -1437,6 +1476,8 @@ function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDec
         //return descriptor;
     }
 }
+
+/* 
 function InizializzaMetodoEventi(parametri: IMetodoEventi, metodo: TerminaleMetodo, list: ListaTerminaleClasse, classe: TerminaleClasse) {
     if (metodo != undefined && list != undefined && classe != undefined) {
 
@@ -1456,6 +1497,7 @@ function InizializzaMetodoEventi(parametri: IMetodoEventi, metodo: TerminaleMeto
         return metodo;
     }
 }
+
 function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: TerminaleMetodo, list: ListaTerminaleClasse, classe: TerminaleClasse,
     propertyKey: string,) {
     if (metodo != undefined && list != undefined && classe != undefined) {
@@ -1513,8 +1555,7 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
 
         if (parametri.path == undefined) metodo.path = propertyKey.toString();
         else metodo.path = parametri.path;
-
-        /* configuro i middleware */
+ 
         if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
 
             const listaMidd = GetListaMiddlewareMetaData();
@@ -1526,8 +1567,7 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
             for (let index = 0; index < parametri.nomiClasseRiferimento.length; index++) {
                 const element = parametri.nomiClasseRiferimento[index];
                 const classeTmp = list.CercaConNomeSeNoAggiungi(element.nome);
-                const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
-                /* configuro il metodo */
+                const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString()); 
 
                 if (parametri.tipo != undefined) metodoTmp.tipo = parametri.tipo;
                 else metodoTmp.tipo = 'get';
@@ -1546,7 +1586,7 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
 
                 for (let index = 0; index < metodo.listaParametri.length; index++) {
                     const element = metodo.listaParametri[index];
-                    /* configuro i parametri */
+                    
                     const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nome, element.indexParameter,
                         element.tipo, element.posizione);
                     if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
@@ -1590,20 +1630,16 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
         //console.log("Errore mio!");
     }
 }
-
+ */
 function decoratoreMetodoParametri(parametri: IMetodoParametri): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
-        /* inizializzo metodo */
+
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
 
-
-
-        /* inizio a lavorare sul metodo */
         if (metodo != undefined && list != undefined && classe != undefined) {
 
-            metodo.metodoAvviabile = descriptor.value;
             for (let index = 0; index < parametri.listaParametri.length; index++) {
                 let element = parametri.listaParametri[index];
 
@@ -1617,9 +1653,8 @@ function decoratoreMetodoParametri(parametri: IMetodoParametri): MethodDecorator
             SalvaListaClasseMetaData(list);
         }
         else {
-            //console.log("Errore mio!");
+
         }
-        //return descriptor;
     }
 }
 
