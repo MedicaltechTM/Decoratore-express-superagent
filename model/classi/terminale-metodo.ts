@@ -140,9 +140,8 @@ export class TerminaleMetodo implements
     onLog?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
-    onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any[];
+    onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti) => IParametriEstratti | Promise<IParametriEstratti>;
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
-    onPrimaDirestituireResponseExpress?: () => void;
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
 
@@ -715,6 +714,8 @@ export class TerminaleMetodo implements
     async EseguiMetodo(parametri: IParametriEstratti) {
         let tmpReturn: any = '';
         let attore = undefined;
+        if (this.onPrimaDiEseguireMetodo)
+            parametri = await this.onPrimaDiEseguireMetodo(parametri);
         /* let count = 0; */
         if (this.Istanziatore) {
             const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
@@ -1152,7 +1153,7 @@ function decoratoreMetodo(parametri: IMetodo,
                 }
 
             if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
-            else if(risposteDiControllo) metodo.RisposteDiControllo= risposteDiControllo;
+            else if (risposteDiControllo) metodo.RisposteDiControllo = risposteDiControllo;
 
             if (parametri.listaHtml) {
                 for (let index = 0; index < parametri.listaHtml.length; index++) {

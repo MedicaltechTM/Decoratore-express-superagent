@@ -337,7 +337,7 @@ export interface IMetodoEventi {
      * se impostata permette di determinare cosa succedera nel momento dell'errore
      */
     onChiamataInErrore?: (logOut: string, result: any, logIn: string, errore: any) => IReturn;
-
+    onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti) => IParametriEstratti | Promise<IParametriEstratti>;
     /**
      * se impostata permette di  verificare lo stato quando il metodo va a buon fine.
      */
