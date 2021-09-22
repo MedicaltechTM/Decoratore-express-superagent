@@ -1,6 +1,6 @@
 
 import { Request, Response } from "express";
-import { RispostaControllo } from "./classi/terminale-metodo";
+import { RispostaControllo, SanificatoreCampo } from "./classi/terminale-metodo";
 import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
 import { Options as OptSlowDows } from "express-slow-down";
 import { Options as OptRateLimit } from "express-rate-limit";
@@ -63,8 +63,8 @@ export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): ILogbas
 }
 export function InizializzaLogbaseOut(res: Response, nomeMetodo?: string): ILogbase {
 
-    const params = { };
-    const body = { };
+    const params = {};
+    const body = {};
     const data = new Date(Date.now());
     const header = res.getHeaders();
     const local = res.socket?.localAddress + " : " + res.socket?.localPort;
@@ -296,10 +296,10 @@ export interface IGestorePercorsiPath {
 
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  */
-export interface IMetodo extends ICaratteristicheMetodo, IMetodoEventi, IMetodoLimitation, IMetodoVettori {
+export interface IMetodo extends IMetodoParametri, IMetodoEventi, IMetodoLimitazioni, IMetodoVettori {
 
 }
-export interface ICaratteristicheMetodo {
+export interface IMetodoParametri {
     //schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean,
@@ -317,13 +317,10 @@ export interface ICaratteristicheMetodo {
      */
 }
 export interface IMetodoVettori {
+    ListaSanificatori?: SanificatoreCampo[];
     RisposteDiControllo?: RispostaControllo[];
     swaggerClassi?: string[];
-
-    nomiClasseRiferimento?: IClasseRiferimento[],
-
-    /*  Risposte?: Risposta[]; */
-
+    nomiClasseRiferimento?: IClasseRiferimento[];
     listaTest?: {
         /* nomeTest?:string, 
         posizione?:number,
@@ -332,7 +329,6 @@ export interface IMetodoVettori {
         query: any,
         header: any
     }[];
-
     listaHtml?: IHtml[];
 }
 export interface IMetodoEventi {
@@ -353,14 +349,13 @@ export interface IMetodoEventi {
 
     onRispostaControllatePradefinita?: (dati: IReturn) => IReturn | Promise<IReturn>;
 }
-export interface IMetodoLimitation {
-    slow_down?: OptSlowDows, rate_limit?: OptRateLimit
+export interface IMetodoLimitazioni {
+    slow_down?: OptSlowDows;
+    rate_limit?: OptRateLimit;
+    cors?: any;
+    helmet?: any;
+    middleware?: any[];
 }
-
-export interface IMetodoParametri {
-    listaParametri: IParametro[];
-}
-
 export interface IClasse {
     percorso?: string,
     LogGenerale?: any,
