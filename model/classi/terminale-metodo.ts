@@ -1,4 +1,4 @@
-import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, IMetodoParametri, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IParametro, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, IMetodoLimitation, IMetodoParametri, IMetodoVettori, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IParametro, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -231,7 +231,7 @@ export class TerminaleMetodo implements
      * @param middlew : la lista dei middleware
      */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = {};
+        let corsOptions = { };
         const apiRateLimiter = rateLimit(this.rate_limit);
         const apiSpeedLimiter = slowDown(this.slow_down);
         //const csrfProtection = csrf({ cookie: true })
@@ -366,7 +366,7 @@ export class TerminaleMetodo implements
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = {};
+        let corsOptions = { };
         corsOptions = {
             methods: 'GET',
         }
@@ -448,7 +448,7 @@ export class TerminaleMetodo implements
                         res.status(598).send(error);
                     }
                 }
-                if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
+                //if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
 
                 logOut = InizializzaLogbaseOut(res, this.nome.toString());
                 if (this.onChiamataCompletata) {
@@ -625,7 +625,7 @@ export class TerminaleMetodo implements
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: {}, nonTrovati: parametri.nontrovato,
+                    body: { }, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -646,7 +646,7 @@ export class TerminaleMetodo implements
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({}, tmpReturn.body);
+                            tmp.body = Object.assign({ }, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
@@ -656,7 +656,7 @@ export class TerminaleMetodo implements
                         else {
                             tmp = {
                                 body: { "Errore Interno filtrato ": 'internal error!!!!' },
-                                stato: 500,
+                                stato: 599,
                                 nonTrovati: parametri.nontrovato
                             };
                         }
@@ -682,7 +682,7 @@ export class TerminaleMetodo implements
                                 'Stack errore': (<Error>error).stack,
                                 nonTrovati: parametri.nontrovato
                             },
-                            stato: 500
+                            stato: 598
                         };
                     }
                 }
@@ -1142,7 +1142,7 @@ function decoratoreMetodo(parametri: IMetodo,
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
         /* inizio a lavorare sul metodo */
         if (metodo != undefined && list != undefined && classe != undefined) {
-            if (listaParametri)
+            if (listaParametri) {
                 for (let index = listaParametri.length - 1; index >= 0; index--) {
                     //for (let index = 0; index < listaParametri.length; index++) {
                     let parametri = listaParametri[index];
@@ -1151,6 +1151,7 @@ function decoratoreMetodo(parametri: IMetodo,
                         parametri.tipo ?? 'any', parametri.posizione ?? 'query');
                     TerminaleParametro.CostruisciTerminaleParametro(parametri, terminaleParametro);
                 }
+            }
 
             if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
             else if (risposteDiControllo) metodo.RisposteDiControllo = risposteDiControllo;
@@ -1302,6 +1303,7 @@ function decoratoreMetodo(parametri: IMetodo,
         //return descriptor;
     }
 }
+
 function decoratoreMetodoEventi(parametri: IMetodoEventi): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const list: ListaTerminaleClasse = GetListaClasseMetaData();

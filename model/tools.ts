@@ -63,8 +63,8 @@ export function InizializzaLogbaseIn(req: Request, nomeMetodo?: string): ILogbas
 }
 export function InizializzaLogbaseOut(res: Response, nomeMetodo?: string): ILogbase {
 
-    const params = {};
-    const body = {};
+    const params = { };
+    const body = { };
     const data = new Date(Date.now());
     const header = res.getHeaders();
     const local = res.socket?.localAddress + " : " + res.socket?.localPort;
@@ -296,12 +296,10 @@ export interface IGestorePercorsiPath {
 
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  */
-export interface IMetodo extends ICaratteristicheMetodo, IMetodoEventi, IMetodoLimitation {
+export interface IMetodo extends ICaratteristicheMetodo, IMetodoEventi, IMetodoLimitation, IMetodoVettori {
 
 }
 export interface ICaratteristicheMetodo {
-    RisposteDiControllo?: RispostaControllo[];
-    swaggerClassi?: string[];
     //schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean,
@@ -317,6 +315,11 @@ export interface ICaratteristicheMetodo {
     sommario?: string,
     /** questa è la strada per andare ad assegnare questa funzione è piu classi o sotto percorsi
      */
+}
+export interface IMetodoVettori {
+    RisposteDiControllo?: RispostaControllo[];
+    swaggerClassi?: string[];
+
     nomiClasseRiferimento?: IClasseRiferimento[],
 
     /*  Risposte?: Risposta[]; */
