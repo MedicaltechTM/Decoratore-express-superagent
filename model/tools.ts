@@ -4,6 +4,8 @@ import { RispostaControllo, SanificatoreCampo } from "./classi/terminale-metodo"
 import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
 import { Options as OptSlowDows } from "express-slow-down";
 import { Options as OptRateLimit } from "express-rate-limit";
+
+import os from "os";
 export const targetTerminale = { name: 'Terminale' };
 
 
@@ -348,6 +350,12 @@ export interface IMetodoEventi {
     Istanziatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => any;
 
     onRispostaControllatePradefinita?: (dati: IReturn) => IReturn | Promise<IReturn>;
+
+    onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
+
+    onDopoAverTerminatoLaFunzione?: (item: any) => any;
+
+    onPrimaDiEseguire?: (req: Request) => Request | Promise<Request>;
 }
 export interface IMetodoLimitazioni {
     slow_down?: OptSlowDows;
@@ -406,3 +414,59 @@ export interface IRisposta {
     }[]
 }
 
+
+export function StartMonitoring() {
+    try {
+
+        const used = process.memoryUsage();
+        const partizionamentoMemoriaProcesso: {
+            rss: string,
+            heapTotale: string,
+            heapUsed: string,
+            external: string,
+            cpuMedia: any,
+            totalMemo: string,
+            freeMemo: string
+        } = {
+            rss: '',
+            heapTotale: '',
+            heapUsed: '',
+            external: '',
+            cpuMedia: '',
+            totalMemo: '',
+            freeMemo: ''
+        };
+        for (let key in used) {
+            switch (key) {
+                case 'rss':
+                    partizionamentoMemoriaProcesso.rss = `${key} ${Math.round((<any>used)[key] / 1024 / 1024 * 100) / 100} MB`;
+                    break;
+                case 'heapTotal':
+                    partizionamentoMemoriaProcesso.heapTotale = `${key} ${Math.round((<any>used)[key] / 1024 / 1024 * 100) / 100} MB`;
+                    break;
+                case 'heapUsed':
+                    partizionamentoMemoriaProcesso.heapUsed = `${key} ${Math.round((<any>used)[key] / 1024 / 1024 * 100) / 100} MB`;
+                    break;
+                case 'external':
+                    partizionamentoMemoriaProcesso.external = `${key} ${Math.round((<any>used)[key] / 1024 / 1024 * 100) / 100} MB`;
+                    break;
+                default:
+                    break;
+            }
+        }        
+        partizionamentoMemoriaProcesso.cpuMedia = os.cpus();
+        partizionamentoMemoriaProcesso.totalMemo = os.totalmem().toString();
+        partizionamentoMemoriaProcesso.freeMemo = os.freemem().toString();
+
+        console.log("Data" + Date.now(), partizionamentoMemoriaProcesso);
+
+
+        setTimeout(() => {
+            StartMonitoring();
+        }, (20) * 1000);
+    } catch (error) {
+        setTimeout(() => {
+            StartMonitoring();
+        }, (20) * 1000);
+    }
+}

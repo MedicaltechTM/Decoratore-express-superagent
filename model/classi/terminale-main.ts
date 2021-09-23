@@ -1,4 +1,4 @@
-import { IGestorePercorsiPath, IRaccoltaPercorsi, targetTerminale } from "../tools";
+import { IGestorePercorsiPath, IRaccoltaPercorsi, StartMonitoring, targetTerminale } from "../tools";
 
 import express from "express";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
@@ -52,7 +52,7 @@ export class Main implements IGestorePercorsiPath {
         this.listaTerminaleTest = Reflect.getMetadata(ListaTerminaleTest.nomeMetadataKeyTarget, targetTerminale);
     }
 
-    Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean, scriviFile?: boolean) {
+    Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean, pathDoveScrivereFile?: string) {
         const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
 
         if (tmp.length > 0) {
@@ -71,8 +71,8 @@ export class Main implements IGestorePercorsiPath {
             this.httpServer = http.createServer(this.serverExpressDecorato);
             SalvaListaClasseMetaData(tmp);
 
-            if (scriviFile)
-                this.ScriviFile();
+            if (pathDoveScrivereFile)
+                this.ScriviFile(pathDoveScrivereFile);
         }
         else {
             console.log("Attenzione non vi sono rotte e quantaltro.");
@@ -107,6 +107,7 @@ export class Main implements IGestorePercorsiPath {
 
     StartHttpServer() {
         this.httpServer.listen(this.percorsi.porta);
+        StartMonitoring();
     }
 
     StartExpress() {
@@ -123,6 +124,8 @@ export class Main implements IGestorePercorsiPath {
         //
 
         this.serverExpressDecorato.listen(this.percorsi.porta)
+
+        StartMonitoring();
     }
 
     async StartTest(numeroRootTest?: number) {
@@ -311,7 +314,10 @@ export class Main implements IGestorePercorsiPath {
 
     }
 
-    ScriviFile() {
+    ScriviFile(pathDoveScrivereFile: string) {
+
+        fs.mkdirSync(pathDoveScrivereFile + '/FileGenerati_MP', { recursive: true });
+
         let ritorno = '';
         try {
             let swaggerClassePath = '';
@@ -358,22 +364,25 @@ export class Main implements IGestorePercorsiPath {
             },
             "security": []
         }`;
-
         } catch (error) {
             return ritorno;
         }
-        fs.writeFileSync(this.path + '/swagger', ritorno);
+        fs.writeFileSync(pathDoveScrivereFile + '/FileGenerati_MP' + '/swagger', ritorno);
 
         ritorno = '';
-
-        for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
-            const classe = this.listaTerminaleClassi[index];
-            for (let index = 0; index < classe.listaMetodi.length; index++) {
-                const metodo = classe.listaMetodi[index];
-                ritorno = ritorno + '' + metodo.PrintStruttura();
+        try {
+            for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
+                const classe = this.listaTerminaleClassi[index];
+                for (let index = 0; index < classe.listaMetodi.length; index++) {
+                    const metodo = classe.listaMetodi[index];
+                    ritorno = ritorno + '' + metodo.PrintStruttura() + '';
+                }
             }
+            fs.writeFileSync(pathDoveScrivereFile + '/FileGenerati_MP' + '/api', ritorno);
+        } catch (error) {
+            return ritorno;
         }
-
-        fs.writeFileSync(this.path + '/api', ritorno);
+        ritorno = '';
+        return ritorno;
     }
 }

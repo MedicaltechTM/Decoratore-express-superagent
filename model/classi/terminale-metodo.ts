@@ -77,11 +77,21 @@ export class TerminaleMetodo implements
     slow_down: OptSlowDows = {
         windowMs: 3 * 60 * 1000, // 15 minutes
         delayAfter: 100, // allow 100 requests per 15 minutes, then...
-        delayMs: 500 // begin adding 500ms of delay per request above 100:
+        delayMs: 500, // begin adding 500ms of delay per request above 100:
+        onLimitReached: (req: Request, res: Response, options: OptSlowDows) => {
+            res.status(555).send("rate_limit : onLimitReached")
+            throw new Error("Errore: rate_limit : onLimitReached");
+
+        }
     };
     rate_limit: OptRateLimit = {
         windowMs: 3 * 60 * 1000, // 15 minutes
-        max: 100
+        max: 100,
+        onLimitReached: (req: Request, res: Response, options: OptRateLimit) => {
+            res.status(555).send("rate_limit : onLimitReached")
+            throw new Error("Errroe: rate_limit : onLimitReached");
+            ;
+        }
     };
     swaggerClassi: string[] = [];
 
@@ -99,23 +109,23 @@ export class TerminaleMetodo implements
 
     static nomeMetadataKeyTarget = "MetodoTerminaleTarget";
 
-    percorsi;
+    percorsi: IRaccoltaPercorsi;
     classePath = '';
-    listaParametri;
+    listaParametri: ListaTerminaleParametro;
     tipo: TypeMetod;
     tipoInterazione: TypeInterazone;
     // eslint-disable-next-line @typescript-eslint/ban-types
-    nome;
+    nome: string | Symbol;
     metodoAvviabile: any;
-    path;
+    path: string;
 
     cors: any;
     helmet: any;
     middleware: any[] = [];
 
-    descrizione;
-    sommario;
-    nomiClassiDiRiferimento = [];
+    descrizione: string;
+    sommario: string;
+    nomiClassiDiRiferimento: IClasseRiferimento[] = [];
 
     listaTest: { body: any, query: any, header: any }[] = [];
 
@@ -148,13 +158,17 @@ export class TerminaleMetodo implements
             }
         }
     }; */
-    onRispostaControllatePradefinita?: (dati: IReturn) => IReturn | Promise<IReturn>;
-    onLog?: (logOut: any, result: any, logIn: any, errore: any) => void;
-    onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
     onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
     onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti) => IParametriEstratti | Promise<IParametriEstratti>;
+
+    onChiamataCompletata?: (logOut: any, result: any, logIn: any, errore: any) => void;
+    onLog?: (logOut: any, result: any, logIn: any, errore: any) => void;
+
+    onRispostaControllatePradefinita?: (dati: IReturn) => IReturn | Promise<IReturn>;
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
     onDopoAverTerminatoLaFunzione?: (item: any) => any;
+    onPrimaDiEseguire?: (req: Request) => Request | Promise<Request>;
+
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
 
@@ -405,7 +419,6 @@ export class TerminaleMetodo implements
             });
     }
 
-    onPrimaDiEseguire?: (req: Request) => Request | Promise<Request>;
     /**
      * Rappresenta la chiamata express
      * @param req 
@@ -633,7 +646,7 @@ export class TerminaleMetodo implements
                 valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
             }
             else if (parametri.errori.length > 0) {
-                valido = { approvato: false, stato: 200, messaggio: '' };
+                valido = { approvato: false, stato: 400, messaggio: 'Parametri in errore.'/* parametri.errori.toString() */ };
             }
             else {
                 valido = { approvato: true, stato: 200, messaggio: '' };
@@ -686,7 +699,7 @@ export class TerminaleMetodo implements
                     }
                     tmp.attore = tmpRitorno.attore;
                     return tmp;
-                } catch (error) { 
+                } catch (error) {
                     if (error instanceof ErroreMio) {
                         throw error;
                         /* tmp = {
@@ -700,9 +713,9 @@ export class TerminaleMetodo implements
                     }
                     else {
                         throw new ErroreMio({
-                            codiceErrore:598,
+                            codiceErrore: 598,
                             messaggio: (<Error>error).message,
-                            percorsoErrore:(<Error>error).stack,
+                            percorsoErrore: (<Error>error).stack,
                         })
                         /* tmp = {
                             body: {
@@ -733,7 +746,7 @@ export class TerminaleMetodo implements
                     }
                     else {
                         tmp = {
-                            body: '',
+                            body: tmp.body,
                             stato: valido.stato ?? 595,
                         }
                     }
@@ -766,7 +779,7 @@ export class TerminaleMetodo implements
         if (this.ListaSanificatori && 'length' in this.ListaSanificatori && this.ListaSanificatori.length > 0)
             tmpReturn = SostituisciRicorsivo(this.ListaSanificatori, tmpReturn);
 
-            
+
         if (this.onDopoAverTerminatoLaFunzione) tmpReturn = this.onDopoAverTerminatoLaFunzione(tmpReturn);
         return {
             attore: attore,
@@ -812,17 +825,22 @@ export class TerminaleMetodo implements
         let parametri = "";
         for (let index = 0; index < this.listaParametri.length; index++) {
             const element = this.listaParametri[index];
-            parametri = parametri + element.PrintStruttura();
+            parametri = parametri + element.PrintStruttura() + '\n';
         }
 
-        if (this.onChiamataCompletata) parametri = parametri + '' + this.onChiamataCompletata.toString();
-        if (this.onChiamataInErrore) parametri = parametri + '' + this.onChiamataInErrore.toString();
-        if (this.onLog) parametri = parametri + '' + this.onLog.toString();
-        if (this.onPrimaDiEseguireMetodo) parametri = parametri + '' + this.onPrimaDiEseguireMetodo.toString();
-        if (this.onPrimaDiTerminareLaChiamata) parametri = parametri + '' + this.onPrimaDiTerminareLaChiamata.toString();
-        if (this.onRispostaControllatePradefinita) parametri = parametri + '' + this.onRispostaControllatePradefinita.toString();
+        if (this.onChiamataCompletata) parametri = parametri + '\tonChiamataCompletata :' + this.onChiamataCompletata.toString() + '\n';
+        if (this.onPrimaDiEseguireMetodo) parametri = parametri + '\tonLog :' + this.onPrimaDiEseguireMetodo.toString() + '\n';
+        if (this.onChiamataInErrore) parametri = parametri + '\tonChiamataInErrore :' + this.onChiamataInErrore.toString() + '\n';
+        if (this.onLog) parametri = parametri + '\tonLog :' + this.onLog.toString() + '\n';
+        if (this.Validatore) parametri = parametri + '\tonLog :' + this.Validatore.toString() + '\n';
+        if (this.Istanziatore) parametri = parametri + '\tonLog :' + this.Istanziatore.toString() + '\n';
+        if (this.onPrimaDiEseguireMetodo) parametri = parametri + '\tonPrimaDiEseguireMetodo :' + this.onPrimaDiEseguireMetodo.toString() + '\n';
+        if (this.onPrimaDiTerminareLaChiamata) parametri = parametri + '\tonPrimaDiTerminareLaChiamata :' + this.onPrimaDiTerminareLaChiamata.toString() + '\n';
+        if (this.onRispostaControllatePradefinita) parametri = parametri + '\tonRispostaControllatePradefinita :' + this.onRispostaControllatePradefinita.toString() + '\n';
+        if (this.onDopoAverTerminatoLaFunzione) parametri = parametri + '\tonLog :' + this.onDopoAverTerminatoLaFunzione.toString() + '\n';
+        if (this.onPrimaDiEseguire) parametri = parametri + '\tonLog :' + this.onPrimaDiEseguire.toString() + '\n';
 
-        const tmp = this.nome + ' | ' + this.percorsi.pathGlobal + '\n\t' + parametri;
+        const tmp = this.nome + ' | ' + this.percorsi.pathGlobal + '\n' + parametri + '\n';
         ////console.log(tmp);
         return tmp;
     }
@@ -1149,6 +1167,166 @@ export class TerminaleMetodo implements
             return ritorno;
         }
     }
+
+    Setta(parametri: IMetodo, propertyKey: string | symbol, descriptor: PropertyDescriptor, list: ListaTerminaleClasse) {
+
+        if (parametri.ListaSanificatori) this.ListaSanificatori = parametri.ListaSanificatori;
+
+        if (parametri.RisposteDiControllo) this.RisposteDiControllo = parametri.RisposteDiControllo;
+
+        if (parametri.listaHtml) {
+            for (let index = 0; index < parametri.listaHtml.length; index++) {
+                const element = parametri.listaHtml[index];
+                if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
+
+                if (element.html != undefined && element.htmlPath == undefined
+                    && this.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
+                    this.html?.push({
+                        contenuto: element.html,
+                        path: element.path,
+                        percorsoIndipendente: element.percorsoIndipendente
+                    });
+                    // this.html?.contenuto = element.html;
+                } else if (element.html == undefined && element.htmlPath != undefined
+                    && this.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
+                    this.html.push({
+                        contenuto: fs.readFileSync(element.htmlPath).toString(),
+                        path: element.path,
+                        percorsoIndipendente: element.percorsoIndipendente
+                    });
+                    // this.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
+                }
+            }
+        }
+
+        if (parametri.slow_down) this.slow_down = parametri.slow_down;
+        if (parametri.rate_limit) this.rate_limit = parametri.rate_limit;
+
+        if (parametri.listaTest)
+            this.listaTest = parametri.listaTest;
+
+        this.metodoAvviabile = descriptor.value;
+
+        if (parametri.percorsoIndipendente) this.percorsoIndipendente = parametri.percorsoIndipendente;
+        else this.percorsoIndipendente = false;
+
+        if (parametri.nomiClasseRiferimento != undefined)
+            this.nomiClassiDiRiferimento = parametri.nomiClasseRiferimento;
+
+        if (parametri.tipo != undefined) this.tipo = parametri.tipo;
+        else if (parametri.tipo == undefined && this.listaParametri.length == 0) this.tipo = 'get';
+        else if (parametri.tipo == undefined && this.listaParametri.length > 0) this.tipo = 'post';
+        //else if (parametri.tipo == undefined && this.listaParametri.length < 0) this.tipo = 'post';
+        else this.tipo = 'get';
+
+        if (parametri.descrizione != undefined) this.descrizione = parametri.descrizione;
+        else this.descrizione = '';
+
+        if (parametri.sommario != undefined) this.sommario = parametri.sommario;
+        else this.sommario = '';
+
+        if (parametri.interazione != undefined) this.tipoInterazione = parametri.interazione;
+        else this.tipoInterazione = 'rotta';
+
+        if (parametri.path == undefined) this.path = propertyKey.toString();
+        else this.path = parametri.path;
+
+        if (parametri.onChiamataCompletata != null) this.onChiamataCompletata = parametri.onChiamataCompletata;
+
+        if (parametri.onLog != null) this.onLog = parametri.onLog;
+
+        if (parametri.onChiamataInErrore) this.onChiamataCompletata = parametri.onChiamataCompletata;
+        if (parametri.onPrimaDiEseguireMetodo) this.onPrimaDiEseguireMetodo = parametri.onPrimaDiEseguireMetodo;
+        if (parametri.onLog) this.onLog = parametri.onLog;
+        if (parametri.onRispostaControllatePradefinita) this.onRispostaControllatePradefinita = parametri.onRispostaControllatePradefinita;
+        if (parametri.onPrimaDiTerminareLaChiamata) this.onPrimaDiTerminareLaChiamata = parametri.onPrimaDiTerminareLaChiamata;
+        if (parametri.onDopoAverTerminatoLaFunzione) this.onDopoAverTerminatoLaFunzione = parametri.onDopoAverTerminatoLaFunzione;
+        if (parametri.onPrimaDiEseguire) this.onPrimaDiEseguire = parametri.onPrimaDiEseguire;
+
+        if (parametri.Validatore != null) this.Validatore = parametri.Validatore;
+
+        if (parametri.Istanziatore != null && parametri.Istanziatore != undefined) {
+            this.Istanziatore = parametri.Istanziatore;
+        }
+        /* configuro i middleware */
+        if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
+
+            const listaMidd = GetListaMiddlewareMetaData();
+            const midd = listaMidd.CercaConNomeSeNoAggiungi(propertyKey.toString());
+            midd.metodoAvviabile = descriptor.value;
+            midd.listaParametri = this.listaParametri;
+            SalvaListaMiddlewareMetaData(listaMidd);
+        }
+        if (parametri.nomiClasseRiferimento != undefined && parametri.nomiClasseRiferimento.length > 0) {
+            for (let index = 0; index < parametri.nomiClasseRiferimento.length; index++) {
+                const element = parametri.nomiClasseRiferimento[index];
+                const classeTmp = list.CercaConNomeSeNoAggiungi(element.nome);
+                const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
+                /* configuro il metodo */
+                metodoTmp.metodoAvviabile = descriptor.value;
+
+                if (parametri.tipo != undefined) metodoTmp.tipo = parametri.tipo;
+                else metodoTmp.tipo = 'get';
+
+                if (parametri.descrizione != undefined) metodoTmp.descrizione = parametri.descrizione;
+                else metodoTmp.descrizione = '';
+
+                if (parametri.sommario != undefined) metodoTmp.sommario = parametri.sommario;
+                else metodoTmp.sommario = '';
+
+                if (parametri.interazione != undefined) metodoTmp.tipoInterazione = parametri.interazione;
+                else metodoTmp.tipoInterazione = 'rotta';
+
+                if (parametri.path == undefined) metodoTmp.path = propertyKey.toString();
+                else metodoTmp.path = parametri.path;
+
+                for (let index = 0; index < this.listaParametri.length; index++) {
+                    const element = this.listaParametri[index];
+                    /* configuro i parametri */
+                    const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nome, element.indexParameter,
+                        element.tipo, element.posizione);
+                    if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
+                    else paramestro.descrizione = '';
+
+                    if (parametri.sommario != undefined) paramestro.sommario = element.sommario;
+                    else paramestro.sommario = '';
+
+                }
+                if (element.listaMiddleware) {
+                    for (let index = 0; index < element.listaMiddleware.length; index++) {
+                        const middlewareTmp = element.listaMiddleware[index];
+                        let midd = undefined;
+                        const listaMidd = GetListaMiddlewareMetaData();
+                        if (typeof middlewareTmp === 'string' || middlewareTmp instanceof String) {
+                            midd = listaMidd.CercaConNomeSeNoAggiungi(String(middlewareTmp));
+                            SalvaListaMiddlewareMetaData(listaMidd);
+                        }
+                        else {
+                            midd = middlewareTmp;
+                        }
+
+                        /* if (metodoTmp != undefined && classeTmp != undefined) {
+                            metodoTmp.middleware.push(midd);
+                        }
+                        else {
+                            //console.log("Errore mio!");
+                        } */
+                        //se non funziona rispostare dopo il richiamo della funzione nella funzione di decorazione
+                        if (metodoTmp != undefined && list != undefined && classeTmp != undefined) {
+                            metodoTmp.middleware.push(midd);
+                            SalvaListaClasseMetaData(list);
+                        }
+                        else {
+                            //console.log("Errore mio!");
+                        }
+                    }
+                }
+            }
+        }
+
+        if (parametri.swaggerClassi != undefined)
+            this.swaggerClassi = parametri.swaggerClassi;
+    }
 }
 
 function SostituisciRicorsivo(sanific: SanificatoreCampo[], currentNode: any): any {
@@ -1184,7 +1362,7 @@ function SostituisciRicorsivo(sanific: SanificatoreCampo[], currentNode: any): a
 /* function decoratoreMetodo(parametri:IMetodoParametri, eventi:IMetodoEventi, limitazioni:IMetodoLimitazioni, vettori:IMetodoVettori) */
 function decoratoreMetodo(parametri: IMetodo,
     listaParametri?: IParametro[], risposteDiControllo?: RispostaControllo[],
-    slow_down?: OptSlowDows, rate_limit?: OptRateLimit ): MethodDecorator {
+    slow_down?: OptSlowDows, rate_limit?: OptRateLimit): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
         /* inizializzo metodo */
@@ -1192,6 +1370,10 @@ function decoratoreMetodo(parametri: IMetodo,
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
         /* inizio a lavorare sul metodo */
         if (metodo != undefined && list != undefined && classe != undefined) {
+            if (risposteDiControllo) parametri.RisposteDiControllo = risposteDiControllo;
+            parametri.slow_down = slow_down;
+            parametri.rate_limit = rate_limit;
+
             if (listaParametri) {
                 for (let index = listaParametri.length - 1; index >= 0; index--) {
                     //for (let index = 0; index < listaParametri.length; index++) {
@@ -1203,149 +1385,7 @@ function decoratoreMetodo(parametri: IMetodo,
                 }
             }
 
-            if (parametri.ListaSanificatori) metodo.ListaSanificatori = parametri.ListaSanificatori;
-
-            if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
-            else if (risposteDiControllo) metodo.RisposteDiControllo = risposteDiControllo;
-
-            if (parametri.listaHtml) {
-                for (let index = 0; index < parametri.listaHtml.length; index++) {
-                    const element = parametri.listaHtml[index];
-                    if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
-
-                    if (element.html != undefined && element.htmlPath == undefined
-                        && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
-                        metodo.html?.push({
-                            contenuto: element.html,
-                            path: element.path,
-                            percorsoIndipendente: element.percorsoIndipendente
-                        });
-                        // metodo.html?.contenuto = element.html;
-                    } else if (element.html == undefined && element.htmlPath != undefined
-                        && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
-                        metodo.html.push({
-                            contenuto: fs.readFileSync(element.htmlPath).toString(),
-                            path: element.path,
-                            percorsoIndipendente: element.percorsoIndipendente
-                        });
-                        // metodo.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
-                    }
-                }
-            }
-
-            if (slow_down) metodo.slow_down = slow_down;
-            if (rate_limit) metodo.rate_limit = rate_limit;
-
-            if (parametri.listaTest)
-                metodo.listaTest = parametri.listaTest;
-
-            metodo.metodoAvviabile = descriptor.value;
-
-            if (parametri.percorsoIndipendente) metodo.percorsoIndipendente = parametri.percorsoIndipendente;
-            else metodo.percorsoIndipendente = false;
-
-            if (parametri.nomiClasseRiferimento != undefined)
-                metodo.nomiClassiDiRiferimento = parametri.nomiClasseRiferimento;
-
-            if (parametri.tipo != undefined) metodo.tipo = parametri.tipo;
-            else if (parametri.tipo == undefined && metodo.listaParametri.length == 0) metodo.tipo = 'get';
-            else if (parametri.tipo == undefined && metodo.listaParametri.length > 0) metodo.tipo = 'post';
-            //else if (parametri.tipo == undefined && metodo.listaParametri.length < 0) metodo.tipo = 'post';
-            else metodo.tipo = 'get';
-
-            if (parametri.descrizione != undefined) metodo.descrizione = parametri.descrizione;
-            else metodo.descrizione = '';
-
-            if (parametri.sommario != undefined) metodo.sommario = parametri.sommario;
-            else metodo.sommario = '';
-
-            if (parametri.interazione != undefined) metodo.tipoInterazione = parametri.interazione;
-            else metodo.tipoInterazione = 'rotta';
-
-            if (parametri.path == undefined) metodo.path = propertyKey.toString();
-            else metodo.path = parametri.path;
-
-            if (parametri.onChiamataCompletata != null) metodo.onChiamataCompletata = parametri.onChiamataCompletata;
-
-            if (parametri.onLog != null) metodo.onLog = parametri.onLog;
-
-            if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
-
-            if (parametri.Istanziatore != null && parametri.Istanziatore != undefined) {
-                metodo.Istanziatore = parametri.Istanziatore;
-            }
-            /* configuro i middleware */
-            if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
-
-                const listaMidd = GetListaMiddlewareMetaData();
-                const midd = listaMidd.CercaConNomeSeNoAggiungi(propertyKey.toString());
-                midd.metodoAvviabile = descriptor.value;
-                midd.listaParametri = metodo.listaParametri;
-                SalvaListaMiddlewareMetaData(listaMidd);
-            }
-            if (parametri.nomiClasseRiferimento != undefined && parametri.nomiClasseRiferimento.length > 0) {
-                for (let index = 0; index < parametri.nomiClasseRiferimento.length; index++) {
-                    const element = parametri.nomiClasseRiferimento[index];
-                    const classeTmp = list.CercaConNomeSeNoAggiungi(element.nome);
-                    const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
-                    /* configuro il metodo */
-                    metodoTmp.metodoAvviabile = descriptor.value;
-
-                    if (parametri.tipo != undefined) metodoTmp.tipo = parametri.tipo;
-                    else metodoTmp.tipo = 'get';
-
-                    if (parametri.descrizione != undefined) metodoTmp.descrizione = parametri.descrizione;
-                    else metodoTmp.descrizione = '';
-
-                    if (parametri.sommario != undefined) metodoTmp.sommario = parametri.sommario;
-                    else metodoTmp.sommario = '';
-
-                    if (parametri.interazione != undefined) metodoTmp.tipoInterazione = parametri.interazione;
-                    else metodoTmp.tipoInterazione = 'rotta';
-
-                    if (parametri.path == undefined) metodoTmp.path = propertyKey.toString();
-                    else metodoTmp.path = parametri.path;
-
-                    for (let index = 0; index < metodo.listaParametri.length; index++) {
-                        const element = metodo.listaParametri[index];
-                        /* configuro i parametri */
-                        const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nome, element.indexParameter,
-                            element.tipo, element.posizione);
-                        if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
-                        else paramestro.descrizione = '';
-
-                        if (parametri.sommario != undefined) paramestro.sommario = element.sommario;
-                        else paramestro.sommario = '';
-
-                    }
-                    if (element.listaMiddleware) {
-                        for (let index = 0; index < element.listaMiddleware.length; index++) {
-                            const middlewareTmp = element.listaMiddleware[index];
-                            let midd = undefined;
-                            const listaMidd = GetListaMiddlewareMetaData();
-                            if (typeof middlewareTmp === 'string' || middlewareTmp instanceof String) {
-                                midd = listaMidd.CercaConNomeSeNoAggiungi(String(middlewareTmp));
-                                SalvaListaMiddlewareMetaData(listaMidd);
-                            }
-                            else {
-                                midd = middlewareTmp;
-                            }
-
-
-                            if (metodoTmp != undefined && list != undefined && classeTmp != undefined) {
-                                metodoTmp.middleware.push(midd);
-                                SalvaListaClasseMetaData(list);
-                            }
-                            else {
-                                //console.log("Errore mio!");
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (parametri.swaggerClassi != undefined)
-                metodo.swaggerClassi = parametri.swaggerClassi;
+            metodo.Setta(parametri, propertyKey, descriptor, list);
 
             SalvaListaClasseMetaData(list);
         }

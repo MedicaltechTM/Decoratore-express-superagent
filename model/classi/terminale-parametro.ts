@@ -49,8 +49,9 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
     }
     PrintStruttura() {
         let tmp = '';
-        tmp = tmp + "- " + this.tipo.toString() + " : " + this.nome + ' |';
-        tmp = tmp + '' + this + '';
+        tmp = tmp + "- " + this.tipo.toString() + " : " + this.nome + ' |\n';
+        //tmp = tmp + '' + this. + '';
+        tmp = tmp + '' + JSON.stringify(this, null, 4) + '';
         return tmp;
     }
 
