@@ -1,4 +1,8 @@
-import { ErroreMio, ICaratteristicheMetodo, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, IMetodoLimitation, IMetodoParametri, IMetodoVettori, InizializzaLogbaseIn, InizializzaLogbaseOut, IParametriEstratti, IParametro, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone, TypeMetod, TypePosizione } from "../tools";
+import {
+    ErroreMio, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, InizializzaLogbaseIn,
+    InizializzaLogbaseOut, IParametriEstratti, IParametro, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone,
+    TypeMetod, TypePosizione
+} from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
@@ -32,6 +36,14 @@ export class RispostaControllo {
         this.trigger = 0;
     }
 }
+export class SanificatoreCampo {
+    campoDaCercare: string;
+    valoreFuturo: string;
+    constructor() {
+        this.campoDaCercare = '';
+        this.valoreFuturo = '';
+    }
+}
 
 export class Risposta {
     stato: number;
@@ -61,14 +73,14 @@ export class Risposta {
 
 
 export class TerminaleMetodo implements
-    IDescrivibile, IMetodo/* , IGestorePercorsiPath, ICaratteristicheMetodo */ {
+    IDescrivibile, IMetodo/* , IGestorePercorsiPath, IMetodoParametri */ {
     slow_down: OptSlowDows = {
-        windowMs: 15 * 60 * 1000, // 15 minutes
+        windowMs: 3 * 60 * 1000, // 15 minutes
         delayAfter: 100, // allow 100 requests per 15 minutes, then...
         delayMs: 500 // begin adding 500ms of delay per request above 100:
     };
     rate_limit: OptRateLimit = {
-        windowMs: 15 * 60 * 1000, // 15 minutes
+        windowMs: 3 * 60 * 1000, // 15 minutes
         max: 100
     };
     swaggerClassi: string[] = [];
@@ -107,7 +119,8 @@ export class TerminaleMetodo implements
 
     listaTest: { body: any, query: any, header: any }[] = [];
 
-    RisposteDiControllo = [];
+    RisposteDiControllo?: RispostaControllo[] = [];
+    ListaSanificatori?: SanificatoreCampo[] = [];
     /* Risposte?: Risposta[] = [] */
 
     /* RispondiConHTML?: {
@@ -231,10 +244,15 @@ export class TerminaleMetodo implements
      * @param middlew : la lista dei middleware
      */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = { };
+        let corsOptions = {};
         const apiRateLimiter = rateLimit(this.rate_limit);
         const apiSpeedLimiter = slowDown(this.slow_down);
         //const csrfProtection = csrf({ cookie: true })
+        /*  */
+        if (this.nome == 'CreaTemperatura') {
+            console.log(true);
+        }
+        /*  */
         switch (this.tipo) {
             case 'get':
                 (<IReturn>this.metodoAvviabile).body;
@@ -366,7 +384,7 @@ export class TerminaleMetodo implements
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = { };
+        let corsOptions = {};
         corsOptions = {
             methods: 'GET',
         }
@@ -624,7 +642,7 @@ export class TerminaleMetodo implements
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: { }, nonTrovati: parametri.nontrovato,
+                    body: {}, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -651,7 +669,7 @@ export class TerminaleMetodo implements
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({ }, tmpReturn.body);
+                            tmp.body = Object.assign({}, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
@@ -668,19 +686,25 @@ export class TerminaleMetodo implements
                     }
                     tmp.attore = tmpRitorno.attore;
                     return tmp;
-                } catch (error) {
+                } catch (error) { 
                     if (error instanceof ErroreMio) {
-                        tmp = {
+                        throw error;
+                        /* tmp = {
                             body: {
                                 "Errore Interno filtrato ": 'filtrato 404 !!!',
                                 'Errore originale': (<ErroreMio>error).message,
                                 'Stack errore': (<Error>error).stack
                             },
                             stato: (<ErroreMio>error).codiceErrore
-                        };
+                        }; */
                     }
                     else {
-                        tmp = {
+                        throw new ErroreMio({
+                            codiceErrore:598,
+                            messaggio: (<Error>error).message,
+                            percorsoErrore:(<Error>error).stack,
+                        })
+                        /* tmp = {
                             body: {
                                 "Errore Interno filtrato ": 'internal error!!!!',
                                 'Errore originale': (<Error>error).message,
@@ -688,8 +712,9 @@ export class TerminaleMetodo implements
                                 nonTrovati: parametri.nontrovato
                             },
                             stato: 598
-                        };
+                        }; */
                     }
+                    return tmp;
                 }
             }/* altrimenti lo vado a costruire */
             else {
@@ -715,10 +740,10 @@ export class TerminaleMetodo implements
                 }
                 return tmp;
             }
+
             //return undefined;
             throw new Error("Attenzione qualcosa è andato storto.");
         } catch (error: any) {
-            console.log('ciao');
             throw error;
         }
     }
@@ -733,38 +758,15 @@ export class TerminaleMetodo implements
             const classeInstanziata = await this.Istanziatore(parametri, this.listaParametri);
             attore = classeInstanziata;
             tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
-            /* const proc = fork(__filename, ['child'],
-                tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri));
-            proc.on('error', (err) => {
-            }); 
-            while (tmpReturn == '') {
-                if (count > 10) {
-                    count = 0;
-                    proc.kill('SIGINT');
-                }
-                await new Promise(resolve => setTimeout(resolve, 5000));
-                count++;
-            } */
-            // è giusta ma ho provato la soluzione 2 //tmpReturn = await classeInstanziata[this.nome.toString()].apply(classeInstanziata, parametri.valoriParametri);
-            //tmpReturn = await classeInstanziata[this.nome.toString()](classeInstanziata, parametri.valoriParametri);
         }
         else {
-
             tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri);
-
-            /* const proc = fork(__filename, ['child'],
-                tmpReturn = await this.metodoAvviabile.apply(this.metodoAvviabile, parametri.valoriParametri));
-            proc.on('error', (err) => {
-            }); 
-            while (tmpReturn == '') {
-                if (count > 10) {
-                    count = 0;
-                    proc.kill('SIGINT');
-                }
-                await new Promise(resolve => setTimeout(resolve, 5000));
-                count++;
-            } */
         }
+
+        if (this.ListaSanificatori && 'length' in this.ListaSanificatori && this.ListaSanificatori.length > 0)
+            tmpReturn = SostituisciRicorsivo(this.ListaSanificatori, tmpReturn);
+
+            
         if (this.onDopoAverTerminatoLaFunzione) tmpReturn = this.onDopoAverTerminatoLaFunzione(tmpReturn);
         return {
             attore: attore,
@@ -1149,6 +1151,22 @@ export class TerminaleMetodo implements
     }
 }
 
+function SostituisciRicorsivo(sanific: SanificatoreCampo[], currentNode: any): any {
+    for (let attribut in currentNode) {
+        if (typeof currentNode[attribut] === 'object') {
+            currentNode[attribut] = SostituisciRicorsivo(sanific, currentNode[attribut]);
+        }
+        else {
+            for (let index = 0; index < sanific.length; index++) {
+                const element = sanific[index];
+                if (attribut == element.campoDaCercare) {
+                    currentNode[attribut] = element.valoreFuturo;
+                }
+            }
+        }
+        return currentNode;
+    }
+}
 
 /**
  * crea una rotta con il nome della classe e la aggiunge alla classe di riferimento, il tipo del metodo dipende dal tipo di parametro.
@@ -1163,9 +1181,10 @@ export class TerminaleMetodo implements
  * Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore;
  * @returns 
  */
+/* function decoratoreMetodo(parametri:IMetodoParametri, eventi:IMetodoEventi, limitazioni:IMetodoLimitazioni, vettori:IMetodoVettori) */
 function decoratoreMetodo(parametri: IMetodo,
     listaParametri?: IParametro[], risposteDiControllo?: RispostaControllo[],
-    slow_down?: OptSlowDows, rate_limit?: OptRateLimit): MethodDecorator {
+    slow_down?: OptSlowDows, rate_limit?: OptRateLimit ): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
         /* inizializzo metodo */
@@ -1183,6 +1202,8 @@ function decoratoreMetodo(parametri: IMetodo,
                     TerminaleParametro.CostruisciTerminaleParametro(parametri, terminaleParametro);
                 }
             }
+
+            if (parametri.ListaSanificatori) metodo.ListaSanificatori = parametri.ListaSanificatori;
 
             if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
             else if (risposteDiControllo) metodo.RisposteDiControllo = risposteDiControllo;
@@ -1364,22 +1385,20 @@ function decoratoreMetodoEventi(parametri: IMetodoEventi): MethodDecorator {
         //return descriptor;
     }
 }
-function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDecorator {
+/* function decoratoreMetodoProprieta(parametri: IMetodoParametri): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
-        const list: ListaTerminaleClasse = GetListaClasseMetaData();
-        /* inizializzo metodo */
+        const list: ListaTerminaleClasse = GetListaClasseMetaData(); 
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
-        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
-        /* inizio a lavorare sul metodo */
+        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString()); 
         if (metodo != undefined && list != undefined && classe != undefined) {
-
+ 
             if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
-
+ 
             if (parametri.listaHtml) {
                 for (let index = 0; index < parametri.listaHtml.length; index++) {
                     const element = parametri.listaHtml[index];
                     if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
-
+ 
                     if (element.html != undefined && element.htmlPath == undefined
                         && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
                         metodo.html?.push({
@@ -1399,39 +1418,38 @@ function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDec
                     }
                 }
             }
-
+ 
             if (parametri.listaTest)
                 metodo.listaTest = parametri.listaTest;
-
+ 
             metodo.metodoAvviabile = descriptor.value;
-
+ 
             if (parametri.percorsoIndipendente) metodo.percorsoIndipendente = parametri.percorsoIndipendente;
             else metodo.percorsoIndipendente = false;
-
+ 
             if (parametri.nomiClasseRiferimento != undefined)
                 metodo.nomiClassiDiRiferimento = parametri.nomiClasseRiferimento;
-
+ 
             if (parametri.tipo != undefined) metodo.tipo = parametri.tipo;
             else if (parametri.tipo == undefined && metodo.listaParametri.length == 0) metodo.tipo = 'get';
             else if (parametri.tipo == undefined && metodo.listaParametri.length > 0) metodo.tipo = 'post';
             //else if (parametri.tipo == undefined && metodo.listaParametri.length < 0) metodo.tipo = 'post';
             else metodo.tipo = 'get';
-
+ 
             if (parametri.descrizione != undefined) metodo.descrizione = parametri.descrizione;
             else metodo.descrizione = '';
-
+ 
             if (parametri.sommario != undefined) metodo.sommario = parametri.sommario;
             else metodo.sommario = '';
-
+ 
             if (parametri.interazione != undefined) metodo.tipoInterazione = parametri.interazione;
             else metodo.tipoInterazione = 'rotta';
-
+ 
             if (parametri.path == undefined) metodo.path = propertyKey.toString();
             else metodo.path = parametri.path;
-
-            /* configuro i middleware */
+ 
             if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
-
+ 
                 const listaMidd = GetListaMiddlewareMetaData();
                 const midd = listaMidd.CercaConNomeSeNoAggiungi(propertyKey.toString());
                 midd.metodoAvviabile = descriptor.value;
@@ -1442,36 +1460,34 @@ function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDec
                 for (let index = 0; index < parametri.nomiClasseRiferimento.length; index++) {
                     const element = parametri.nomiClasseRiferimento[index];
                     const classeTmp = list.CercaConNomeSeNoAggiungi(element.nome);
-                    const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
-                    /* configuro il metodo */
+                    const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString()); 
                     metodoTmp.metodoAvviabile = descriptor.value;
-
+ 
                     if (parametri.tipo != undefined) metodoTmp.tipo = parametri.tipo;
                     else metodoTmp.tipo = 'get';
-
+ 
                     if (parametri.descrizione != undefined) metodoTmp.descrizione = parametri.descrizione;
                     else metodoTmp.descrizione = '';
-
+ 
                     if (parametri.sommario != undefined) metodoTmp.sommario = parametri.sommario;
                     else metodoTmp.sommario = '';
-
+ 
                     if (parametri.interazione != undefined) metodoTmp.tipoInterazione = parametri.interazione;
                     else metodoTmp.tipoInterazione = 'rotta';
-
+ 
                     if (parametri.path == undefined) metodoTmp.path = propertyKey.toString();
                     else metodoTmp.path = parametri.path;
-
+ 
                     for (let index = 0; index < metodo.listaParametri.length; index++) {
-                        const element = metodo.listaParametri[index];
-                        /* configuro i parametri */
+                        const element = metodo.listaParametri[index]; 
                         const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nome, element.indexParameter,
                             element.tipo, element.posizione);
                         if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
                         else paramestro.descrizione = '';
-
+ 
                         if (parametri.sommario != undefined) paramestro.sommario = element.sommario;
                         else paramestro.sommario = '';
-
+ 
                     }
                     if (element.listaMiddleware) {
                         for (let index = 0; index < element.listaMiddleware.length; index++) {
@@ -1485,8 +1501,8 @@ function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDec
                             else {
                                 midd = middlewareTmp;
                             }
-
-
+ 
+ 
                             if (metodoTmp != undefined && list != undefined && classeTmp != undefined) {
                                 metodoTmp.middleware.push(midd);
                                 SalvaListaClasseMetaData(list);
@@ -1498,10 +1514,10 @@ function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDec
                     }
                 }
             }
-
+ 
             if (parametri.swaggerClassi != undefined)
                 metodo.swaggerClassi = parametri.swaggerClassi;
-
+ 
             SalvaListaClasseMetaData(list);
         }
         else {
@@ -1509,40 +1525,40 @@ function decoratoreMetodoProprieta(parametri: ICaratteristicheMetodo): MethodDec
         }
         //return descriptor;
     }
-}
+} */
 
 /* 
 function InizializzaMetodoEventi(parametri: IMetodoEventi, metodo: TerminaleMetodo, list: ListaTerminaleClasse, classe: TerminaleClasse) {
     if (metodo != undefined && list != undefined && classe != undefined) {
-
+ 
         if (parametri.onChiamataCompletata != null) metodo.onChiamataCompletata = parametri.onChiamataCompletata;
-
+ 
         if (parametri.onLog != null) metodo.onLog = parametri.onLog;
-
+ 
         if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
-
+ 
         if (parametri.Istanziatore != null && parametri.Istanziatore != undefined) {
             metodo.Istanziatore = parametri.Istanziatore;
         }
-
+ 
         return metodo;
     }
     else {
         return metodo;
     }
 }
-
-function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: TerminaleMetodo, list: ListaTerminaleClasse, classe: TerminaleClasse,
+ 
+function InizializzaMetodoProprieta(parametri: IMetodoParametri, metodo: TerminaleMetodo, list: ListaTerminaleClasse, classe: TerminaleClasse,
     propertyKey: string,) {
     if (metodo != undefined && list != undefined && classe != undefined) {
-
+ 
         if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
-
+ 
         if (parametri.listaHtml) {
             for (let index = 0; index < parametri.listaHtml.length; index++) {
                 const element = parametri.listaHtml[index];
                 if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
-
+ 
                 if (element.html != undefined && element.htmlPath == undefined
                     && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
                     metodo.html?.push({
@@ -1562,36 +1578,36 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
                 }
             }
         }
-
+ 
         if (parametri.listaTest)
             metodo.listaTest = parametri.listaTest;
-
+ 
         if (parametri.percorsoIndipendente) metodo.percorsoIndipendente = parametri.percorsoIndipendente;
         else metodo.percorsoIndipendente = false;
-
+ 
         if (parametri.nomiClasseRiferimento != undefined)
             metodo.nomiClassiDiRiferimento = parametri.nomiClasseRiferimento;
-
+ 
         if (parametri.tipo != undefined) metodo.tipo = parametri.tipo;
         else if (parametri.tipo == undefined && metodo.listaParametri.length == 0) metodo.tipo = 'get';
         else if (parametri.tipo == undefined && metodo.listaParametri.length > 0) metodo.tipo = 'post';
         //else if (parametri.tipo == undefined && metodo.listaParametri.length < 0) metodo.tipo = 'post';
         else metodo.tipo = 'get';
-
+ 
         if (parametri.descrizione != undefined) metodo.descrizione = parametri.descrizione;
         else metodo.descrizione = '';
-
+ 
         if (parametri.sommario != undefined) metodo.sommario = parametri.sommario;
         else metodo.sommario = '';
-
+ 
         if (parametri.interazione != undefined) metodo.tipoInterazione = parametri.interazione;
         else metodo.tipoInterazione = 'rotta';
-
+ 
         if (parametri.path == undefined) metodo.path = propertyKey.toString();
         else metodo.path = parametri.path;
  
         if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
-
+ 
             const listaMidd = GetListaMiddlewareMetaData();
             const midd = listaMidd.CercaConNomeSeNoAggiungi(propertyKey.toString());
             midd.listaParametri = metodo.listaParametri;
@@ -1602,22 +1618,22 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
                 const element = parametri.nomiClasseRiferimento[index];
                 const classeTmp = list.CercaConNomeSeNoAggiungi(element.nome);
                 const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString()); 
-
+ 
                 if (parametri.tipo != undefined) metodoTmp.tipo = parametri.tipo;
                 else metodoTmp.tipo = 'get';
-
+ 
                 if (parametri.descrizione != undefined) metodoTmp.descrizione = parametri.descrizione;
                 else metodoTmp.descrizione = '';
-
+ 
                 if (parametri.sommario != undefined) metodoTmp.sommario = parametri.sommario;
                 else metodoTmp.sommario = '';
-
+ 
                 if (parametri.interazione != undefined) metodoTmp.tipoInterazione = parametri.interazione;
                 else metodoTmp.tipoInterazione = 'rotta';
-
+ 
                 if (parametri.path == undefined) metodoTmp.path = propertyKey.toString();
                 else metodoTmp.path = parametri.path;
-
+ 
                 for (let index = 0; index < metodo.listaParametri.length; index++) {
                     const element = metodo.listaParametri[index];
                     
@@ -1625,10 +1641,10 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
                         element.tipo, element.posizione);
                     if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
                     else paramestro.descrizione = '';
-
+ 
                     if (parametri.sommario != undefined) paramestro.sommario = element.sommario;
                     else paramestro.sommario = '';
-
+ 
                 }
                 if (element.listaMiddleware) {
                     for (let index = 0; index < element.listaMiddleware.length; index++) {
@@ -1642,8 +1658,8 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
                         else {
                             midd = middlewareTmp;
                         }
-
-
+ 
+ 
                         if (metodoTmp != undefined && list != undefined && classeTmp != undefined) {
                             metodoTmp.middleware.push(midd);
                             SalvaListaClasseMetaData(list);
@@ -1655,7 +1671,7 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
                 }
             }
         }
-
+ 
         if (parametri.swaggerClassi != undefined)
             metodo.swaggerClassi = parametri.swaggerClassi;
         return metodo;
@@ -1665,7 +1681,7 @@ function InizializzaMetodoProprieta(parametri: ICaratteristicheMetodo, metodo: T
     }
 }
  */
-function decoratoreMetodoParametri(parametri: IMetodoParametri): MethodDecorator {
+function decoratoreMetodoParametri(parametri: { listaParametri: IParametro[] }): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
 
@@ -1802,7 +1818,7 @@ export { decoratoreMetodo as mpMet };
 
 export { decoratoreRitorno as mpRet };
 
-export { decoratoreMetodoProprieta as mpMetProprita }
+/* export { decoratoreMetodoProprieta as mpMetProprita } */
 
 export { decoratoreMetodoParametri as mpMetPar }
 
