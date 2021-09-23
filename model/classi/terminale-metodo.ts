@@ -59,6 +59,7 @@ export class Risposta {
 
 } */
 
+
 export class TerminaleMetodo implements
     IDescrivibile, IMetodo/* , IGestorePercorsiPath, ICaratteristicheMetodo */ {
     slow_down: OptSlowDows = {
@@ -86,29 +87,27 @@ export class TerminaleMetodo implements
 
     static nomeMetadataKeyTarget = "MetodoTerminaleTarget";
 
-    percorsi: IRaccoltaPercorsi;
+    percorsi;
     classePath = '';
-    listaParametri: ListaTerminaleParametro;
+    listaParametri;
     tipo: TypeMetod;
     tipoInterazione: TypeInterazone;
     // eslint-disable-next-line @typescript-eslint/ban-types
-    nome: string | Symbol;
+    nome;
     metodoAvviabile: any;
-    path: string;
+    path;
 
     cors: any;
     helmet: any;
     middleware: any[] = [];
 
-    descrizione: string;
-    sommario: string;
-    nomiClassiDiRiferimento: IClasseRiferimento[] = [];
+    descrizione;
+    sommario;
+    nomiClassiDiRiferimento = [];
 
-    listaTest: {
-        body: any, query: any, header: any
-    }[] = [];
+    listaTest: { body: any, query: any, header: any }[] = [];
 
-    RisposteDiControllo?: RispostaControllo[] = [];
+    RisposteDiControllo = [];
     /* Risposte?: Risposta[] = [] */
 
     /* RispondiConHTML?: {
@@ -142,6 +141,7 @@ export class TerminaleMetodo implements
     onChiamataInErrore?: (logOut: any, result: any, logIn: any, errore: any) => IReturn;
     onPrimaDiEseguireMetodo?: (parametri: IParametriEstratti) => IParametriEstratti | Promise<IParametriEstratti>;
     onPrimaDiTerminareLaChiamata?: (res: IReturn) => IReturn;
+    onDopoAverTerminatoLaFunzione?: (item: any) => any;
 
     Validatore?: (parametri: IParametriEstratti, listaParametri: ListaTerminaleParametro) => IRitornoValidatore | void;
 
@@ -387,6 +387,7 @@ export class TerminaleMetodo implements
             });
     }
 
+    onPrimaDiEseguire?: (req: Request) => Request | Promise<Request>;
     /**
      * Rappresenta la chiamata express
      * @param req 
@@ -400,6 +401,7 @@ export class TerminaleMetodo implements
         try {
             //console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
+            if (this.onPrimaDiEseguire) req = await this.onPrimaDiEseguire(req);
             tmp = await this.Esegui(req);
 
             if (tmp != undefined) {
@@ -611,16 +613,13 @@ export class TerminaleMetodo implements
             let valido: IRitornoValidatore | undefined = undefined;
             if (this.Validatore) {
                 valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
-                //console.log("C1");
             }
             else if (parametri.errori.length > 0) {
                 valido = { approvato: false, stato: 200, messaggio: '' };
-                //console.log("C2");
             }
             else {
                 valido = { approvato: true, stato: 200, messaggio: '' };
             }
-
             /* verifico che il metodo possa essere eseguito come volevasi ovvero approvato = true o undefiend */
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
@@ -636,7 +635,13 @@ export class TerminaleMetodo implements
                             //console.log("ciao");
                         }
                         if ('body' in tmpReturn) { tmp.body = tmpReturn.body; }
-                        else { tmp.body = tmpReturn; }
+                        else {
+                            if (typeof tmpReturn === 'object' && tmpReturn !== null)
+                                tmp.body = tmpReturn;
+                            else {
+                                tmp.body = { tmpReturn };
+                            }
+                        }
                         if ('stato' in tmpReturn) { tmp.stato = tmpReturn.stato; }
                         else { tmp.stato = 298; }
                     }
@@ -692,14 +697,21 @@ export class TerminaleMetodo implements
                     body: parametri.errori,
                     nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori,
-                    stato: 500
+                    stato: 597
                 };
                 if (valido) {
-                    if (valido.body != undefined)
+                    if (valido.body != undefined) {
                         tmp = {
                             body: valido.body,
-                            stato: valido.stato ?? 500,
+                            stato: valido.stato ?? 596,
                         }
+                    }
+                    else {
+                        tmp = {
+                            body: '',
+                            stato: valido.stato ?? 595,
+                        }
+                    }
                 }
                 return tmp;
             }
@@ -753,6 +765,7 @@ export class TerminaleMetodo implements
                 count++;
             } */
         }
+        if (this.onDopoAverTerminatoLaFunzione) tmpReturn = this.onDopoAverTerminatoLaFunzione(tmpReturn);
         return {
             attore: attore,
             result: tmpReturn
@@ -789,6 +802,24 @@ export class TerminaleMetodo implements
             const element = this.listaParametri[index];
             parametri = parametri + element.PrintParametro();
         }
+        const tmp = this.nome + ' | ' + this.percorsi.pathGlobal + '\n\t' + parametri;
+        ////console.log(tmp);
+        return tmp;
+    }
+    PrintStruttura(): string {
+        let parametri = "";
+        for (let index = 0; index < this.listaParametri.length; index++) {
+            const element = this.listaParametri[index];
+            parametri = parametri + element.PrintStruttura();
+        }
+
+        if (this.onChiamataCompletata) parametri = parametri + '' + this.onChiamataCompletata.toString();
+        if (this.onChiamataInErrore) parametri = parametri + '' + this.onChiamataInErrore.toString();
+        if (this.onLog) parametri = parametri + '' + this.onLog.toString();
+        if (this.onPrimaDiEseguireMetodo) parametri = parametri + '' + this.onPrimaDiEseguireMetodo.toString();
+        if (this.onPrimaDiTerminareLaChiamata) parametri = parametri + '' + this.onPrimaDiTerminareLaChiamata.toString();
+        if (this.onRispostaControllatePradefinita) parametri = parametri + '' + this.onRispostaControllatePradefinita.toString();
+
         const tmp = this.nome + ' | ' + this.percorsi.pathGlobal + '\n\t' + parametri;
         ////console.log(tmp);
         return tmp;

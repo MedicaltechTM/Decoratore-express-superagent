@@ -11,6 +11,8 @@ import swaggerUI from "swagger-ui-express";
 import { GetListaTestMetaData, IReturnTest, ITest, SalvaListaTerminaleMetaData, TerminaleTest } from "./terminale-test";
 import cookieParser from "cookie-parser";
 
+import fs from "fs";
+
 /**
  * 
  */
@@ -50,7 +52,7 @@ export class Main implements IGestorePercorsiPath {
         this.listaTerminaleTest = Reflect.getMetadata(ListaTerminaleTest.nomeMetadataKeyTarget, targetTerminale);
     }
 
-    Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean) {
+    Inizializza(patheader: string, porta: number, rottaBase: boolean, creaFile?: boolean, scriviFile?: boolean) {
         const tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
 
         if (tmp.length > 0) {
@@ -68,6 +70,9 @@ export class Main implements IGestorePercorsiPath {
             }
             this.httpServer = http.createServer(this.serverExpressDecorato);
             SalvaListaClasseMetaData(tmp);
+
+            if (scriviFile)
+                this.ScriviFile();
         }
         else {
             console.log("Attenzione non vi sono rotte e quantaltro.");
@@ -132,7 +137,7 @@ export class Main implements IGestorePercorsiPath {
                     else return 0;
                 };
             });
-            const risultati =[];
+            const risultati = [];
             for (let index = 0; index < this.listaTerminaleTest.length; index++) {
                 const test = this.listaTerminaleTest[index];
                 if (test.test &&
@@ -176,9 +181,9 @@ export class Main implements IGestorePercorsiPath {
             console.log('\n\n\n');
             risultati.forEach(element => {
                 console.log(element);
-                
+
             });
-            console.log('\n\n\n');            
+            console.log('\n\n\n');
             console.log('********************************************************************************************************************')
             console.log('********************************************************************************************************************')
             console.log('********************************************************************************************************************')
@@ -243,7 +248,6 @@ export class Main implements IGestorePercorsiPath {
     InizializzaSwagger(testo?: string) {
         let ritorno = '';
         try {
-
             let swaggerClassePath = '';
             for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
                 const element = this.listaTerminaleClassi[index];
@@ -289,92 +293,7 @@ export class Main implements IGestorePercorsiPath {
             "security": []
         }`;
 
-
             this.serverExpressDecorato.use("/api-docs", swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno)));
-
-            /* if (testo)
-                this.serverExpressDecorato.use("/api-docs-doc", swaggerUI.serve, swaggerUI.setup(JSON.parse(testo)));
- */
-
-            /* const swaggerClassiTesto: {
-                numeroElementi: number,
-                testo: string,
-                nomeClasse: string
-            }[] = [];
-
-            for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
-                const tmpClasse = this.listaTerminaleClassi[index];
-                for (let index2 = 0; index2 < tmpClasse.listaMetodi.length; index2++) {
-                    const tmpMetodo = tmpClasse.listaMetodi[index2];
-                    if (tmpMetodo.swaggerClassi) {
-                        for (let index3 = 0; index3 < tmpMetodo.swaggerClassi.length; index3++) {
-                            const classeSwagger = tmpMetodo.swaggerClassi[index3];
-
-                            const tmp = tmpMetodo.SettaSwagger();
-
-                            let inserito = false;
-
-                            for (let indexs4 = 0; indexs4 < swaggerClassiTesto.length; indexs4++) {
-                                const element = swaggerClassiTesto[indexs4];
-                                if (element.nomeClasse == classeSwagger) {
-                                    if (element.numeroElementi > 0 && tmp != undefined && tmp != undefined && tmp != '')
-                                        element.testo = element.testo + ', ';
-                                    if (tmp != undefined && tmp != undefined && tmp != '')
-                                        element.testo = element.testo + tmp;
-                                    inserito = true;
-                                }
-                            }
-                            if (tmp && inserito == false)
-                                swaggerClassiTesto.push({
-                                    nomeClasse: classeSwagger,
-                                    numeroElementi: 1,
-                                    testo: tmp
-                                });
-                        }
-                    }
-                }
-            }
-
-            for (let index = 0; index < swaggerClassiTesto.length; index++) {
-                const element = swaggerClassiTesto[index];
-                const ritorno2 = ` {
-                    "openapi": "3.0.0",
-                    "servers": [
-                        {
-                            "url": "https://staisicuro.medicaltech.it/",
-                            "variables": {},
-                            "description": "indirizzo principale"
-                        },
-                        {
-                            "url": "http://ss-test.medicaltech.it/",
-                            "description": "indirizzo secondario nel caso quello principale non dovesse funzionare."
-                        }
-                    ],
-                    "info": {
-                        "description": "Documentazione delle API con le quali interrogare il server dell'applicazione STAI sicuro, per il momento qui troverai solo le api con le quali interfacciarti alla parte relativa al paziente.Se vi sono problemi sollevare degli issues o problemi sulla pagina di github oppure scrivere direttamente una email.",
-                        "version": "1.0.0",
-                        "title": "STAI sicuro",
-                        "termsOfService": "https://github.com/MedicaltechTM/STAI_sicuro"
-                    },
-                    "tags": [],
-                    "paths": {
-                        ${element.testo}
-                    },
-                    "externalDocs": {
-                        "description": "Per il momento non vi sono documentazione esterne.",
-                        "url": "-"
-                    },
-                    "components": {
-                        "schemas": {},
-                        "securitySchemes": {},
-                        "links": {},
-                        "callbacks": {}                
-                    },
-                    "security": []
-                }`;
-
-                this.serverExpressDecorato.use("/api-docs-" + element.nomeClasse, swaggerUI.serve, swaggerUI.setup(JSON.parse(ritorno2)));
-            } */
 
             return ritorno;
         } catch (error) {
@@ -390,5 +309,71 @@ export class Main implements IGestorePercorsiPath {
         //console.log("Menu main, digita il numero della la tua scelta: ");
         await tmp.PrintMenuClassi();
 
+    }
+
+    ScriviFile() {
+        let ritorno = '';
+        try {
+            let swaggerClassePath = '';
+            for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
+                const element = this.listaTerminaleClassi[index];
+                const tmp = element.SettaSwagger();
+                if (index > 0 && tmp != undefined && tmp != undefined && tmp != '')
+                    swaggerClassePath = swaggerClassePath + ', ';
+                if (tmp != undefined && tmp != undefined && tmp != '')
+                    swaggerClassePath = swaggerClassePath + tmp;
+            }
+            ritorno = ` {
+            "openapi": "3.0.0",
+            "servers": [
+                {
+                    "url": "https://staisicuro.medicaltech.it/",
+                    "variables": {},
+                    "description": "indirizzo principale"
+                },
+                {
+                    "url": "http://ss-test.medicaltech.it/",
+                    "description": "indirizzo secondario nel caso quello principale non dovesse funzionare."
+                }
+            ],
+            "info": {
+                "description": "Documentazione delle API con le quali interrogare il server dell'applicazione STAI sicuro, per il momento qui troverai solo le api con le quali interfacciarti alla parte relativa al paziente.Se vi sono problemi sollevare degli issues o problemi sulla pagina di github oppure scrivere direttamente una email.",
+                "version": "1.0.0",
+                "title": "STAI sicuro",
+                "termsOfService": "https://github.com/MedicaltechTM/STAI_sicuro"
+            },
+            "tags": [],
+            "paths": {
+                ${swaggerClassePath}
+            },
+            "externalDocs": {
+                "description": "Per il momento non vi sono documentazione esterne.",
+                "url": "-"
+            },
+            "components": {
+                "schemas": {},
+                "securitySchemes": {},
+                "links": {},
+                "callbacks": {}                
+            },
+            "security": []
+        }`;
+
+        } catch (error) {
+            return ritorno;
+        }
+        fs.writeFileSync(this.path + '/swagger', ritorno);
+
+        ritorno = '';
+
+        for (let index = 0; index < this.listaTerminaleClassi.length; index++) {
+            const classe = this.listaTerminaleClassi[index];
+            for (let index = 0; index < classe.listaMetodi.length; index++) {
+                const metodo = classe.listaMetodi[index];
+                ritorno = ritorno + '' + metodo.PrintStruttura();
+            }
+        }
+
+        fs.writeFileSync(this.path + '/api', ritorno);
     }
 }

@@ -12,6 +12,14 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
         super();
     }
 
+    /**
+     * Estrae i parametri dalla request, per estrarli legge i valori di se stesso e ne verifica le seguenti cose:
+     * - che sia obbligatorio
+     * - che sia Validato se prevede un validatore
+     * - che sia Verificato
+     * @param richiesta 
+     * @returns 
+     */
     EstraiParametriDaRequest(richiesta: Request): IParametriEstratti {
         const ritorno: IParametriEstratti = {
             errori: [], nontrovato: [], valoriParametri: []
@@ -19,6 +27,7 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
         for (let index = this.length - 1; index >= 0; index--) {
             const element = this[index];
             let tmp = undefined;
+            /* Verifico che l'emento sia o nel body o nella query o nella header, basandomi sulla sua posizione e lo metto in tmp*/
             if (richiesta.body[element.nome] != undefined && element.posizione == 'body') {
                 tmp = richiesta.body[element.nome];
             }
@@ -28,18 +37,20 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
             else if (richiesta.headers[element.nome] != undefined && element.posizione == 'header') {
                 tmp = richiesta.headers[element.nome];
             }
-            else {
-                if (element.obbligatorio == true) {
+            else { // se non c'è allora tmp = undefined, pensero poi a costruire l'errore
+                /* if (element.obbligatorio == true) {
                     ritorno.nontrovato.push({
                         nome: element.nome,
                         posizioneParametro: element.indexParameter
                     });
                 } else {
                     tmp = undefined;
-                }
+                } */
+                tmp = undefined;
             }
             ritorno.valoriParametri.push(tmp);
             element.valore = tmp;
+            //vado a verificare il validatore, a cui sara riservato il massimo della priorita, se presente non eseguirà altri controlli oltre a lui
             if (element.Validatore) {
                 const rit = element.Validatore(tmp)
                 if (rit.approvato == false) {
@@ -48,7 +59,8 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
                 }
             }
             else {
-               /*  if (TerminaleParametro.Verifica(element.tipo, tmp) == true) { */ if (element.Verifica() == false) {
+                // se il validatore non c'è lo vado a verificare
+                if (element.Verifica() == false) {
                     ritorno.errori.push({
                         approvato: false,
                         terminale: element,

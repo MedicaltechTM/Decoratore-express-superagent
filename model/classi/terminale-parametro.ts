@@ -47,6 +47,12 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
     PrintParametro() {
         return "- " + this.tipo.toString() + " : " + this.nome + ' |';
     }
+    PrintStruttura() {
+        let tmp = '';
+        tmp = tmp + "- " + this.tipo.toString() + " : " + this.nome + ' |';
+        tmp = tmp + '' + this + '';
+        return tmp;
+    }
 
     /*  */
 
@@ -92,12 +98,12 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
                     break;
                 case 'any': break;
                 default:
-                    throw new Error("Valore non trovato");
+                    return false;
             }
             return true;
         } catch (error) {
             console.log('ciao');
-            throw new Error("Errore!");
+            throw error;
         }
     }
     static Verifica(tipo: tipo, valore: any): boolean {
@@ -179,11 +185,11 @@ export class TerminaleParametro implements IDescrivibile, IParametro {
 function decoratoreParametroGenerico(parametri: IParametro)/* (nome: string, posizione: TypePosizione, tipo?: tipo, descrizione?: string, sommario?: string) */ {
     return function (target: any, propertyKey: string | symbol, parameterIndex: number) {
 
-        
+
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
         const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
         const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
-        
+
         parametri = TerminaleParametro.NormalizzaValori(parametri, parameterIndex.toString());
         const terminaleParametro = metodo.CercaParametroSeNoAggiungi(parametri.nome ?? '', parameterIndex,
             parametri.tipo ?? 'any', parametri.posizione ?? 'query');
