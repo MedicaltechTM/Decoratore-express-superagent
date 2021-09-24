@@ -20,6 +20,10 @@ import Handlebars from "handlebars";
 
 import slowDown, { Options as OptSlowDows } from "express-slow-down";
 import rateLimit, { Options as OptRateLimit } from "express-rate-limit";
+import { cacheMiddleware, memoCache, redisClient } from "../express-cache";
+
+import { Options as OptionsCache } from "express-redis-cache";
+
 //import csrf from "csurf";
 
 /* import { fork } from "child_process"; */
@@ -122,6 +126,7 @@ export class TerminaleMetodo implements
     cors: any;
     helmet: any;
     middleware: any[] = [];
+    cacheOption: OptionsCache = { expire: 5 /* secondi */, client: redisClient };
 
     descrizione: string;
     sommario: string;
@@ -261,12 +266,8 @@ export class TerminaleMetodo implements
         let corsOptions = {};
         const apiRateLimiter = rateLimit(this.rate_limit);
         const apiSpeedLimiter = slowDown(this.slow_down);
-        //const csrfProtection = csrf({ cookie: true })
-        /*  */
-        if (this.nome == 'CreaTemperatura') {
-            console.log(true);
-        }
-        /*  */
+
+        //const csrfProtection = csrf({ cookie: true }) 
         switch (this.tipo) {
             case 'get':
                 (<IReturn>this.metodoAvviabile).body;
@@ -283,6 +284,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    cacheMiddleware.route(this.cacheOption),
+                    memoCache(5),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("GET");
@@ -304,6 +307,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    cacheMiddleware.route(this.cacheOption),
+                    memoCache(5),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("POST");
@@ -325,6 +330,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    cacheMiddleware.route(this.cacheOption),
+                    memoCache(5),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("DELETE");
@@ -346,6 +353,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    cacheMiddleware.route(this.cacheOption),
+                    memoCache(5),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PATCH");
@@ -367,6 +376,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    cacheMiddleware.route(this.cacheOption),
+                    memoCache(5),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PURGE");
@@ -388,6 +399,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
+                    cacheMiddleware.route(this.cacheOption),
+                    memoCache(5),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PUT");
@@ -1862,10 +1875,12 @@ export { decoratoreRitorno as mpRet };
 
 export { decoratoreMetodoParametri as mpMetPar }
 
-function Rispondi(res: Response, item: IReturn) {
+function Rispondi(res: Response, item: IReturn/* , url: string */) {
 
     res.statusCode = Number.parseInt('' + item.stato);
     res.send(item.body);
+    /* let key = '__express__' + url;
+    memorycache.put(key, body, ) */
 }
 
 function ConstruisciErrore(messaggio: string): IReturn {

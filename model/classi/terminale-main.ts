@@ -69,6 +69,7 @@ export class Main implements IGestorePercorsiPath {
                 element.SettaPathRoot_e_Global(this.path, this.percorsi, this.serverExpressDecorato);
             }
             this.httpServer = http.createServer(this.serverExpressDecorato);
+
             SalvaListaClasseMetaData(tmp);
 
             if (pathDoveScrivereFile)

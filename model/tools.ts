@@ -5,6 +5,8 @@ import { ListaTerminaleParametro } from "./liste/lista-terminale-parametro";
 import { Options as OptSlowDows } from "express-slow-down";
 import { Options as OptRateLimit } from "express-rate-limit";
 
+import { Options as OptionsCache } from "express-redis-cache";
+
 import os from "os";
 export const targetTerminale = { name: 'Terminale' };
 
@@ -363,6 +365,7 @@ export interface IMetodoLimitazioni {
     cors?: any;
     helmet?: any;
     middleware?: any[];
+    cacheOption?: OptionsCache;
 }
 export interface IClasse {
     percorso?: string,
@@ -453,7 +456,7 @@ export function StartMonitoring() {
                 default:
                     break;
             }
-        }        
+        }
         partizionamentoMemoriaProcesso.cpuMedia = os.cpus();
         partizionamentoMemoriaProcesso.totalMemo = os.totalmem().toString();
         partizionamentoMemoriaProcesso.freeMemo = os.freemem().toString();
@@ -470,3 +473,4 @@ export function StartMonitoring() {
         }, (20) * 1000);
     }
 }
+
