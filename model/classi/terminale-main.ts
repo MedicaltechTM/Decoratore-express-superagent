@@ -2,7 +2,7 @@ import { IGestorePercorsiPath, IRaccoltaPercorsi, StartMonitoring, targetTermina
 
 import express from "express";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
-import { SalvaListaClasseMetaData } from "./terminale-classe";
+import { IstanzaClasse, SalvaListaClasseMetaData } from "./terminale-classe";
 
 import * as http from 'http';
 import { ListaTerminaleTest } from "../liste/lista-terminale-test";
@@ -78,6 +78,9 @@ export class Main implements IGestorePercorsiPath {
         else {
             console.log("Attenzione non vi sono rotte e quantaltro.");
         }
+    }
+    InizializzaClassi(lista: IstanzaClasse[]) {
+        return true;
     }
 
     async StartTestAPI() {

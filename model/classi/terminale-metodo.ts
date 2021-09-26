@@ -12,6 +12,7 @@ import { ListaTerminaleParametro } from "../liste/lista-terminale-parametro";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import cors from 'cors';
 
+import memorycache from "memory-cache";
 import fs from "fs";
 
 import superagent from "superagent";
@@ -20,7 +21,7 @@ import Handlebars from "handlebars";
 
 import slowDown, { Options as OptSlowDows } from "express-slow-down";
 import rateLimit, { Options as OptRateLimit } from "express-rate-limit";
-import { cacheMiddleware, memoCache, redisClient } from "../express-cache";
+import { cacheMiddleware, CalcolaChiaveMemoryCache, memoCache, redisClient } from "../express-cache";
 
 import { Options as OptionsCache } from "express-redis-cache";
 
@@ -75,6 +76,41 @@ export class Risposta {
 
 } */
 
+export class IstanzaMetodo {
+    constructor(parametri: IMetodo, nomeMetodo: string | symbol, descriptor: PropertyDescriptor, nomeClasse: string,
+        listaParametri?: IParametro[], risposteDiControllo?: RispostaControllo[],
+        slow_down?: OptSlowDows, rate_limit?: OptRateLimit) {
+        const list: ListaTerminaleClasse = GetListaClasseMetaData();
+        /* inizializzo metodo */
+        const classe = list.CercaConNomeSeNoAggiungi(nomeClasse);
+        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(nomeMetodo.toString());
+        /* inizio a lavorare sul metodo */
+        if (metodo != undefined && list != undefined && classe != undefined) {
+            if (risposteDiControllo) parametri.RisposteDiControllo = risposteDiControllo;
+            parametri.slow_down = slow_down;
+            parametri.rate_limit = rate_limit;
+
+            if (listaParametri) {
+                for (let index = listaParametri.length - 1; index >= 0; index--) {
+                    //for (let index = 0; index < listaParametri.length; index++) {
+                    let parametri = listaParametri[index];
+                    parametri = TerminaleParametro.NormalizzaValori(parametri, index.toString());
+                    const terminaleParametro = metodo.CercaParametroSeNoAggiungi(parametri.nome ?? '', index,
+                        parametri.tipo ?? 'any', parametri.posizione ?? 'query');
+                    TerminaleParametro.CostruisciTerminaleParametro(parametri, terminaleParametro);
+                }
+            }
+
+            metodo.Setta(parametri, nomeMetodo, descriptor, list);
+
+            SalvaListaClasseMetaData(list);
+        }
+        else {
+            //console.log("Errore mio!");
+        }
+        //return descriptor;
+    }
+}
 
 export class TerminaleMetodo implements
     IDescrivibile, IMetodo/* , IGestorePercorsiPath, IMetodoParametri */ {
@@ -126,7 +162,8 @@ export class TerminaleMetodo implements
     cors: any;
     helmet: any;
     middleware: any[] = [];
-    cacheOption: OptionsCache = { expire: 5 /* secondi */, client: redisClient };
+    cacheOptionRedis?: OptionsCache = { expire: 1 /* secondi */, client: redisClient };
+    cacheOptionMemory?: { durationSecondi: number } = undefined;
 
     descrizione: string;
     sommario: string;
@@ -263,10 +300,9 @@ export class TerminaleMetodo implements
      * @param middlew : la lista dei middleware
      */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = {};
+        let corsOptions = { };
         const apiRateLimiter = rateLimit(this.rate_limit);
         const apiSpeedLimiter = slowDown(this.slow_down);
-
         //const csrfProtection = csrf({ cookie: true }) 
         switch (this.tipo) {
             case 'get':
@@ -284,8 +320,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOption),
-                    memoCache(5),
+                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("GET");
@@ -307,8 +342,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOption),
-                    memoCache(5),
+                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("POST");
@@ -330,8 +364,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOption),
-                    memoCache(5),
+                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("DELETE");
@@ -353,8 +386,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOption),
-                    memoCache(5),
+                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PATCH");
@@ -376,8 +408,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOption),
-                    memoCache(5),
+                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
                     apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PURGE");
@@ -399,9 +430,9 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOption),
-                    memoCache(5),
-                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
+                    cacheMiddleware.route(this.cacheOptionRedis ?? { }),
+                    apiRateLimiter,
+                    apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PUT");
                         await this.ChiamataGenerica(req, res);
@@ -411,7 +442,7 @@ export class TerminaleMetodo implements
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = {};
+        let corsOptions = { };
         corsOptions = {
             methods: 'GET',
         }
@@ -446,66 +477,77 @@ export class TerminaleMetodo implements
             //console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguire) req = await this.onPrimaDiEseguire(req);
-            tmp = await this.Esegui(req);
+            const key = this.cacheOptionMemory != undefined ? CalcolaChiaveMemoryCache(req) : undefined;
+            const durationSecondi = this.cacheOptionMemory != undefined ? this.cacheOptionMemory.durationSecondi : undefined
+            const cachedBody = memorycache.get(key)
+            if (cachedBody == undefined) {
+                tmp = await this.Esegui(req);
+                if (tmp != undefined) {
+                    if (this.onRispostaControllatePradefinita && this.VerificaPresenzaRispostaControllata(tmp) == false) {
+                        const rispostaPilotata = await this.onRispostaControllatePradefinita(tmp)
+                        Rispondi(res, rispostaPilotata, key, durationSecondi);
+                        //throw new Error("Attenzione, cosa stai facendo?");
+                    }
+                    else {
+                        try {
+                            if (!this.VerificaTrigger(req)) {
 
-            if (tmp != undefined) {
-                if (this.onRispostaControllatePradefinita && this.VerificaPresenzaRispostaControllata(tmp) == false) {
-                    const rispostaPilotata = await this.onRispostaControllatePradefinita(tmp)
-                    Rispondi(res, rispostaPilotata);
-                    //throw new Error("Attenzione, cosa stai facendo?");
-                }
-                else {
-                    try {
-                        if (!this.VerificaTrigger(req)) {
-
-                            if (this.VerificaPresenzaRispostaControllata(tmp) && this.EseguiRispostaControllata) {
-                                tmp = await this.EseguiRispostaControllata(tmp);
-                            }
-                            Rispondi(res, tmp ?? ConstruisciErrore('Attenzione! Rimpiazzato.'));
-                        }
-                        else {
-                            const risposta = this.CercaRispostaConTrigger(req);
-                            if (risposta) {
-                                let source = "";
-                                if (risposta.stato >= 1 && risposta.stato < 600) {
-                                    if (risposta.htmlPath != undefined)
-                                        source = fs.readFileSync(risposta.htmlPath).toString();
-                                    else if (risposta.html != undefined)
-                                        source = risposta.html;
-                                    else
-                                        throw new Error("Errorissimo");
+                                if (this.VerificaPresenzaRispostaControllata(tmp) && this.EseguiRispostaControllata) {
+                                    tmp = await this.EseguiRispostaControllata(tmp);
                                 }
-                                if (risposta.isHandlebars) {
-                                    const template = Handlebars.compile(source);
-                                    const result = template(tmp.body);
-                                    res.statusCode = Number.parseInt('' + risposta.stato);
-                                    res.send(result);
-                                    passato = true;
-                                } else {
-                                    Rispondi(res, tmp);
-                                    passato = true;
-                                }
+                                Rispondi(res, tmp ?? ConstruisciErrore('Attenzione! Rimpiazzato.'), key, durationSecondi);
                             }
                             else {
-                                throw new Error("Errore nel trigger");
+                                const risposta = this.CercaRispostaConTrigger(req);
+                                if (risposta) {
+                                    let source = "";
+                                    if (risposta.stato >= 1 && risposta.stato < 600) {
+                                        if (risposta.htmlPath != undefined)
+                                            source = fs.readFileSync(risposta.htmlPath).toString();
+                                        else if (risposta.html != undefined)
+                                            source = risposta.html;
+                                        else
+                                            throw new Error("Errorissimo");
+                                    }
+                                    if (risposta.isHandlebars) {
+                                        const template = Handlebars.compile(source);
+                                        const result = template(tmp.body);
+                                        res.statusCode = Number.parseInt('' + risposta.stato);
+                                        res.send(result);
+                                        passato = true;
+                                    } else {
+                                        Rispondi(res, tmp, key, durationSecondi);
+                                        passato = true;
+                                    }
+                                }
+                                else {
+                                    throw new Error("Errore nel trigger");
+                                }
                             }
-                        }
-                    } catch (error) {
-                        res.status(598).send(error);
-                    }
-                }
-                //if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
+                        } catch (errore: any) {
+                            const err = ConstruisciErrore(errore);
+                            err.stato = 598;
+                            Rispondi(res, err, key, durationSecondi);
 
-                logOut = InizializzaLogbaseOut(res, this.nome.toString());
-                if (this.onChiamataCompletata) {
-                    this.onChiamataCompletata(logIn, tmp, logOut, undefined);
+                        }
+                    }
+                    //if (this.onPrimaDiTerminareLaChiamata) tmp = this.onPrimaDiTerminareLaChiamata(tmp);
                 }
-                if (this.onLog) {
-                    this.onLog(logIn, tmp, logOut, undefined);
+                else {
+                    throw new Error("Attenzione qualcosa è andato storto nell'Esegui(req), guarda @mpMet");
                 }
             }
             else {
-                throw new Error("Attenzione qualcosa è andato storto nell'Esegui(req), guarda @mpMet");
+                res.setHeader('Content-Type', 'application/json');
+                res.status(cachedBody.stato).send(JSON.parse(cachedBody.body))
+            }
+
+            logOut = InizializzaLogbaseOut(res, this.nome.toString());
+            if (this.onChiamataCompletata) {
+                this.onChiamataCompletata(logIn, tmp, logOut, undefined);
+            }
+            if (this.onLog) {
+                this.onLog(logIn, tmp, logOut, undefined);
             }
         } catch (error) {
             if (this.onChiamataInErrore) {
@@ -668,7 +710,7 @@ export class TerminaleMetodo implements
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: {}, nonTrovati: parametri.nontrovato,
+                    body: { }, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -695,7 +737,7 @@ export class TerminaleMetodo implements
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({}, tmpReturn.body);
+                            tmp.body = Object.assign({ }, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
@@ -770,6 +812,7 @@ export class TerminaleMetodo implements
             //return undefined;
             throw new Error("Attenzione qualcosa è andato storto.");
         } catch (error: any) {
+            console.log('ciao');
             throw error;
         }
     }
@@ -1377,34 +1420,11 @@ function decoratoreMetodo(parametri: IMetodo,
     listaParametri?: IParametro[], risposteDiControllo?: RispostaControllo[],
     slow_down?: OptSlowDows, rate_limit?: OptRateLimit): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
-        const list: ListaTerminaleClasse = GetListaClasseMetaData();
-        /* inizializzo metodo */
-        const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
-        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString());
-        /* inizio a lavorare sul metodo */
-        if (metodo != undefined && list != undefined && classe != undefined) {
-            if (risposteDiControllo) parametri.RisposteDiControllo = risposteDiControllo;
-            parametri.slow_down = slow_down;
-            parametri.rate_limit = rate_limit;
-
-            if (listaParametri) {
-                for (let index = listaParametri.length - 1; index >= 0; index--) {
-                    //for (let index = 0; index < listaParametri.length; index++) {
-                    let parametri = listaParametri[index];
-                    parametri = TerminaleParametro.NormalizzaValori(parametri, index.toString());
-                    const terminaleParametro = metodo.CercaParametroSeNoAggiungi(parametri.nome ?? '', index,
-                        parametri.tipo ?? 'any', parametri.posizione ?? 'query');
-                    TerminaleParametro.CostruisciTerminaleParametro(parametri, terminaleParametro);
-                }
-            }
-
-            metodo.Setta(parametri, propertyKey, descriptor, list);
-
-            SalvaListaClasseMetaData(list);
-        }
-        else {
-            //console.log("Errore mio!");
-        }
+        new IstanzaMetodo(
+            parametri, propertyKey.toString(), descriptor, target.constructor.name,
+            listaParametri, risposteDiControllo,
+            slow_down, rate_limit
+        );
         //return descriptor;
     }
 }
@@ -1875,15 +1895,18 @@ export { decoratoreRitorno as mpRet };
 
 export { decoratoreMetodoParametri as mpMetPar }
 
-function Rispondi(res: Response, item: IReturn/* , url: string */) {
+function Rispondi(res: Response, item: IReturn, key?: string, durationSecondi?: number /* , url: string */) {
 
     res.statusCode = Number.parseInt('' + item.stato);
     res.send(item.body);
+    if (key != undefined) {
+        memorycache.put(key, { body: item.body, stato: res.statusCode }, (durationSecondi ?? 1) * 1000);
+    }
     /* let key = '__express__' + url;
     memorycache.put(key, body, ) */
 }
 
-function ConstruisciErrore(messaggio: string): IReturn {
+function ConstruisciErrore(messaggio: any): IReturn {
     return {
         stato: 500,
         body: {

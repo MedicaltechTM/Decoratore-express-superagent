@@ -1,6 +1,6 @@
 
+import { Request } from "express";
 //import redis from "redis";
-import { NextFunction, Request, Response } from "express";
 import expressRedisCache from "express-redis-cache";
 
 
@@ -26,35 +26,30 @@ redisClient.on("warning", function (item: any) {
 
 export const cacheMiddleware = expressRedisCache({ client: redisClient, expire: 10 /* secondi */ });
 
-import memorycache from "memory-cache";
 import { sha1 } from "object-hash";
 
+export function CalcolaChiaveMemoryCache(req: Request) {
+    const tmp = '-' + JSON.stringify(req.body) + '-' + JSON.stringify(req.header) + '-' + JSON.stringify(req.query) + '-';
+    const tmpmd = sha1((tmp));
+    const key = '__express__' + req.url + '__MP__' + tmpmd+ '__';
+    return key;
+}
+/* 
 export const memoCache = (durationSecondi: number) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        //const tmp = Object.assign(req.body + req.headers + req.query);
-        const tmp = '-' + JSON.stringify(req.body) + '-' + JSON.stringify(req.header) + '-' + JSON.stringify(req.query) + '-';
-
-        const tmpmd = sha1((tmp))
-        console.log(tmpmd);
-
-        let key = '__express__' + req.url + '__MIRKO_PIZZINI__' + tmpmd
-        let cachedBody = memorycache.get(key)
+        const key = CalcolaChiaveMemoryCache(req);
+        const cachedBody = memorycache.get(key)
         if (cachedBody) {
             res.setHeader('Content-Type', 'application/json');
             res.status(cachedBody.stato).send(JSON.parse(cachedBody.body))
             return
         } else {
-            /* res.sendResponse = res.send
-            res.send = (body) => {
-                mcache.put(key, body, duration * 1000);
-                res.sendResponse(body)
-            } */
-            (<any>res).sendResponse = res.send
+            (<any>res).sendResponse = res.send;
             res.send = (body: string): any => {
                 memorycache.put(key, { body: body, stato: res.statusCode }, durationSecondi * 1000);
-                (<any>res).sendResponse(body)
+                (<any>res).sendResponse(body);
             }
             next();
         }
     }
-}
+} */

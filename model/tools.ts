@@ -304,6 +304,7 @@ export interface IMetodo extends IMetodoParametri, IMetodoEventi, IMetodoLimitaz
 
 }
 export interface IMetodoParametri {
+    
     //schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean,
@@ -365,7 +366,9 @@ export interface IMetodoLimitazioni {
     cors?: any;
     helmet?: any;
     middleware?: any[];
-    cacheOption?: OptionsCache;
+    
+    cacheOptionRedis?: OptionsCache;
+    cacheOptionMemory?: { durationSecondi: number };
 }
 export interface IClasse {
     percorso?: string,

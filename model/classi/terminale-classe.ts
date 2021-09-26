@@ -3,7 +3,7 @@ import { IClasse, IRaccoltaPercorsi, targetTerminale, IHtml, IGestorePercorsiPat
 
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
 import { ListaTerminaleMetodo } from "../liste/lista-terminale-metodo";
-import { TerminaleMetodo } from "./terminale-metodo";
+import { IstanzaMetodo, TerminaleMetodo } from "./terminale-metodo";
 
 import chiedi from "prompts";
 import { Request, Router, Response } from "express";
@@ -154,19 +154,16 @@ export class TerminaleClasse implements IGestorePercorsiPath {
 
 }
 
-/**
- * inizializza la classe, crea un rotta in express mediante il percorso specificato. 
- * @param percorso : di default il nome della classe
- */
-function decoratoreClasse(parametri: IClasse): any {
-    return (ctr: Function) => {
+export class IstanzaClasse {
+    constructor(parametri: IClasse, nomeClasse: string, listaMetodi?: IstanzaMetodo[]) {
+
         const tmp: ListaTerminaleClasse = GetListaClasseMetaData();
-        const classe = CheckClasseMetaData(ctr.name);
+        const classe = CheckClasseMetaData(nomeClasse);
         /* 
                 if (parametri.listaTest) classe.listaTest = parametri.listaTest; */
 
         if (parametri.percorso) classe.SetPath = parametri.percorso;
-        else classe.SetPath = ctr.name;
+        else classe.SetPath = nomeClasse;
 
         if (parametri.html) {
             classe.html = [];
@@ -233,6 +230,89 @@ function decoratoreClasse(parametri: IClasse): any {
         }
 
         SalvaListaClasseMetaData(tmp);
+    }
+}
+
+/**
+ * inizializza la classe, crea un rotta in express mediante il percorso specificato. 
+ * @param percorso : di default il nome della classe
+ */
+function decoratoreClasse(parametri: IClasse): any {
+    return (ctr: Function) => {
+        new IstanzaClasse(parametri, ctr.name);
+        /* 
+         const tmp: ListaTerminaleClasse = GetListaClasseMetaData();
+         const classe = CheckClasseMetaData(ctr.name);
+ 
+         if (parametri.percorso) classe.SetPath = parametri.percorso;
+         else classe.SetPath = ctr.name;
+ 
+         if (parametri.html) {
+             classe.html = [];
+             for (let index = 0; index < parametri.html.length; index++) {
+                 const element = parametri.html[index];
+                 if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
+ 
+                 if (element.html != undefined && element.htmlPath == undefined
+                     && classe.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
+                     classe.html.push({
+                         contenuto: element.html,
+                         path: element.path,
+                         percorsoIndipendente: element.percorsoIndipendente
+                     });
+                     // metodo.html?.contenuto = element.html;
+                 } else if (element.html == undefined && element.htmlPath != undefined
+                     && classe.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
+ 
+                     try {
+                         classe.html.push({
+                             contenuto: fs.readFileSync(element.htmlPath).toString(),
+                             path: element.path,
+                             percorsoIndipendente: element.percorsoIndipendente
+                         });
+                     } catch (error) {
+                         classe.html.push({
+                             contenuto: 'Nessun contenuto',
+                             path: element.path,
+                             percorsoIndipendente: element.percorsoIndipendente
+                         });
+                     }
+                     // metodo.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
+                 }
+             }
+         }
+ 
+         if (parametri.LogGenerale) {
+             classe.listaMetodi.forEach(element => {
+                 if (element.onLog == undefined)
+                     element.onLog = parametri.LogGenerale;
+             });
+         }
+ 
+         if (parametri.Inizializzatore) {
+             classe.listaMetodi.forEach(element => {
+                 let contiene = false;
+                 element.listaParametri.forEach(element => {
+                     if (element.autenticatore == true) contiene = true;
+                 });
+                 if (contiene) element.Istanziatore = parametri.Inizializzatore;
+             });
+         }
+ 
+         if (parametri.classeSwagger && parametri.classeSwagger != '') {
+             classe.classeSwagger = parametri.classeSwagger;
+             classe.listaMetodi.forEach(element => {
+                 if (element.swaggerClassi) {
+                     const ris = element.swaggerClassi.find(x => { if (x == parametri.classeSwagger) return true; else return false; })
+                     if (ris == undefined && parametri.classeSwagger) {
+                         element.swaggerClassi.push(parametri.classeSwagger);
+                     }
+                 }
+             });
+         }
+ 
+         SalvaListaClasseMetaData(tmp); 
+         */
     }
 }
 
