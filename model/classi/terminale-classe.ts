@@ -11,6 +11,8 @@ import fs from 'fs';
 
 export class TerminaleClasse implements IGestorePercorsiPath {
 
+    listaKnex: any[] = [];
+
     classeSwagger?= '';
 
     static nomeMetadataKeyTarget = "ClasseTerminaleTarget";
@@ -228,8 +230,9 @@ export class IstanzaClasse {
                 }
             });
         }
+        classe.
 
-        SalvaListaClasseMetaData(tmp);
+            SalvaListaClasseMetaData(tmp);
     }
 }
 
