@@ -304,7 +304,7 @@ export interface IMetodo extends IMetodoParametri, IMetodoEventi, IMetodoLimitaz
 
 }
 export interface IMetodoParametri {
-    
+
     //schemaSwagger?: any;
     /**Specifica se il percorso dato deve essere concatenato al percorso della classe o se è da prendere singolarmente di default è falso e quindi il percorso andra a sommarsi al percorso della classe */
     percorsoIndipendente?: boolean,
@@ -366,11 +366,14 @@ export interface IMetodoLimitazioni {
     cors?: any;
     helmet?: any;
     middleware?: any[];
-    
+
     cacheOptionRedis?: OptionsCache;
     cacheOptionMemory?: { durationSecondi: number };
 }
 export interface IClasse {
+    cacheOptionRedis?: OptionsCache,
+    cacheOptionMemory?: { durationSecondi: number },
+
     percorso?: string,
     LogGenerale?: any,
     /*  ((logOut: any, result: any, logIn: any, errore: any) => void) */
@@ -464,7 +467,7 @@ export function StartMonitoring() {
         partizionamentoMemoriaProcesso.totalMemo = os.totalmem().toString();
         partizionamentoMemoriaProcesso.freeMemo = os.freemem().toString();
 
-        console.log("Data" + Date.now(), partizionamentoMemoriaProcesso);
+        //console.log("Data" + Date.now(), partizionamentoMemoriaProcesso);
 
 
         setTimeout(() => {

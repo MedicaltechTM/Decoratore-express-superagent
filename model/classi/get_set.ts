@@ -17,7 +17,7 @@ function Controllo<T>(item: {
         };
         const setter = function (newVal: T) {
             if (item.setCheck instanceof Error) {
-                console.log('ciao');
+                //console.log('ciao');
             }
             else if (item.setCheck instanceof Boolean) {
                 value = newVal;

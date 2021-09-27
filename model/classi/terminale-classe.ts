@@ -219,6 +219,14 @@ export class IstanzaClasse {
             });
         }
 
+        if (parametri.cacheOptionMemory) {
+            classe.listaMetodi.forEach(element => {
+                if (element.cacheOptionMemory == undefined) {
+                    element.cacheOptionMemory = parametri.cacheOptionMemory;
+                }
+            });
+        }
+
         if (parametri.classeSwagger && parametri.classeSwagger != '') {
             classe.classeSwagger = parametri.classeSwagger;
             classe.listaMetodi.forEach(element => {
@@ -230,9 +238,8 @@ export class IstanzaClasse {
                 }
             });
         }
-        classe.
-
-            SalvaListaClasseMetaData(tmp);
+        /* classe. */
+        SalvaListaClasseMetaData(tmp);
     }
 }
 

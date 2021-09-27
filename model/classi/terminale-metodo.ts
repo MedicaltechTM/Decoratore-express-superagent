@@ -21,7 +21,7 @@ import Handlebars from "handlebars";
 
 import slowDown, { Options as OptSlowDows } from "express-slow-down";
 import rateLimit, { Options as OptRateLimit } from "express-rate-limit";
-import { cacheMiddleware, CalcolaChiaveMemoryCache, memoCache, redisClient } from "../express-cache";
+import { cacheMiddleware, CalcolaChiaveMemoryCache, redisClient } from "../express-cache";
 
 import { Options as OptionsCache } from "express-redis-cache";
 
@@ -300,7 +300,7 @@ export class TerminaleMetodo implements
      * @param middlew : la lista dei middleware
      */
     ConfiguraRotteSwitch(app: any, percorsoTmp: string, middlew: any[]) {
-        let corsOptions = { };
+        let corsOptions = {};
         const apiRateLimiter = rateLimit(this.rate_limit);
         const apiSpeedLimiter = slowDown(this.slow_down);
         //const csrfProtection = csrf({ cookie: true }) 
@@ -430,7 +430,7 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOptionRedis ?? { }),
+                    cacheMiddleware.route(this.cacheOptionRedis ?? {}),
                     apiRateLimiter,
                     apiSpeedLimiter,/*csrfProtection,*/
                     async (req: Request, res: Response) => {
@@ -442,7 +442,7 @@ export class TerminaleMetodo implements
     }
     ConfiguraRotteHtml(app: any, percorsoTmp: string, contenuto: string) {
         (<IReturn>this.metodoAvviabile).body;
-        let corsOptions = { };
+        let corsOptions = {};
         corsOptions = {
             methods: 'GET',
         }
@@ -473,14 +473,14 @@ export class TerminaleMetodo implements
         let logIn: any;
         let logOut: any;
         let tmp: IReturn | undefined;
+        const key = this.cacheOptionMemory != undefined ? CalcolaChiaveMemoryCache(req) : undefined;
+        const durationSecondi = this.cacheOptionMemory != undefined ? this.cacheOptionMemory.durationSecondi : undefined;
         try {
             //console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguire) req = await this.onPrimaDiEseguire(req);
-            const key = this.cacheOptionMemory != undefined ? CalcolaChiaveMemoryCache(req) : undefined;
-            const durationSecondi = this.cacheOptionMemory != undefined ? this.cacheOptionMemory.durationSecondi : undefined
             const cachedBody = memorycache.get(key)
-            if (cachedBody == undefined) {
+            if (cachedBody == undefined || cachedBody == null) {
                 tmp = await this.Esegui(req);
                 if (tmp != undefined) {
                     if (this.onRispostaControllatePradefinita && this.VerificaPresenzaRispostaControllata(tmp) == false) {
@@ -512,8 +512,12 @@ export class TerminaleMetodo implements
                                     if (risposta.isHandlebars) {
                                         const template = Handlebars.compile(source);
                                         const result = template(tmp.body);
-                                        res.statusCode = Number.parseInt('' + risposta.stato);
-                                        res.send(result);
+                                        /* res.statusCode = Number.parseInt('' + risposta.stato);
+                                        res.send(result); */
+                                        Rispondi(res, {
+                                            stato: Number.parseInt('' + risposta.stato),
+                                            body:result
+                                        }, key, durationSecondi);
                                         passato = true;
                                     } else {
                                         Rispondi(res, tmp, key, durationSecondi);
@@ -538,8 +542,28 @@ export class TerminaleMetodo implements
                 }
             }
             else {
-                res.setHeader('Content-Type', 'application/json');
-                res.status(cachedBody.stato).send(JSON.parse(cachedBody.body))
+                const parametri = this.listaParametri.EstraiParametriDaRequest(req);
+                let valido: IRitornoValidatore | undefined = undefined;
+                if (this.Validatore) {
+                    valido = this.Validatore(parametri, this.listaParametri) ?? undefined;
+                    if (valido && valido?.approvato == true && this.Istanziatore) {
+                        await this.Istanziatore(parametri, this.listaParametri);
+                        res.setHeader('Content-Type', 'application/json');
+                        res.status(cachedBody.stato).send(cachedBody.body)
+                    }
+                    else {
+                        res.status(555).send({ errore: 'Errore cache.' });
+                    }
+                }
+                else if (parametri.errori.length > 0) {
+                    valido = { approvato: false, stato: 400, messaggio: 'Parametri in errore.'/* parametri.errori.toString() */ };
+                    res.status(555).send({ errore: 'Errore cache.' });
+                }
+                else {
+                    valido = { approvato: true, stato: 200, messaggio: '' };
+                    res.setHeader('Content-Type', 'application/json');
+                    res.status(cachedBody.stato).send(cachedBody.body)
+                }
             }
 
             logOut = InizializzaLogbaseOut(res, this.nome.toString());
@@ -552,11 +576,11 @@ export class TerminaleMetodo implements
         } catch (error) {
             if (this.onChiamataInErrore) {
                 tmp = await this.onChiamataInErrore(logIn, tmp, logOut, error);
-                let num = 0;
+                /* let num = 0;
                 num = tmp.stato;
-                //num = 404; 
                 res.statusCode = Number.parseInt('' + num);
-                res.send(tmp.body);
+                res.send(tmp.body); */
+                Rispondi(res, tmp, key, durationSecondi);
             }
             else if (passato == false) {
                 if (error instanceof ErroreMio) {
@@ -567,21 +591,42 @@ export class TerminaleMetodo implements
                             errore: (<ErroreMio>error).message
                         }
                     }; */
-                    res.status((<ErroreMio>error).codiceErrore).send({ errore: (<ErroreMio>error).message });
+
+                    Rispondi(res, {
+                        stato: (<ErroreMio>error).codiceErrore,
+                        body: { errore: (<ErroreMio>error).message }
+                    }, key, durationSecondi);
+                    //res.status((<ErroreMio>error).codiceErrore).send({ errore: (<ErroreMio>error).message });
                 } else {
-                    res.status(500).send({
+                    Rispondi(res, {
+                        stato: 500,
+                        body: {
+                            error: error,
+                            passato: passato,
+                            info: ''
+                        }
+                    }, key, durationSecondi);
+                    /* res.status(500).send({
                         error: error,
                         passato: passato,
                         info: ''
-                    });
+                    }); */
                 }
             }
             else {
-                res.status(500).send({
+                Rispondi(res, {
+                    stato: 500,
+                    body: {
+                        error: error,
+                        passato: passato,
+                        info: ''
+                    }
+                }, key, durationSecondi);
+                /* res.status(500).send({
                     error: error,
                     passato: passato,
                     info: ''
-                });
+                }); */
             }
             if (this.onLog) {
                 this.onLog(logIn, tmp, logOut, error);
@@ -710,7 +755,7 @@ export class TerminaleMetodo implements
             if ((valido && (valido.approvato == undefined || valido.approvato == true))
                 || (!valido && parametri.errori.length == 0)) {
                 let tmp: IReturn = {
-                    body: { }, nonTrovati: parametri.nontrovato,
+                    body: {}, nonTrovati: parametri.nontrovato,
                     inErrore: parametri.errori, stato: 200
                 };
                 try {
@@ -737,12 +782,12 @@ export class TerminaleMetodo implements
                             for (let attribut in tmpReturn.body) {
                                 (<any>tmp.body)[attribut] = tmpReturn.body[attribut];
                             }
-                            tmp.body = Object.assign({ }, tmpReturn.body);
+                            tmp.body = Object.assign({}, tmpReturn.body);
                             tmp.stato = tmpReturn.stato;
                         }
                         else if (tmpReturn) {
                             tmp.body = tmpReturn;
-                            tmp.stato = 299;
+                            tmp.stato = 200//299;
                         }
                         else {
                             tmp = {
@@ -812,7 +857,7 @@ export class TerminaleMetodo implements
             //return undefined;
             throw new Error("Attenzione qualcosa è andato storto.");
         } catch (error: any) {
-            console.log('ciao');
+            //console.log('ciao');
             throw error;
         }
     }
@@ -1257,6 +1302,7 @@ export class TerminaleMetodo implements
 
         if (parametri.slow_down) this.slow_down = parametri.slow_down;
         if (parametri.rate_limit) this.rate_limit = parametri.rate_limit;
+        if (parametri.cacheOptionMemory) this.cacheOptionMemory = parametri.cacheOptionMemory ?? { durationSecondi: 1 };
 
         if (parametri.listaTest)
             this.listaTest = parametri.listaTest;
@@ -1900,7 +1946,8 @@ function Rispondi(res: Response, item: IReturn, key?: string, durationSecondi?: 
     res.statusCode = Number.parseInt('' + item.stato);
     res.send(item.body);
     if (key != undefined) {
-        memorycache.put(key, { body: item.body, stato: res.statusCode }, (durationSecondi ?? 1) * 1000);
+        const tempo = (durationSecondi ?? 1);
+        memorycache.put(key, { body: item.body, stato: res.statusCode }, tempo * 1000);
     }
     /* let key = '__express__' + url;
     memorycache.put(key, body, ) */

@@ -1,9 +1,10 @@
 
-import chiedi from "prompts";
+import chiedi from "prompts"
 import { createConnection, ConnectionOptions } from "typeorm";
 import { Main } from "./model/classi/terminale-main";
 /* import { IReturn } from "./model/tools"; */
 
+/*
 
 import { IParametriEstratti, mpMet, mpMetEvent, mpMetPropieta, mpPar } from ".";
 import { IstanzaClasse, TerminaleClasse } from "./model/classi/terminale-classe";
@@ -57,7 +58,7 @@ class Persona {
     }) kikko: string) {
         return 'Nome :' + this.nome + '; Cognome: ' + this.cognome + '||';
     }
-}  * /
+}  */
 
 const connessione = <ConnectionOptions>{
     type: "postgres",
@@ -93,7 +94,7 @@ createConnection(connessione).then(async connection => {
     console.log("4: test");
     main.Inizializza("localhost", 8080, true, true);
     main.InizializzaSwagger();
-    main.InizializzaClassi([
+    /* main.InizializzaClassi([
         new IstanzaClasse({
 
         },'',[
@@ -101,7 +102,7 @@ createConnection(connessione).then(async connection => {
         ])
     ]){
 
-    }
+    } */
     await main.StartTest();
     chiedi({ type: 'number', message: 'scegli:', name: 'risultato', min: 0, max: 3 })
         .then((result) => {
