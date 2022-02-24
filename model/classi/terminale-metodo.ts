@@ -6,11 +6,11 @@ import {
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
 import { TerminaleParametro } from "./terminale-parametro";
 import helmet from "helmet";
+import cors from 'cors';
 import { Request, Response, NextFunction } from "express";
 import { GetListaMiddlewareMetaData, SalvaListaMiddlewareMetaData } from "../liste/lista-terminale-metodo";
 import { ListaTerminaleParametro } from "../liste/lista-terminale-parametro";
 import { ListaTerminaleClasse } from "../liste/lista-terminale-classe";
-import cors from 'cors';
 
 import memorycache from "memory-cache";
 import fs from "fs";
@@ -21,9 +21,9 @@ import Handlebars from "handlebars";
 
 import slowDown, { Options as OptSlowDows } from "express-slow-down";
 import rateLimit, { Options as OptRateLimit } from "express-rate-limit";
-import { cacheMiddleware, CalcolaChiaveMemoryCache, redisClient } from "../express-cache";
-
 import { Options as OptionsCache } from "express-redis-cache";
+import { CalcolaChiaveMemoryCache, redisClient } from "../express-cache";
+
 
 //import csrf from "csurf";
 
@@ -303,6 +303,8 @@ export class TerminaleMetodo implements
         let corsOptions = {};
         const apiRateLimiter = rateLimit(this.rate_limit);
         const apiSpeedLimiter = slowDown(this.slow_down);
+        console.log(apiRateLimiter, apiSpeedLimiter);
+        
         //const csrfProtection = csrf({ cookie: true }) 
         switch (this.tipo) {
             case 'get':
@@ -320,8 +322,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
-                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
+                    /* cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1, client: redisClient }),
+                    apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("GET");
                         await this.ChiamataGenerica(req, res);
@@ -342,8 +344,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
-                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
+                    /* cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1, client: redisClient }),
+                    apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("POST");
                         await this.ChiamataGenerica(req, res);
@@ -364,8 +366,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
-                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
+                    /* cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1, client: redisClient }),
+                    apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("DELETE");
                         await this.ChiamataGenerica(req, res);
@@ -386,8 +388,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
-                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
+                    /* cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1, client: redisClient }),
+                    apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PATCH");
                         await this.ChiamataGenerica(req, res);
@@ -408,8 +410,8 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1 /* secondi */, client: redisClient }),
-                    apiRateLimiter, apiSpeedLimiter,/*csrfProtection,*/
+                    /* cacheMiddleware.route(this.cacheOptionRedis ?? <OptionsCache>{ expire: 1, client: redisClient }),
+                    apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PURGE");
                         await this.ChiamataGenerica(req, res);
@@ -430,9 +432,9 @@ export class TerminaleMetodo implements
                     this.cors,
                     this.helmet,
                     middlew,
-                    cacheMiddleware.route(this.cacheOptionRedis ?? {}),
+                    /* cacheMiddleware.route(this.cacheOptionRedis ?? {}),
                     apiRateLimiter,
-                    apiSpeedLimiter,/*csrfProtection,*/
+                    apiSpeedLimiter, *//*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PUT");
                         await this.ChiamataGenerica(req, res);
