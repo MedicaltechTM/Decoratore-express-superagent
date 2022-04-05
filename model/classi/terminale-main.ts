@@ -18,21 +18,7 @@ import fs from "fs";
  */
 export function mpMain(path: string) {
     return function (ctr: FunctionConstructor) {
-        //tmp.PrintMenu();
         (<any>ctr.prototype).serverExpressDecorato = express();
-        /* ctr.prototype.Inizializza = () => {
-            let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
-            for (let index = 0; index < tmp.length; index++) {
-                const element = tmp[index];
-                element.SettaPathRoot_e_Global(path, '/' + path + '/' + element.path);
-                ctr.prototype.serverExpressDecorato.use('/' + path + '/' + element.path, element.rotte);
-            }
-        }
-        ctr.prototype.PrintMenu = () => {
-            let tmp: ListaTerminaleClasse = Reflect.getMetadata(ListaTerminaleClasse.nomeMetadataKeyTarget, targetTerminale);
-            console.log("mpMain" + ' -> ' + 'PrintMenu');
-            tmp.PrintMenu();
-        }; */
     }
 }
 export class Main implements IGestorePercorsiPath {

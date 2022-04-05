@@ -1,6 +1,6 @@
 import {
     ErroreMio, IClasseRiferimento, IDescrivibile, IHtml, IMetodo, IMetodoEventi, InizializzaLogbaseIn,
-    InizializzaLogbaseOut, IParametriEstratti, IParametro, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TypeInterazone,
+    InizializzaLogbaseOut, IParametriEstratti, IParametro, IRaccoltaPercorsi, IReturn, IRitornoValidatore, IsJsonString, tipo, TracciamentoDurataChiamata, TypeInterazone,
     TypeMetod, TypePosizione
 } from "../tools";
 import { GetListaClasseMetaData, SalvaListaClasseMetaData } from "./terminale-classe";
@@ -124,7 +124,7 @@ export class TerminaleMetodo implements
 
         }
     };
-    rate_limit: OptRateLimit = {
+    rate_limit: OptRateLimit | any = {
         windowMs: 3 * 60 * 1000, // 15 minutes
         max: 100,
         onLimitReached: (req: Request, res: Response, options: OptRateLimit) => {
@@ -304,7 +304,7 @@ export class TerminaleMetodo implements
         const apiRateLimiter = rateLimit(this.rate_limit);
         const apiSpeedLimiter = slowDown(this.slow_down);
         console.log(apiRateLimiter, apiSpeedLimiter);
-        
+
         //const csrfProtection = csrf({ cookie: true }) 
         switch (this.tipo) {
             case 'get':
@@ -326,7 +326,16 @@ export class TerminaleMetodo implements
                     apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("GET");
-                        await this.ChiamataGenerica(req, res);
+                        const chiamata = <TracciamentoDurataChiamata>{
+                            datainizio: new Date(Date.now()),
+                            nomeChiamata: percorsoTmp,
+                            request: {
+                                header:req.headers,
+                                body:req.body,
+                                query:req.query
+                            }
+                        };
+                        await this.ChiamataGenerica(req, res, chiamata);
                     });
                 break;
             case 'post':
@@ -348,7 +357,16 @@ export class TerminaleMetodo implements
                     apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("POST");
-                        await this.ChiamataGenerica(req, res);
+                        const chiamata = <TracciamentoDurataChiamata>{
+                            datainizio: new Date(Date.now()),
+                            nomeChiamata: percorsoTmp,
+                            request: {
+                                header:req.headers,
+                                body:req.body,
+                                query:req.query
+                            }
+                        };
+                        await this.ChiamataGenerica(req, res, chiamata);
                     });
                 break;
             case 'delete':
@@ -370,7 +388,16 @@ export class TerminaleMetodo implements
                     apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("DELETE");
-                        await this.ChiamataGenerica(req, res);
+                        const chiamata = <TracciamentoDurataChiamata>{
+                            datainizio: new Date(Date.now()),
+                            nomeChiamata: percorsoTmp,
+                            request: {
+                                header:req.headers,
+                                body:req.body,
+                                query:req.query
+                            }
+                        };
+                        await this.ChiamataGenerica(req, res, chiamata);
                     });
                 break;
             case 'patch':
@@ -392,7 +419,16 @@ export class TerminaleMetodo implements
                     apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PATCH");
-                        await this.ChiamataGenerica(req, res);
+                        const chiamata = <TracciamentoDurataChiamata>{
+                            datainizio: new Date(Date.now()),
+                            nomeChiamata: percorsoTmp,
+                            request: {
+                                header:req.headers,
+                                body:req.body,
+                                query:req.query
+                            }
+                        };
+                        await this.ChiamataGenerica(req, res, chiamata);
                     });
                 break;
             case 'purge':
@@ -414,7 +450,16 @@ export class TerminaleMetodo implements
                     apiRateLimiter, apiSpeedLimiter, */ /*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PURGE");
-                        await this.ChiamataGenerica(req, res);
+                        const chiamata = <TracciamentoDurataChiamata>{
+                            datainizio: new Date(Date.now()),
+                            nomeChiamata: percorsoTmp,
+                            request: {
+                                header:req.headers,
+                                body:req.body,
+                                query:req.query
+                            }
+                        };
+                        await this.ChiamataGenerica(req, res, chiamata);
                     });
                 break;
             case 'put':
@@ -437,7 +482,16 @@ export class TerminaleMetodo implements
                     apiSpeedLimiter, *//*csrfProtection,*/
                     async (req: Request, res: Response) => {
                         //console.log("PUT");
-                        await this.ChiamataGenerica(req, res);
+                        const chiamata = <TracciamentoDurataChiamata>{
+                            datainizio: new Date(Date.now()),
+                            nomeChiamata: percorsoTmp,
+                            request: {
+                                header:req.headers,
+                                body:req.body,
+                                query:req.query
+                            }
+                        };
+                        await this.ChiamataGenerica(req, res, chiamata);
                     });
                 break;
         }
@@ -470,15 +524,14 @@ export class TerminaleMetodo implements
      * @param req 
      * @param res 
      */
-    async ChiamataGenerica(req: Request, res: Response) {
+    async ChiamataGenerica(req: Request, res: Response, chiamata: TracciamentoDurataChiamata) {
         let passato = false;
         let logIn: any;
         let logOut: any;
         let tmp: IReturn | undefined;
         const key = this.cacheOptionMemory != undefined ? CalcolaChiaveMemoryCache(req) : undefined;
         const durationSecondi = this.cacheOptionMemory != undefined ? this.cacheOptionMemory.durationSecondi : undefined;
-        try {
-            //console.log('Inizio Chiamata generica per : ' + this.percorsi.pathGlobal);
+        try { 
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguire) req = await this.onPrimaDiEseguire(req);
             const cachedBody = memorycache.get(key)
@@ -487,7 +540,7 @@ export class TerminaleMetodo implements
                 if (tmp != undefined) {
                     if (this.onRispostaControllatePradefinita && this.VerificaPresenzaRispostaControllata(tmp) == false) {
                         const rispostaPilotata = await this.onRispostaControllatePradefinita(tmp)
-                        Rispondi(res, rispostaPilotata, key, durationSecondi);
+                        Rispondi(res, rispostaPilotata, chiamata, key, durationSecondi);
                         //throw new Error("Attenzione, cosa stai facendo?");
                     }
                     else {
@@ -497,7 +550,7 @@ export class TerminaleMetodo implements
                                 if (this.VerificaPresenzaRispostaControllata(tmp) && this.EseguiRispostaControllata) {
                                     tmp = await this.EseguiRispostaControllata(tmp);
                                 }
-                                Rispondi(res, tmp ?? ConstruisciErrore('Attenzione! Rimpiazzato.'), key, durationSecondi);
+                                Rispondi(res, tmp ?? ConstruisciErrore('Attenzione! Rimpiazzato.'), chiamata, key, durationSecondi);
                             }
                             else {
                                 const risposta = this.CercaRispostaConTrigger(req);
@@ -518,11 +571,11 @@ export class TerminaleMetodo implements
                                         res.send(result); */
                                         Rispondi(res, {
                                             stato: Number.parseInt('' + risposta.stato),
-                                            body:result
-                                        }, key, durationSecondi);
+                                            body: result
+                                        }, chiamata, key, durationSecondi);
                                         passato = true;
                                     } else {
-                                        Rispondi(res, tmp, key, durationSecondi);
+                                        Rispondi(res, tmp, chiamata, key, durationSecondi);
                                         passato = true;
                                     }
                                 }
@@ -533,7 +586,7 @@ export class TerminaleMetodo implements
                         } catch (errore: any) {
                             const err = ConstruisciErrore(errore);
                             err.stato = 598;
-                            Rispondi(res, err, key, durationSecondi);
+                            Rispondi(res, err, chiamata, key, durationSecondi);
 
                         }
                     }
@@ -582,7 +635,7 @@ export class TerminaleMetodo implements
                 num = tmp.stato;
                 res.statusCode = Number.parseInt('' + num);
                 res.send(tmp.body); */
-                Rispondi(res, tmp, key, durationSecondi);
+                Rispondi(res, tmp, chiamata, key, durationSecondi);
             }
             else if (passato == false) {
                 if (error instanceof ErroreMio) {
@@ -597,7 +650,7 @@ export class TerminaleMetodo implements
                     Rispondi(res, {
                         stato: (<ErroreMio>error).codiceErrore,
                         body: { errore: (<ErroreMio>error).message }
-                    }, key, durationSecondi);
+                    }, chiamata, key, durationSecondi);
                     //res.status((<ErroreMio>error).codiceErrore).send({ errore: (<ErroreMio>error).message });
                 } else {
                     Rispondi(res, {
@@ -607,7 +660,7 @@ export class TerminaleMetodo implements
                             passato: passato,
                             info: ''
                         }
-                    }, key, durationSecondi);
+                    }, chiamata, key, durationSecondi);
                     /* res.status(500).send({
                         error: error,
                         passato: passato,
@@ -623,7 +676,7 @@ export class TerminaleMetodo implements
                         passato: passato,
                         info: ''
                     }
-                }, key, durationSecondi);
+                }, chiamata, key, durationSecondi);
                 /* res.status(500).send({
                     error: error,
                     passato: passato,
@@ -1017,7 +1070,7 @@ export class TerminaleMetodo implements
                     .set(JSON.parse('{ ' + header + ' }'))
                     .set('accept', 'json')
                     ;
-            } catch (error) {
+            } catch (error: any) {
                 //console.log(error);
                 if ('response' in error) {
                     return (<any>error).response.body;
@@ -1046,7 +1099,7 @@ export class TerminaleMetodo implements
                     .set(header)
                     .set('accept', 'json')
                     ;
-            } catch (error) {
+            } catch (error:any) {
                 //console.log(error);
                 if ('response' in error) {
                     return (<any>error).response.body;
@@ -1473,7 +1526,6 @@ function decoratoreMetodo(parametri: IMetodo,
             listaParametri, risposteDiControllo,
             slow_down, rate_limit
         );
-        //return descriptor;
     }
 }
 
@@ -1506,302 +1558,7 @@ function decoratoreMetodoEventi(parametri: IMetodoEventi): MethodDecorator {
         //return descriptor;
     }
 }
-/* function decoratoreMetodoProprieta(parametri: IMetodoParametri): MethodDecorator {
-    return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
-        const list: ListaTerminaleClasse = GetListaClasseMetaData(); 
-        const classe = list.CercaConNomeSeNoAggiungi(target.constructor.name);
-        const metodo = classe.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString()); 
-        if (metodo != undefined && list != undefined && classe != undefined) {
- 
-            if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
- 
-            if (parametri.listaHtml) {
-                for (let index = 0; index < parametri.listaHtml.length; index++) {
-                    const element = parametri.listaHtml[index];
-                    if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
- 
-                    if (element.html != undefined && element.htmlPath == undefined
-                        && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
-                        metodo.html?.push({
-                            contenuto: element.html,
-                            path: element.path,
-                            percorsoIndipendente: element.percorsoIndipendente
-                        });
-                        // metodo.html?.contenuto = element.html;
-                    } else if (element.html == undefined && element.htmlPath != undefined
-                        && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
-                        metodo.html.push({
-                            contenuto: fs.readFileSync(element.htmlPath).toString(),
-                            path: element.path,
-                            percorsoIndipendente: element.percorsoIndipendente
-                        });
-                        // metodo.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
-                    }
-                }
-            }
- 
-            if (parametri.listaTest)
-                metodo.listaTest = parametri.listaTest;
- 
-            metodo.metodoAvviabile = descriptor.value;
- 
-            if (parametri.percorsoIndipendente) metodo.percorsoIndipendente = parametri.percorsoIndipendente;
-            else metodo.percorsoIndipendente = false;
- 
-            if (parametri.nomiClasseRiferimento != undefined)
-                metodo.nomiClassiDiRiferimento = parametri.nomiClasseRiferimento;
- 
-            if (parametri.tipo != undefined) metodo.tipo = parametri.tipo;
-            else if (parametri.tipo == undefined && metodo.listaParametri.length == 0) metodo.tipo = 'get';
-            else if (parametri.tipo == undefined && metodo.listaParametri.length > 0) metodo.tipo = 'post';
-            //else if (parametri.tipo == undefined && metodo.listaParametri.length < 0) metodo.tipo = 'post';
-            else metodo.tipo = 'get';
- 
-            if (parametri.descrizione != undefined) metodo.descrizione = parametri.descrizione;
-            else metodo.descrizione = '';
- 
-            if (parametri.sommario != undefined) metodo.sommario = parametri.sommario;
-            else metodo.sommario = '';
- 
-            if (parametri.interazione != undefined) metodo.tipoInterazione = parametri.interazione;
-            else metodo.tipoInterazione = 'rotta';
- 
-            if (parametri.path == undefined) metodo.path = propertyKey.toString();
-            else metodo.path = parametri.path;
- 
-            if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
- 
-                const listaMidd = GetListaMiddlewareMetaData();
-                const midd = listaMidd.CercaConNomeSeNoAggiungi(propertyKey.toString());
-                midd.metodoAvviabile = descriptor.value;
-                midd.listaParametri = metodo.listaParametri;
-                SalvaListaMiddlewareMetaData(listaMidd);
-            }
-            if (parametri.nomiClasseRiferimento != undefined && parametri.nomiClasseRiferimento.length > 0) {
-                for (let index = 0; index < parametri.nomiClasseRiferimento.length; index++) {
-                    const element = parametri.nomiClasseRiferimento[index];
-                    const classeTmp = list.CercaConNomeSeNoAggiungi(element.nome);
-                    const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString()); 
-                    metodoTmp.metodoAvviabile = descriptor.value;
- 
-                    if (parametri.tipo != undefined) metodoTmp.tipo = parametri.tipo;
-                    else metodoTmp.tipo = 'get';
- 
-                    if (parametri.descrizione != undefined) metodoTmp.descrizione = parametri.descrizione;
-                    else metodoTmp.descrizione = '';
- 
-                    if (parametri.sommario != undefined) metodoTmp.sommario = parametri.sommario;
-                    else metodoTmp.sommario = '';
- 
-                    if (parametri.interazione != undefined) metodoTmp.tipoInterazione = parametri.interazione;
-                    else metodoTmp.tipoInterazione = 'rotta';
- 
-                    if (parametri.path == undefined) metodoTmp.path = propertyKey.toString();
-                    else metodoTmp.path = parametri.path;
- 
-                    for (let index = 0; index < metodo.listaParametri.length; index++) {
-                        const element = metodo.listaParametri[index]; 
-                        const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nome, element.indexParameter,
-                            element.tipo, element.posizione);
-                        if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
-                        else paramestro.descrizione = '';
- 
-                        if (parametri.sommario != undefined) paramestro.sommario = element.sommario;
-                        else paramestro.sommario = '';
- 
-                    }
-                    if (element.listaMiddleware) {
-                        for (let index = 0; index < element.listaMiddleware.length; index++) {
-                            const middlewareTmp = element.listaMiddleware[index];
-                            let midd = undefined;
-                            const listaMidd = GetListaMiddlewareMetaData();
-                            if (typeof middlewareTmp === 'string' || middlewareTmp instanceof String) {
-                                midd = listaMidd.CercaConNomeSeNoAggiungi(String(middlewareTmp));
-                                SalvaListaMiddlewareMetaData(listaMidd);
-                            }
-                            else {
-                                midd = middlewareTmp;
-                            }
- 
- 
-                            if (metodoTmp != undefined && list != undefined && classeTmp != undefined) {
-                                metodoTmp.middleware.push(midd);
-                                SalvaListaClasseMetaData(list);
-                            }
-                            else {
-                                //console.log("Errore mio!");
-                            }
-                        }
-                    }
-                }
-            }
- 
-            if (parametri.swaggerClassi != undefined)
-                metodo.swaggerClassi = parametri.swaggerClassi;
- 
-            SalvaListaClasseMetaData(list);
-        }
-        else {
-            //console.log("Errore mio!");
-        }
-        //return descriptor;
-    }
-} */
 
-/* 
-function InizializzaMetodoEventi(parametri: IMetodoEventi, metodo: TerminaleMetodo, list: ListaTerminaleClasse, classe: TerminaleClasse) {
-    if (metodo != undefined && list != undefined && classe != undefined) {
- 
-        if (parametri.onChiamataCompletata != null) metodo.onChiamataCompletata = parametri.onChiamataCompletata;
- 
-        if (parametri.onLog != null) metodo.onLog = parametri.onLog;
- 
-        if (parametri.Validatore != null) metodo.Validatore = parametri.Validatore;
- 
-        if (parametri.Istanziatore != null && parametri.Istanziatore != undefined) {
-            metodo.Istanziatore = parametri.Istanziatore;
-        }
- 
-        return metodo;
-    }
-    else {
-        return metodo;
-    }
-}
- 
-function InizializzaMetodoProprieta(parametri: IMetodoParametri, metodo: TerminaleMetodo, list: ListaTerminaleClasse, classe: TerminaleClasse,
-    propertyKey: string,) {
-    if (metodo != undefined && list != undefined && classe != undefined) {
- 
-        if (parametri.RisposteDiControllo) metodo.RisposteDiControllo = parametri.RisposteDiControllo;
- 
-        if (parametri.listaHtml) {
-            for (let index = 0; index < parametri.listaHtml.length; index++) {
-                const element = parametri.listaHtml[index];
-                if (element.percorsoIndipendente == undefined) element.percorsoIndipendente = false;
- 
-                if (element.html != undefined && element.htmlPath == undefined
-                    && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
-                    metodo.html?.push({
-                        contenuto: element.html,
-                        path: element.path,
-                        percorsoIndipendente: element.percorsoIndipendente
-                    });
-                    // metodo.html?.contenuto = element.html;
-                } else if (element.html == undefined && element.htmlPath != undefined
-                    && metodo.html.find(x => { if (x.path == element.path) return true; else return false; }) == undefined) {
-                    metodo.html.push({
-                        contenuto: fs.readFileSync(element.htmlPath).toString(),
-                        path: element.path,
-                        percorsoIndipendente: element.percorsoIndipendente
-                    });
-                    // metodo.html?.contenuto = fs.readFileSync(element.htmlPath).toString();
-                }
-            }
-        }
- 
-        if (parametri.listaTest)
-            metodo.listaTest = parametri.listaTest;
- 
-        if (parametri.percorsoIndipendente) metodo.percorsoIndipendente = parametri.percorsoIndipendente;
-        else metodo.percorsoIndipendente = false;
- 
-        if (parametri.nomiClasseRiferimento != undefined)
-            metodo.nomiClassiDiRiferimento = parametri.nomiClasseRiferimento;
- 
-        if (parametri.tipo != undefined) metodo.tipo = parametri.tipo;
-        else if (parametri.tipo == undefined && metodo.listaParametri.length == 0) metodo.tipo = 'get';
-        else if (parametri.tipo == undefined && metodo.listaParametri.length > 0) metodo.tipo = 'post';
-        //else if (parametri.tipo == undefined && metodo.listaParametri.length < 0) metodo.tipo = 'post';
-        else metodo.tipo = 'get';
- 
-        if (parametri.descrizione != undefined) metodo.descrizione = parametri.descrizione;
-        else metodo.descrizione = '';
- 
-        if (parametri.sommario != undefined) metodo.sommario = parametri.sommario;
-        else metodo.sommario = '';
- 
-        if (parametri.interazione != undefined) metodo.tipoInterazione = parametri.interazione;
-        else metodo.tipoInterazione = 'rotta';
- 
-        if (parametri.path == undefined) metodo.path = propertyKey.toString();
-        else metodo.path = parametri.path;
- 
-        if (parametri.interazione == 'middleware' || parametri.interazione == 'ambo') {
- 
-            const listaMidd = GetListaMiddlewareMetaData();
-            const midd = listaMidd.CercaConNomeSeNoAggiungi(propertyKey.toString());
-            midd.listaParametri = metodo.listaParametri;
-            SalvaListaMiddlewareMetaData(listaMidd);
-        }
-        if (parametri.nomiClasseRiferimento != undefined && parametri.nomiClasseRiferimento.length > 0) {
-            for (let index = 0; index < parametri.nomiClasseRiferimento.length; index++) {
-                const element = parametri.nomiClasseRiferimento[index];
-                const classeTmp = list.CercaConNomeSeNoAggiungi(element.nome);
-                const metodoTmp = classeTmp.CercaMetodoSeNoAggiungiMetodo(propertyKey.toString()); 
- 
-                if (parametri.tipo != undefined) metodoTmp.tipo = parametri.tipo;
-                else metodoTmp.tipo = 'get';
- 
-                if (parametri.descrizione != undefined) metodoTmp.descrizione = parametri.descrizione;
-                else metodoTmp.descrizione = '';
- 
-                if (parametri.sommario != undefined) metodoTmp.sommario = parametri.sommario;
-                else metodoTmp.sommario = '';
- 
-                if (parametri.interazione != undefined) metodoTmp.tipoInterazione = parametri.interazione;
-                else metodoTmp.tipoInterazione = 'rotta';
- 
-                if (parametri.path == undefined) metodoTmp.path = propertyKey.toString();
-                else metodoTmp.path = parametri.path;
- 
-                for (let index = 0; index < metodo.listaParametri.length; index++) {
-                    const element = metodo.listaParametri[index];
-                    
-                    const paramestro = metodoTmp.CercaParametroSeNoAggiungi(element.nome, element.indexParameter,
-                        element.tipo, element.posizione);
-                    if (parametri.descrizione != undefined) paramestro.descrizione = element.descrizione;
-                    else paramestro.descrizione = '';
- 
-                    if (parametri.sommario != undefined) paramestro.sommario = element.sommario;
-                    else paramestro.sommario = '';
- 
-                }
-                if (element.listaMiddleware) {
-                    for (let index = 0; index < element.listaMiddleware.length; index++) {
-                        const middlewareTmp = element.listaMiddleware[index];
-                        let midd = undefined;
-                        const listaMidd = GetListaMiddlewareMetaData();
-                        if (typeof middlewareTmp === 'string' || middlewareTmp instanceof String) {
-                            midd = listaMidd.CercaConNomeSeNoAggiungi(String(middlewareTmp));
-                            SalvaListaMiddlewareMetaData(listaMidd);
-                        }
-                        else {
-                            midd = middlewareTmp;
-                        }
- 
- 
-                        if (metodoTmp != undefined && list != undefined && classeTmp != undefined) {
-                            metodoTmp.middleware.push(midd);
-                            SalvaListaClasseMetaData(list);
-                        }
-                        else {
-                            //console.log("Errore mio!");
-                        }
-                    }
-                }
-            }
-        }
- 
-        if (parametri.swaggerClassi != undefined)
-            metodo.swaggerClassi = parametri.swaggerClassi;
-        return metodo;
-    }
-    else {
-        //console.log("Errore mio!");
-    }
-}
- */
 function decoratoreMetodoParametri(parametri: { listaParametri: IParametro[] }): MethodDecorator {
     return function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
         const list: ListaTerminaleClasse = GetListaClasseMetaData();
@@ -1943,10 +1700,16 @@ export { decoratoreRitorno as mpRet };
 
 export { decoratoreMetodoParametri as mpMetPar }
 
-function Rispondi(res: Response, item: IReturn, key?: string, durationSecondi?: number /* , url: string */) {
+function Rispondi(res: Response, item: IReturn, chiamata: TracciamentoDurataChiamata, key?: string, durationSecondi?: number /* , url: string */) {
 
     res.statusCode = Number.parseInt('' + item.stato);
     res.send(item.body);
+    chiamata.dataFine = new Date(Date.now());
+    chiamata.tempo =  new Date(chiamata.dataFine).getTime() - new Date(chiamata.datainizio).getTime();
+    console.log(chiamata);
+    console.log("*****************************************************************\n\n");
+    
+
     if (key != undefined) {
         const tempo = (durationSecondi ?? 1);
         memorycache.put(key, { body: item.body, stato: res.statusCode }, tempo * 1000);

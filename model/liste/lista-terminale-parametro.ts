@@ -155,24 +155,4 @@ export class ListaTerminaleParametro extends Array<TerminaleParametro>  {
         header = header + '';
         return { body, query, header };
     }
-
-    
-    /* CercaConNome(nome: string): TerminaleParametro | undefined {
-        for (let index = 0; index < this.length; index++) {
-            const element = this[index];
-            if (element.nome == nome) return element;
-        }
-        return undefined;
-    }
-    AggiungiElemento(item: TerminaleParametro, ) {
-        for (let index = 0; index < this.length; index++) {
-            const element = this[index];
-            if (element.nome == item.nome && element.indexParameter == item.classePath) {
-                this[index] = item;
-                return item;
-            }
-        }
-        this.push(item);
-        return item;
-    } */
 }

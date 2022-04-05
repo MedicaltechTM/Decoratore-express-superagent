@@ -156,7 +156,7 @@ export class ErroreMio extends Error {
     }
 }
 export interface IGestioneErrore {
-    error: Error,
+    error: Error | ErroreMio | any,
     nomeClasse?: string,
     nomeFunzione?: string
 }
@@ -478,5 +478,14 @@ export function StartMonitoring() {
             StartMonitoring();
         }, (20) * 1000);
     }
+}
+
+export interface TracciamentoDurataChiamata{
+    datainizio:Date,
+    nomeChiamata:string,
+    dataFine:Date,
+    request:any,
+    response:any,
+    tempo:number
 }
 
