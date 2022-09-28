@@ -115,6 +115,8 @@ export class IstanzaMetodo {
 export class TerminaleMetodo implements
     IDescrivibile, IMetodo/* , IGestorePercorsiPath, IMetodoParametri */ {
 
+    inseriscimi: boolean = true;
+
     slow_down: OptSlowDows = {
         windowMs: 3 * 60 * 1000, // 15 minutes
         delayAfter: 100, // allow 100 requests per 15 minutes, then...
@@ -275,7 +277,7 @@ export class TerminaleMetodo implements
         }
         /*  */
 
-        if (this.metodoAvviabile != undefined) {
+        if (this.metodoAvviabile != undefined && this.inseriscimi) {
             this.ConfiguraRotteSwitch(app, percorsoTmp, middlew);
         }
 
@@ -331,9 +333,9 @@ export class TerminaleMetodo implements
                             datainizio: new Date(Date.now()),
                             nomeChiamata: percorsoTmp,
                             request: {
-                                header:req.headers,
-                                body:req.body,
-                                query:req.query
+                                header: req.headers,
+                                body: req.body,
+                                query: req.query
                             }
                         };
                         await this.ChiamataGenerica(req, res, chiamata);
@@ -362,9 +364,9 @@ export class TerminaleMetodo implements
                             datainizio: new Date(Date.now()),
                             nomeChiamata: percorsoTmp,
                             request: {
-                                header:req.headers,
-                                body:req.body,
-                                query:req.query
+                                header: req.headers,
+                                body: req.body,
+                                query: req.query
                             }
                         };
                         await this.ChiamataGenerica(req, res, chiamata);
@@ -393,9 +395,9 @@ export class TerminaleMetodo implements
                             datainizio: new Date(Date.now()),
                             nomeChiamata: percorsoTmp,
                             request: {
-                                header:req.headers,
-                                body:req.body,
-                                query:req.query
+                                header: req.headers,
+                                body: req.body,
+                                query: req.query
                             }
                         };
                         await this.ChiamataGenerica(req, res, chiamata);
@@ -424,9 +426,9 @@ export class TerminaleMetodo implements
                             datainizio: new Date(Date.now()),
                             nomeChiamata: percorsoTmp,
                             request: {
-                                header:req.headers,
-                                body:req.body,
-                                query:req.query
+                                header: req.headers,
+                                body: req.body,
+                                query: req.query
                             }
                         };
                         await this.ChiamataGenerica(req, res, chiamata);
@@ -455,9 +457,9 @@ export class TerminaleMetodo implements
                             datainizio: new Date(Date.now()),
                             nomeChiamata: percorsoTmp,
                             request: {
-                                header:req.headers,
-                                body:req.body,
-                                query:req.query
+                                header: req.headers,
+                                body: req.body,
+                                query: req.query
                             }
                         };
                         await this.ChiamataGenerica(req, res, chiamata);
@@ -487,9 +489,9 @@ export class TerminaleMetodo implements
                             datainizio: new Date(Date.now()),
                             nomeChiamata: percorsoTmp,
                             request: {
-                                header:req.headers,
-                                body:req.body,
-                                query:req.query
+                                header: req.headers,
+                                body: req.body,
+                                query: req.query
                             }
                         };
                         await this.ChiamataGenerica(req, res, chiamata);
@@ -532,7 +534,7 @@ export class TerminaleMetodo implements
         let tmp: IReturn | undefined;
         const key = this.cacheOptionMemory != undefined ? CalcolaChiaveMemoryCache(req) : undefined;
         const durationSecondi = this.cacheOptionMemory != undefined ? this.cacheOptionMemory.durationSecondi : undefined;
-        try { 
+        try {
             logIn = InizializzaLogbaseIn(req, this.nome.toString());
             if (this.onPrimaDiEseguire) req = await this.onPrimaDiEseguire(req);
             const cachedBody = memorycache.get(key)
@@ -1100,7 +1102,7 @@ export class TerminaleMetodo implements
                     .set(header)
                     .set('accept', 'json')
                     ;
-            } catch (error:any) {
+            } catch (error: any) {
                 //console.log(error);
                 if ('response' in error) {
                     return (<any>error).response.body;
@@ -1484,6 +1486,10 @@ export class TerminaleMetodo implements
 
         if (parametri.swaggerClassi != undefined)
             this.swaggerClassi = parametri.swaggerClassi;
+
+        if (parametri.inseriscimi != undefined) {
+            this.inseriscimi = parametri.inseriscimi;
+        }
     }
 }
 
@@ -1706,10 +1712,10 @@ function Rispondi(res: Response, item: IReturn, chiamata: TracciamentoDurataChia
     res.statusCode = Number.parseInt('' + item.stato);
     res.send(item.body);
     chiamata.dataFine = new Date(Date.now());
-    chiamata.tempo =  new Date(chiamata.dataFine).getTime() - new Date(chiamata.datainizio).getTime();
+    chiamata.tempo = new Date(chiamata.dataFine).getTime() - new Date(chiamata.datainizio).getTime();
     console.log(chiamata);
     console.log("*****************************************************************\n\n");
-    
+
 
     if (key != undefined) {
         const tempo = (durationSecondi ?? 1);

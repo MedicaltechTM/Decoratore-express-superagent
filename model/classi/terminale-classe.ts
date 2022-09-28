@@ -11,7 +11,7 @@ import fs from 'fs';
 
 export class TerminaleClasse implements IGestorePercorsiPath {
 
-    inseriscimi:boolean=true;
+    inseriscimi: boolean = true;
 
     listaKnex: any[] = [];
 
@@ -38,7 +38,7 @@ export class TerminaleClasse implements IGestorePercorsiPath {
 
     html: IHtml[] = [];
 
-    constructor(nome: string, path?: string, headerPath?: string, port?: number, inseriscimi?:boolean) {
+    constructor(nome: string, path?: string, headerPath?: string, port?: number) {
         this.id = Math.random().toString();
         this.rotte = Router();
         this.listaMetodi = new ListaTerminaleMetodo();
@@ -53,7 +53,6 @@ export class TerminaleClasse implements IGestorePercorsiPath {
         if (port == undefined) this.percorsi.porta = 3000;
         else this.percorsi.porta = port;
 
-        if(inseriscimi!= undefined)this.inseriscimi = inseriscimi;
 
         const pathGlobal = '/' + this.path;
         this.percorsi.pathGlobal = pathGlobal;
@@ -241,6 +240,10 @@ export class IstanzaClasse {
                     }
                 }
             });
+        }
+
+        if (parametri.inseriscimi != undefined) {
+            classe.inseriscimi = parametri.inseriscimi;
         }
         /* classe. */
         SalvaListaClasseMetaData(tmp);

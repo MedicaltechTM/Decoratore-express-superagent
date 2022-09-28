@@ -361,6 +361,8 @@ export interface IMetodoEventi {
     onPrimaDiEseguire?: (req: Request) => Request | Promise<Request>;
 }
 export interface IMetodoLimitazioni {
+inseriscimi?:boolean;
+
     slow_down?: OptSlowDows;
     rate_limit?: OptRateLimit;
     cors?: any;
