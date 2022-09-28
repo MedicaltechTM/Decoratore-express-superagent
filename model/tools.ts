@@ -371,6 +371,7 @@ export interface IMetodoLimitazioni {
     cacheOptionMemory?: { durationSecondi: number };
 }
 export interface IClasse {
+    inseriscimi?:boolean;
     cacheOptionRedis?: OptionsCache,
     cacheOptionMemory?: { durationSecondi: number },
 

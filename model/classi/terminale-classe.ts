@@ -11,6 +11,8 @@ import fs from 'fs';
 
 export class TerminaleClasse implements IGestorePercorsiPath {
 
+    inseriscimi:boolean=true;
+
     listaKnex: any[] = [];
 
     classeSwagger?= '';
@@ -36,7 +38,7 @@ export class TerminaleClasse implements IGestorePercorsiPath {
 
     html: IHtml[] = [];
 
-    constructor(nome: string, path?: string, headerPath?: string, port?: number) {
+    constructor(nome: string, path?: string, headerPath?: string, port?: number, inseriscimi?:boolean) {
         this.id = Math.random().toString();
         this.rotte = Router();
         this.listaMetodi = new ListaTerminaleMetodo();
@@ -50,6 +52,8 @@ export class TerminaleClasse implements IGestorePercorsiPath {
         else this.percorsi.patheader = headerPath;
         if (port == undefined) this.percorsi.porta = 3000;
         else this.percorsi.porta = port;
+
+        if(inseriscimi!= undefined)this.inseriscimi = inseriscimi;
 
         const pathGlobal = '/' + this.path;
         this.percorsi.pathGlobal = pathGlobal;

@@ -52,7 +52,9 @@ export class Main implements IGestorePercorsiPath {
 
             for (let index = 0; index < tmp.length; index++) {
                 const element = tmp[index];
-                element.SettaPathRoot_e_Global(this.path, this.percorsi, this.serverExpressDecorato);
+                if (element.inseriscimi) {
+                    element.SettaPathRoot_e_Global(this.path, this.percorsi, this.serverExpressDecorato);
+                }
             }
             this.httpServer = http.createServer(this.serverExpressDecorato);
 

@@ -114,6 +114,7 @@ export class IstanzaMetodo {
 
 export class TerminaleMetodo implements
     IDescrivibile, IMetodo/* , IGestorePercorsiPath, IMetodoParametri */ {
+
     slow_down: OptSlowDows = {
         windowMs: 3 * 60 * 1000, // 15 minutes
         delayAfter: 100, // allow 100 requests per 15 minutes, then...
